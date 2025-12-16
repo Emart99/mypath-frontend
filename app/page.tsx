@@ -4,7 +4,7 @@ import { Navbar } from "@/components/navbar";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#E57373] text-white selection:bg-white selection:text-[#FF3E00] overflow-x-hidden font-sans relative">
+    <div className="min-h-screen bg-[#E57373] text-white selection:bg-white selection:text-[#FF3E00] overflow-x-hidden relative">
       <div className="bg-noise"></div>
       <Navbar />
       <main className="relative z-10 flex flex-col items-center justify-start pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">

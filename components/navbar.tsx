@@ -1,13 +1,19 @@
-import React from 'react';
 import { Button } from './ui/button';
+import { cookies } from 'next/headers';
+import { handleLogout } from '@/app/actions';
 
-export const Navbar: React.FC = () => {
+export async function Navbar() {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken');
+  const refreshToken = cookieStore.get('refreshToken');
+  const isLoggedIn = !!(accessToken || refreshToken);
+
   return (
     <nav 
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 ease-in-out bg-transparent border-b border-transparent backdrop-blur-[2px]"
+      className="fixed top-0 left-0 right-0 z-50 flex bg-[#E57373] items-center justify-between px-6 py-4 transition-all duration-300 ease-in-out border-1 border-b border-black"
     >
       <div className="flex items-center gap-8">
-        <a href="#" className="flex items-center gap-1 group">
+        <a href="/" className="flex items-center gap-1 group">
           <span className="font-extrabold text-xl tracking-tight text-white">MyPath</span>
           <span className="w-1.5 h-1.5 rounded-full bg-white mb-1 ml-0.5 animate-pulse"></span>
         </a>
@@ -20,9 +26,23 @@ export const Navbar: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant={"link"} className="text-white underline-none"><a href="login">Log In</a></Button>
-        <Button> <a href="signup">Sign Up</a></Button>
+        {isLoggedIn ? (
+          <form action={handleLogout}>
+            <Button type="submit" variant="default">
+              Log Out
+            </Button>
+          </form>
+        ) : (
+          <>
+            <Button variant={"link"} className="text-white underline-none">
+              <a href="/login">Log In</a>
+            </Button>
+            <Button>
+              <a href="/signup">Sign Up</a>
+            </Button>
+          </>
+        )}
       </div>
     </nav>
   );
-};
+}
