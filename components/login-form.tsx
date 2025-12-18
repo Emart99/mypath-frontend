@@ -9,18 +9,29 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { authenticate } from "@/app/login/actions"
-import { useFormStatus } from 'react-dom';
+import { authenticateHandler } from "@/app/login/actions"
+import { useActionState } from 'react';
 
+function SubmitButton() {
+  return (
+    <Button type="submit">
+      Login
+    </Button>
+  );
+}
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const { pending } = useFormStatus();
-
+  const [state, formAction, isPending] = useActionState(authenticateHandler, null);
+  
   return (
-    <form action={authenticate} className={cn("flex flex-col gap-6", className)} {...props}>
+    <form 
+      action={formAction}
+      className={cn("flex flex-col gap-6", className)} 
+      {...props}
+    >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -28,6 +39,11 @@ export function LoginForm({
             Enter your username below to login to your account
           </p>
         </div>
+        {state?.error && (
+          <div className="text-red-500 text-sm text-center">
+            {state.error}
+          </div>
+        )}
         <Field>
           <FieldLabel htmlFor="username">Username</FieldLabel>
           <Input id="username" name="username" placeholder="pepito123" required />
@@ -45,7 +61,9 @@ export function LoginForm({
           <Input id="password" name="password" type="password" required />
         </Field>
         <Field>
-          <Button type="submit" disabled={pending}>Login</Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Logging in..." : "Login"}
+          </Button>
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
         <Field>

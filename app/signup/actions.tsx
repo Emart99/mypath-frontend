@@ -2,23 +2,25 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-export type AuthResult = {
+export type RegisterResult = {
   error?: string;
 };
 
-export async function authenticateHandler(
-  prevState: AuthResult | null,
+export async function registerHandler(
+  prevState: RegisterResult | null,
   formData: FormData
-): Promise<AuthResult | null> {
+): Promise<RegisterResult | null> {
+    console.log(formData)
   const username = formData.get('username');
+  const email = formData.get('email');
   const password = formData.get('password');
 
-  const response = await fetch('http://localhost:8080/api/auth/login', {
+  const response = await fetch('http://localhost:8080/api/auth/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, email, password }),
   });
 
   if (!response.ok) {
