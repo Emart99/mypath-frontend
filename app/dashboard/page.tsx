@@ -13,6 +13,13 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import { TRANSFORMERS } from '@lexical/markdown';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+
 import "./Editor.css"
 import {
   $isTextNode,
@@ -25,15 +32,28 @@ import {
   LexicalNode,
   ParagraphNode,
   TextNode,
+  EditorState,
 } from 'lexical';
+
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
+import { ListItemNode, ListNode } from '@lexical/list';
+import { CodeHighlightNode, CodeNode } from '@lexical/code';
+import { AutoLinkNode, LinkNode } from '@lexical/link';
 
 import ExampleTheme from './ExampleTheme';
 import ToolbarPlugin from './plugins/ToolbarPlugin';
 import TreeViewPlugin from './plugins/TreeViewPlugin';
+import UpdateContentPlugin from './plugins/UpdateContentPlugin';
 import { parseAllowedColor, parseAllowedFontSize } from './styleConfig';
 import { SidebarCustom } from '@/components/sidebar-custom';
+import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { Path, Idea } from './types';
+import { useState, useCallback } from 'react';
 
 const placeholder = 'Enter some rich text...';
+
+import { MOCK_PATHS } from './mockData';
 
 const removeStylesExportDOM = (
   editor: LexicalEditor,
@@ -134,7 +154,21 @@ const editorConfig = {
     import: constructImportMap(),
   },
   namespace: 'React.js Demo',
-  nodes: [ParagraphNode, TextNode],
+  nodes: [
+    ParagraphNode,
+    TextNode,
+    HeadingNode,
+    QuoteNode,
+    ListNode,
+    ListItemNode,
+    CodeNode,
+    CodeHighlightNode,
+    TableNode,
+    TableCellNode,
+    TableRowNode,
+    AutoLinkNode,
+    LinkNode
+  ],
   onError(error: Error) {
     throw error;
   },
@@ -142,33 +176,80 @@ const editorConfig = {
 };
 
 export default function DashboardPage() {
+  const [paths, setPaths] = useState<Path[]>(MOCK_PATHS);
+  const [selectedIdeaId, setSelectedIdeaId] = useState<string | undefined>(MOCK_PATHS[0]?.ideas[0]?.id);
+
+  // Helper to find the currently selected idea object
+  const selectedIdea = paths
+    .flatMap(p => p.ideas)
+    .find(i => i.id === selectedIdeaId);
+
+  const handleSelectIdea = (idea: Idea) => {
+    setSelectedIdeaId(idea.id);
+  };
+
+  const onChange = useCallback((editorState: EditorState) => {
+    editorState.read(() => {
+      // Create a JSON string of the editor state
+      const json = JSON.stringify(editorState.toJSON());
+
+      // Update the content of the selected idea in our state
+      setPaths(prevPaths => prevPaths.map(path => ({
+        ...path,
+        ideas: path.ideas.map(idea =>
+          idea.id === selectedIdeaId
+            ? { ...idea, content: json }
+            : idea
+        )
+      })));
+    });
+  }, [selectedIdeaId]);
+
   return (
     <>
-      <SidebarCustom />
-      <LexicalComposer initialConfig={editorConfig}>
-
-        <div className="editor-container">
-          <ToolbarPlugin />
-          <div className="editor-inner">
-            <RichTextPlugin
-              contentEditable={
-                <ContentEditable
-                  className="editor-input"
-                  aria-placeholder={placeholder}
-                  placeholder={
-                    <div className="editor-placeholder">{placeholder}</div>
+      <SidebarCustom
+        paths={paths}
+        selectedIdeaId={selectedIdeaId}
+        onSelectIdea={handleSelectIdea}
+      />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger />
+        </header>
+        <div className="flex-1 overflow-auto p-4">
+          <LexicalComposer initialConfig={editorConfig}>
+            <div className="editor-container">
+              <ToolbarPlugin />
+              <div className="editor-inner">
+                <RichTextPlugin
+                  contentEditable={
+                    <ContentEditable
+                      className="editor-input"
+                      aria-placeholder={placeholder}
+                      placeholder={
+                        <div className="editor-placeholder">{placeholder}</div>
+                      }
+                    />
                   }
+                  ErrorBoundary={LexicalErrorBoundary}
                 />
-              }
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-            <HistoryPlugin />
-            <AutoFocusPlugin />
-            <TreeViewPlugin />
-          </div>
-        </div>
-      </LexicalComposer>
-    </>
+                <HistoryPlugin />
+                <AutoFocusPlugin />
+                <TreeViewPlugin />
+                <ListPlugin />
+                <CheckListPlugin />
+                <LinkPlugin />
+                <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
 
+                {selectedIdea && (
+                  <UpdateContentPlugin content={selectedIdea.content} />
+                )}
+                <OnChangePlugin onChange={onChange} />
+              </div>
+            </div>
+          </LexicalComposer>
+        </div>
+      </SidebarInset>
+    </>
   )
 }

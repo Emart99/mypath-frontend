@@ -1,14 +1,9 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { SidebarCustom } from "@/components/sidebar-custom"
+import { SidebarProvider } from "@/components/ui/sidebar"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <SidebarCustom />
-      <main className="w-full">
-        {/* <SidebarTrigger /> */}
-        {children}
-      </main>
+      {children}
     </SidebarProvider>
   )
 }
