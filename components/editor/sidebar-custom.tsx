@@ -1,6 +1,5 @@
 import { ChevronRight, GitBranch, Link2, ListPlus, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react"
 import { useState } from "react"
-
 import {
   Sidebar,
   SidebarContent,
@@ -77,12 +76,8 @@ export function SidebarCustom({
   } | null>(null);
 
   const trailsForItem = (itemId: string) => trails.filter(trail => trail.itemIds.includes(itemId));
-  // The item layer: every item in the project, listed once. An item that's also
-  // in a trail shows here (item) AND under its trail (step) — two layers, not a
-  // duplicate. Object.values is unique by id, so no in-list repetition.
   const allItems = Object.values(items);
 
-  // Search filters both layers by title; a matching item also surfaces its trail.
   const q = query.trim().toLowerCase();
   const visibleItems = q ? allItems.filter((i) => i.title.toLowerCase().includes(q)) : allItems;
   const visibleTrails = q
@@ -217,13 +212,13 @@ export function SidebarCustom({
                     </button>
                   </CollapsibleTrigger>
                   <span className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-normal">{visibleTrails.length}</span>
+                    <span className="text-[11px] font-normal group-data-[state=open]/trails:hidden">{visibleTrails.length}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5" title="New trail" onClick={() => setIsCreating(true)}>
                       <Plus className="h-4 w-4" />
                     </Button>
                   </span>
                 </div>
-                <CollapsibleContent>
+                <CollapsibleContent className="pl-2">
                   {isCreating && (
                     <div className="px-2 pb-2">
                       <Input
@@ -395,7 +390,7 @@ export function SidebarCustom({
                                               }
                                             >
                                               {/* Step number — this is the sequence layer, order matters here. */}
-                                              <span className="w-4 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
+                                              <span className="w-4 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
                                                 {index + 1}
                                               </span>
                                               <span className="truncate">{item.title}</span>
@@ -507,13 +502,13 @@ export function SidebarCustom({
                     </button>
                   </CollapsibleTrigger>
                   <span className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-normal">{visibleItems.length}</span>
+                    <span className="text-[11px] font-normal group-data-[state=open]/items:hidden">{visibleItems.length}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5" title="New item" onClick={() => setIsCreatingLoose(true)}>
                       <Plus className="h-4 w-4" />
                     </Button>
                   </span>
                 </div>
-                <CollapsibleContent>
+                <CollapsibleContent className="pl-2">
                   {isCreatingLoose && (
                     <div className="px-2 pb-2">
                       <Input
