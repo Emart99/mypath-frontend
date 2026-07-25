@@ -241,8 +241,6 @@ export default function EditorPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const router = useRouter();
 
-  // Session died with the editor open — bounce to login once. Middleware
-  // self-corrects if the session is actually fine (redirects back).
   const authRedirectedRef = useRef(false);
   const redirectToLogin = useCallback(() => {
     if (authRedirectedRef.current) return;
@@ -270,8 +268,6 @@ export default function EditorPage() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(
     () => typeof window === 'undefined' || localStorage.getItem(SIDEBAR_OPEN_STORAGE_KEY) !== 'false'
   );
-  // Hidden by default (it's dense info used a small fraction of the time); only
-  // shown if the user has explicitly opened it before.
   const [connectionsPanelOpen, setConnectionsPanelOpen] = useState(
     () => typeof window !== 'undefined' && localStorage.getItem(CONNECTIONS_OPEN_STORAGE_KEY) === 'true'
   );
@@ -315,7 +311,6 @@ export default function EditorPage() {
 
       const savedItemId = localStorage.getItem(lastItemStorageKey(projectId));
       const savedItem = savedItemId ? project.items[savedItemId] : undefined;
-      // Focus the trail that holds the restored item, else the first trail.
       const host = savedItem ? project.trails.find((t) => t.itemIds.includes(savedItem.id)) : undefined;
       setActiveTrailId((host ?? project.trails[0])?.id);
       if (!savedItem) return;
@@ -333,8 +328,6 @@ export default function EditorPage() {
       }
       if (!cancelled) setSelectedItemId(savedItem.id);
     }).catch(() => {
-      // getProject threw (terminal 401 after a failed refresh, or a dead
-      // session) — otherwise we'd sit on a blank screen forever.
       if (!cancelled) redirectToLogin();
     });
     return () => {
@@ -393,7 +386,6 @@ export default function EditorPage() {
         ? { ...t, steps: t.steps.map((s) => (s.itemId === itemId ? { ...s, annotation } : s)) }
         : t
     ));
-    // Send the existing associationId too — the endpoint rewrites both fields.
     await updateStep(trailId, itemId, { annotation, associationId: step?.associationId ?? null });
   };
 
@@ -428,7 +420,6 @@ export default function EditorPage() {
 
   const handleSelectItem = async (item: Item) => {
     setView('write');
-    // Keep the current trail if it contains the item, else jump to a trail that does.
     setActiveTrailId((prev) => {
       const current = trails.find((t) => t.id === prev);
       if (current?.itemIds.includes(item.id)) return prev;
@@ -467,8 +458,6 @@ export default function EditorPage() {
           }
         : trail
     ));
-    // Focus the trail we created in (so the incoming-annotation banner resolves)
-    // and open the new item in Write.
     setActiveTrailId(trailId);
     setView('write');
     setSelectedItemId(newItem.id);
@@ -487,8 +476,6 @@ export default function EditorPage() {
     ));
   };
 
-  // Remove an item from a trail. It stays in the project — and if that was its
-  // last trail, it surfaces in Unfiled (mirrors the backend's sticky flag).
   const handleUnlinkItemFromTrail = async (trailId: string, itemId: string) => {
     await detachItemFromTrail(trailId, itemId);
     const nextTrails = trails.map(trail =>
@@ -509,7 +496,6 @@ export default function EditorPage() {
     }
   };
 
-  // Loose item: belongs to the project, no trail. Shows in the "Unfiled" section.
   const handleCreateLooseItem = async (title: string) => {
     const newItem = await createLooseItem(projectId, title);
     setItems(prevItems => ({ ...prevItems, [newItem.id]: newItem }));
@@ -517,7 +503,6 @@ export default function EditorPage() {
     setSelectedItemId(newItem.id);
   };
 
-  // Permanently delete an item (from every trail + the project).
   const handleDeleteItem = async (itemId: string) => {
     await deleteItem(itemId);
     setTrails(prevTrails => prevTrails.map(trail => ({
@@ -561,7 +546,6 @@ export default function EditorPage() {
     if (!target) return;
 
     await deleteTrailRequest(trailId);
-    // Items that only lived in this trail surface in Unfiled, not deleted.
     const remainingTrails = trails.filter(trail => trail.id !== trailId);
     setTrails(remainingTrails);
     const orphanIds = target.itemIds.filter(
@@ -596,7 +580,6 @@ export default function EditorPage() {
     });
   };
 
-  // Typed associations (ties). Directional source→target, item→item or item→trail.
   const handleTie = async (itemId: string, targetId: string, targetType: AssociationTargetType, type: AssociationType) => {
     await tie(itemId, targetId, targetType, type);
     const targetTitle = targetType === 'ITEM'
@@ -605,7 +588,6 @@ export default function EditorPage() {
     setItems((prev) => {
       const it = prev[itemId];
       if (!it) return prev;
-      // Temp id until the next full load hands back the real association id.
       const association: Association = { id: `tmp:${targetType}:${targetId}`, type, targetType, targetId, targetTitle };
       const linkedItemIds = targetType === 'ITEM' && !it.linkedItemIds.includes(targetId)
         ? [...it.linkedItemIds, targetId]
@@ -702,13 +684,11 @@ export default function EditorPage() {
         if (!pendingContentRef.current) {
           pendingContentRef.current = pending;
         }
-        // Terminal 401 (dead session) — stop looping "Save failed" and go to login.
         if (isAuthError(err)) redirectToLogin();
       });
   }, [redirectToLogin]);
 
   useEffect(() => {
-    // capture the thumbnail only when actually leaving the item, not on every autosave tick
     return () => flushPendingContent(true);
   }, [selectedItemId, flushPendingContent]);
 
@@ -920,7 +900,7 @@ export default function EditorPage() {
           ) : selectedItem ? (
             <>
               <div className="flex min-w-0 flex-1 flex-col overflow-hidden ">
-                <LexicalComposer initialConfig={editorConfig}>
+                <LexicalComposer key={selectedItem.id} initialConfig={editorConfig}>
                   <div className="editor-container flex flex-1 min-h-0 flex-col">
                     <ToolbarPlugin
                       titleFocused={activeAlignTarget === 'title'}
