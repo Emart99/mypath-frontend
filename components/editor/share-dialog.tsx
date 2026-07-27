@@ -22,7 +22,6 @@ import {
   setProjectTags,
   type ProjectVisibility,
 } from "@/lib/projects-store"
-import { getSubscriptionStatus, type SubscriptionStatus } from "@/lib/subscription"
 import { cn } from "@/lib/utils"
 
 interface ShareDialogProps {
@@ -77,7 +76,6 @@ export function ShareDialog({
   const [tagsInput, setTagsInput] = useState(tags);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
-  const [planStatus, setPlanStatus] = useState<SubscriptionStatus | null>(null);
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/p/${projectId}`
     : "";
@@ -90,7 +88,6 @@ export function ShareDialog({
       setDescriptionInput(description);
       setTagsInput(tags);
       setValidationError(null);
-      getSubscriptionStatus().then(setPlanStatus).catch(() => {});
     }
     setOpen(next);
   };
@@ -185,12 +182,6 @@ export function ShareDialog({
           })}
         </div>
         <p className="text-xs text-muted-foreground">{selected.description}</p>
-        {selectedVisibility === "published" && planStatus && planStatus.publishesPerWeek !== -1 && (
-          <p className="text-xs text-muted-foreground">
-            {planStatus.publishesUsedThisWeek}/{planStatus.publishesPerWeek} weekly publishes used on the free
-            plan — republishing an existing project doesn&apos;t count.
-          </p>
-        )}
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="share-description">Description</Label>

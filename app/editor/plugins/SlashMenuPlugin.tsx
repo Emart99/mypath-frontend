@@ -63,7 +63,7 @@ function headingOption(label: string, Icon: typeof Type, tag: HeadingTagType): S
   );
 }
 
-export default function SlashMenuPlugin() {
+export default function SlashMenuPlugin({ projectId }: { projectId?: string } = {}) {
   const [editor] = useLexicalComposerContext();
   const [queryString, setQueryString] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -128,7 +128,7 @@ export default function SlashMenuPlugin() {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
-    insertImageWithUpload(editor, file);
+    insertImageWithUpload(editor, file, projectId);
   };
 
   return (

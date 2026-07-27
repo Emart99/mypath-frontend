@@ -4,10 +4,9 @@ import { API_BASE_URL } from "./config";
 import { parseResponse } from "./http";
 
 export interface SubscriptionStatus {
-  premium: boolean;
+  supporter: boolean;
   storageUsedBytes: number;
   storageQuotaBytes: number;
-  publishesUsedThisWeek: number;
   publishesPerWeek: number; // -1 = unlimited
 }
 

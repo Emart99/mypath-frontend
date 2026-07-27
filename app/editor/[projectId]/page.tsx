@@ -142,6 +142,7 @@ export default function EditorPage() {
               />
             ) : project.selectedItem ? (
               <WriteView
+                projectId={projectId}
                 item={project.selectedItem}
                 items={project.items}
                 trails={project.trails}

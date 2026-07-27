@@ -4,11 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { HardDrive } from "lucide-react"
 import { getSubscriptionStatus, type SubscriptionStatus } from "@/lib/subscription"
-
-function formatBytes(bytes: number): string {
-  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}GB`
-  return `${Math.round(bytes / (1024 * 1024))}MB`
-}
+import { formatBytes } from "@/lib/format-bytes"
 
 /** Compact storage/publish usage pill linking to the Plan settings tab. Renders nothing until loaded. */
 export function PlanUsageChip({ className }: { className?: string }) {
@@ -27,12 +23,7 @@ export function PlanUsageChip({ className }: { className?: string }) {
     >
       <HardDrive className="h-3.5 w-3.5" />
       {formatBytes(status.storageUsedBytes)} / {formatBytes(status.storageQuotaBytes)}
-      {status.publishesPerWeek !== -1 && (
-        <span className="text-muted-foreground">
-          · {status.publishesUsedThisWeek}/{status.publishesPerWeek} publishes this week
-        </span>
-      )}
-      {status.premium && <span className="text-primary">· Premium</span>}
+      {status.supporter && <span className="text-primary">· Supporter</span>}
     </Link>
   )
 }

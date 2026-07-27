@@ -20,6 +20,7 @@ export interface Project {
   tags: string;
   createdAt: string;
   updatedAt: string;
+  storageBytes: number;
 }
 
 
@@ -32,6 +33,7 @@ interface ProjectDTO {
   tags: string | null;
   creationDate: string;
   modifiedDate: string;
+  storageBytes: number;
 }
 
 interface TrailDTO {
@@ -85,6 +87,7 @@ function toProjectSummary(dto: ProjectDTO): Project {
     tags: dto.tags ?? "",
     createdAt: dto.creationDate,
     updatedAt: dto.modifiedDate,
+    storageBytes: dto.storageBytes,
   };
 }
 
@@ -179,6 +182,7 @@ export async function getProject(id: string): Promise<Project | null> {
     tags: projectDto.tags ?? "",
     createdAt: projectDto.creationDate,
     updatedAt: projectDto.modifiedDate,
+    storageBytes: projectDto.storageBytes,
   };
 }
 

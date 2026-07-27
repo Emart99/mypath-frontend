@@ -61,6 +61,7 @@ function getImageFiles(dataTransfer: DataTransfer): File[] {
 export function insertImageWithUpload(
   editor: ReturnType<typeof useLexicalComposerContext>[0],
   file: File,
+  projectId?: string,
 ): void {
   const previewUrl = URL.createObjectURL(file);
   let key: NodeKey | null = null;
@@ -75,7 +76,7 @@ export function insertImageWithUpload(
   (async () => {
     try {
       const blob = await resizeImageToBlob(file, EDITOR_IMAGE_MAX_DIMENSION, EDITOR_IMAGE_QUALITY);
-      const src = await uploadImage(blob, 'editor-image');
+      const src = await uploadImage(blob, 'editor-image', projectId);
       editor.update(() => {
         if (key === null) return;
         const node = $getNodeByKey(key);
@@ -98,13 +99,14 @@ export function insertImageWithUpload(
 function insertImageFiles(
   editor: ReturnType<typeof useLexicalComposerContext>[0],
   files: File[],
+  projectId?: string,
 ): void {
   for (const file of files) {
-    insertImageWithUpload(editor, file);
+    insertImageWithUpload(editor, file, projectId);
   }
 }
 
-export default function ImagesPlugin(): null {
+export default function ImagesPlugin({ projectId }: { projectId?: string }): null {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -146,7 +148,7 @@ export default function ImagesPlugin(): null {
           const files = getImageFiles(clipboardData);
           if (files.length === 0) return false;
           event.preventDefault();
-          insertImageFiles(editor, files);
+          insertImageFiles(editor, files, projectId);
           return true;
         },
         COMMAND_PRIORITY_HIGH,
@@ -159,7 +161,7 @@ export default function ImagesPlugin(): null {
           const files = getImageFiles(dataTransfer);
           if (files.length === 0) return false;
           event.preventDefault();
-          insertImageFiles(editor, files);
+          insertImageFiles(editor, files, projectId);
           return true;
         },
         COMMAND_PRIORITY_HIGH,
@@ -177,7 +179,7 @@ export default function ImagesPlugin(): null {
         COMMAND_PRIORITY_HIGH,
       ),
     );
-  }, [editor]);
+  }, [editor, projectId]);
 
   return null;
 }

@@ -415,7 +415,7 @@ export function useProjectEditorState(projectId: string) {
     setThumbnailCapture(null);
     if (!blob) return;
     try {
-      const publicUrl = await uploadImage(blob, 'thumbnail');
+      const publicUrl = await uploadImage(blob, 'thumbnail', projectId);
       await setProjectThumbnail(projectId, publicUrl);
     } catch (err) {
       console.error(err);

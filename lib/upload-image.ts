@@ -7,9 +7,9 @@ async function sha256Hex(blob: Blob): Promise<string> {
     .join("");
 }
 
-export async function uploadImage(blob: Blob, kind: UploadKind): Promise<string> {
+export async function uploadImage(blob: Blob, kind: UploadKind, projectId?: string): Promise<string> {
   const contentHash = await sha256Hex(blob);
-  const { uploadUrl, publicUrl } = await getUploadPresign(blob.type, kind, contentHash, blob.size);
+  const { uploadUrl, publicUrl } = await getUploadPresign(blob.type, kind, contentHash, blob.size, projectId);
 
   const response = await fetch(uploadUrl, {
     method: "PUT",

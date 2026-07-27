@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { PlanUsageChip } from "@/components/profile/plan-usage-chip"
+import { formatBytes } from "@/lib/format-bytes"
 import {
   createProject,
   deleteProject,
@@ -264,7 +265,7 @@ export default function ProjectsPage() {
                       </DropdownMenu>
                     </div>
                     <p className="text-xs tabular-nums mt-1 text-muted-foreground">
-                      Edited {formatUpdatedAt(project.updatedAt)}
+                      Edited {formatUpdatedAt(project.updatedAt)} · {formatBytes(project.storageBytes)}
                     </p>
                   </CardHeader>
                 </Card>
@@ -331,7 +332,7 @@ export default function ProjectsPage() {
                     {project.visibility}
                   </div>
                   <div className="w-32 shrink-0 text-xs tabular-nums text-muted-foreground">
-                    {formatUpdatedAt(project.updatedAt)}
+                    {formatUpdatedAt(project.updatedAt)} · {formatBytes(project.storageBytes)}
                   </div>
                   <div className="w-8 shrink-0">
                     <DropdownMenu>

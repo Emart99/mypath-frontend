@@ -35,6 +35,7 @@ import { Trail, Item, TitleAlign, AssociationType, AssociationTargetType } from 
 import type { IncomingStep } from '../hooks/useProjectEditorState';
 
 interface WriteViewProps {
+  projectId: string;
   item: Item;
   items: Record<string, Item>;
   trails: Trail[];
@@ -55,6 +56,7 @@ interface WriteViewProps {
 }
 
 export function WriteView({
+  projectId,
   item,
   items,
   trails,
@@ -91,6 +93,7 @@ export function WriteView({
         <LexicalComposer key={item.id} initialConfig={editorConfig}>
           <div className="editor-container flex flex-1 min-h-0 flex-col">
             <ToolbarPlugin
+              projectId={projectId}
               titleFocused={activeAlignTarget === 'title'}
               titleAlign={item.titleAlign}
               onSetTitleAlign={(align) => onSetTitleAlign(item.id, align)}
@@ -152,12 +155,12 @@ export function WriteView({
                   if (target) onSelectItem(target);
                 }} />
                 <ClickableLinkPlugin newTab />
-                <ImagesPlugin />
+                <ImagesPlugin projectId={projectId} />
                 <PastePlugin />
                 <CodeHighlightPlugin />
                 <TabIndentationPlugin />
                 <HorizontalRulePlugin />
-                <SlashMenuPlugin />
+                <SlashMenuPlugin projectId={projectId} />
                 <FloatingLinkEditorPlugin />
                 <FindReplacePlugin />
                 {blockAnchor && <DraggableBlockPlugin anchorElem={blockAnchor} />}

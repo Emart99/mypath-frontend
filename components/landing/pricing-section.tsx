@@ -6,14 +6,13 @@ import { FadeUp } from '@/components/landing/landing-motion';
 const FREE_FEATURES = [
   'Unlimited public paths',
   'Full social layer — follow, fork, comment, upvote',
-  '500MB image storage',
-  '5 new publishes per week',
+  'Unlimited publishing',
+  '500MB storage',
 ];
 
-const PREMIUM_FEATURES = [
+const SUPPORTER_FEATURES = [
   'Everything in Free',
-  '10GB image storage',
-  'Unlimited publishing',
+  '10GB storage',
   'Animated GIF avatar',
   'Supporter badge on your profile',
 ];
@@ -46,12 +45,12 @@ export const PricingSection: React.FC = () => {
         <FadeUp delay={0.1}>
           <div className="flex h-full flex-col rounded-[28px] bg-accent p-9 text-accent-foreground">
             <h2 className="font-display text-2xl font-medium inline-flex items-center gap-2">
-              Premium <Heart className="h-5 w-5 text-primary" />
+              Supporter <Heart className="h-5 w-5 text-primary" />
             </h2>
-            <p className="mt-1 text-sm opacity-85">More room, no limits, a thank-you badge.</p>
+            <p className="mt-1 text-sm opacity-85">More room, a thank-you badge.</p>
             <div className="mt-4 font-display text-[40px] font-medium">Coming soon</div>
             <ul className="mt-5 flex flex-col gap-2.5 text-[15px]">
-              {PREMIUM_FEATURES.map((feature) => (
+              {SUPPORTER_FEATURES.map((feature) => (
                 <li key={feature} className="flex items-start gap-2.5">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   {feature}

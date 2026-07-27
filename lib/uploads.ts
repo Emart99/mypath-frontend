@@ -9,14 +9,14 @@ export interface UploadPresign {
   publicUrl: string;
 }
 
-export async function getUploadPresign(contentType: string, kind: UploadKind, contentHash: string, contentBytes: number): Promise<UploadPresign> {
+export async function getUploadPresign(contentType: string, kind: UploadKind, contentHash: string, contentBytes: number, projectId?: string): Promise<UploadPresign> {
   const response = await authenticatedFetch(`${API_BASE_URL}/api/uploads/presign`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contentType, kind, contentHash, contentBytes }),
+    body: JSON.stringify({ contentType, kind, contentHash, contentBytes, ...(projectId ? { projectId } : {}) }),
   });
   if (!response.ok) {
-    // limit errors (storage quota, premium-only GIF avatar) carry a user-facing message
+    // limit errors (storage quota, supporter-only GIF avatar) carry a user-facing message
     const message = await response.json().then((body) => body?.message).catch(() => null);
     throw new Error(message ?? `Request failed with status ${response.status}`);
   }
