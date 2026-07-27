@@ -1,7 +1,6 @@
 export const lastItemStorageKey = (projectId: string) => `tramo:lastItem:${projectId}`;
 export const SIDEBAR_OPEN_STORAGE_KEY = 'tramo:editorSidebarOpen';
 export const CONNECTIONS_OPEN_STORAGE_KEY = 'tramo:editorConnectionsOpen';
-export const EDITOR_TOUR_SEEN_STORAGE_KEY = 'tramo:editorTourSeen';
 
 export function countTextStats(content: string): { words: number; characters: number } {
   if (!content) return { words: 0, characters: 0 };

@@ -12,6 +12,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { changePassword, deleteAccount } from "@/lib/account"
 import { getPasswordStrength } from "@/lib/password-strength"
 import { setEmailDigestFrequency, type EmailDigestFrequency } from "@/lib/notifications-prefs"
+import { setEditorTourSeen } from "@/lib/editor-tour-prefs"
 
 const PASSWORD_COMPLEXITY_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/
 
@@ -25,6 +26,7 @@ export function SettingsView({ initialDigest }: { initialDigest: EmailDigestFreq
   return (
     <>
       <EmailDigestSection initialDigest={initialDigest} />
+      <TutorialsSection />
       <ChangePasswordSection />
       <DangerZoneSection />
     </>
@@ -57,6 +59,36 @@ function EmailDigestSection({ initialDigest }: { initialDigest: EmailDigestFrequ
       </p>
       {error && <div className="mb-2 text-sm text-destructive">Couldn&apos;t save that change, try again.</div>}
       <SegmentedControl options={DIGEST_OPTIONS} value={digest} onChange={handleChange} />
+    </section>
+  )
+}
+
+function TutorialsSection() {
+  const [status, setStatus] = useState<"idle" | "pending" | "done" | "error">("idle")
+
+  async function handleReplay() {
+    setStatus("pending")
+    const result = await setEditorTourSeen(false)
+    setStatus(result.error ? "error" : "done")
+  }
+
+  return (
+    <section>
+      <h2 className="mb-1 text-lg font-medium">Tutorials</h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Replay the editor walkthrough next time you open a project.
+      </p>
+      {status === "error" && <div className="mb-2 text-sm text-destructive">Couldn&apos;t save that change, try again.</div>}
+      {status === "done" ? (
+        <div className="flex items-center gap-2 text-[15px] text-muted-foreground">
+          <CheckCircle2 className="h-5 w-5 text-success" />
+          It&apos;ll show again next time you open the editor.
+        </div>
+      ) : (
+        <Button type="button" variant="outline" disabled={status === "pending"} onClick={handleReplay}>
+          {status === "pending" ? "Resetting..." : "Replay editor tutorial"}
+        </Button>
+      )}
     </section>
   )
 }

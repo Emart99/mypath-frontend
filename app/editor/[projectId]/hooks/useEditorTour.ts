@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { EDITOR_TOUR_SEEN_STORAGE_KEY } from '../../editor-utils';
+import { getEditorTourSeen, setEditorTourSeen } from '@/lib/editor-tour-prefs';
 
 const TOUR_STEPS = [
   {
@@ -51,16 +51,24 @@ const TOUR_STEPS = [
 export function useEditorTour(ready: boolean) {
   useEffect(() => {
     if (!ready) return;
-    if (localStorage.getItem(EDITOR_TOUR_SEEN_STORAGE_KEY) === 'true') return;
+    let cancelled = false;
 
-    const tour = driver({
-      showProgress: true,
-      skipMissingElement: true,
-      steps: TOUR_STEPS,
-      onDestroyed: () => localStorage.setItem(EDITOR_TOUR_SEEN_STORAGE_KEY, 'true'),
-    });
-    tour.drive();
+    getEditorTourSeen()
+      .then((seen) => {
+        if (cancelled || seen) return;
 
-    return () => tour.destroy();
+        const tour = driver({
+          showProgress: true,
+          skipMissingElement: true,
+          steps: TOUR_STEPS,
+          onDestroyed: () => setEditorTourSeen(),
+        });
+        tour.drive();
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
   }, [ready]);
 }
