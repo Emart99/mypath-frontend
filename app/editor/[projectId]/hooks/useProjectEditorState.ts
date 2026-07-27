@@ -43,10 +43,6 @@ export interface ThumbnailCapturePayload {
   content: string;
 }
 
-// All project/trail/item state, its load/persist effects, and every CRUD
-// handler the editor page needs. Deliberately excludes Lexical auto-save
-// (see useAutoSave) and pure header-only UI state (title-edit input state
-// lives in EditorHeader).
 export function useProjectEditorState(projectId: string) {
   const router = useRouter();
 
@@ -426,9 +422,6 @@ export function useProjectEditorState(projectId: string) {
     }
   }, [projectId]);
 
-  // Bridges useAutoSave's flush success into the thumbnail-capture modal:
-  // looks up the item's current title/titleAlign so useAutoSave itself only
-  // ever needs to know an itemId + content, not item shape.
   const handleAutoSaveThumbnailDue = useCallback((itemId: string, content: string) => {
     setThumbnailCapture({
       title: itemsRef.current[itemId]?.title ?? '',

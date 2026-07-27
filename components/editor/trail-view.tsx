@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { TrailReader } from '@/components/editor/trail-reader';
-import { Trail, Item, Association } from '../../types';
+import { Trail, Item, Association } from '@/app/editor/types';
 
 interface TrailViewProps {
   trail: Trail | undefined;
@@ -8,7 +8,7 @@ interface TrailViewProps {
   associationById: Map<string, Association>;
   selectedItemId: string | undefined;
   onSelectItem: (item: Item) => void;
-  onSetDescription: (trailId: string, description: string) => void;
+  onSetDescription?: (trailId: string, description: string) => void;
   onClose: () => void;
   emptyState: React.ReactNode;
 }

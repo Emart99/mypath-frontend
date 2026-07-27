@@ -15,10 +15,7 @@ interface UseAutoSaveParams {
   redirectToLogin: () => void;
 }
 
-// Debounced auto-save of the currently edited item's content: flushes 600ms
-// after the last edit, on item switch/unmount, and (best-effort) on
-// beforeunload. Also drives periodic thumbnail recapture for the project's
-// first item.
+
 export function useAutoSave({
   selectedItemId,
   firstItemIdRef,

@@ -12,8 +12,8 @@ import { useProjectEditorState } from './hooks/useProjectEditorState';
 import { useAutoSave } from './hooks/useAutoSave';
 import { EditorTitleSlot, EditorActions } from './components/EditorHeader';
 import { WriteView } from './components/WriteView';
-import { TrailView } from './components/TrailView';
-import { GraphView } from './components/GraphView';
+import { TrailView } from '@/components/editor/trail-view';
+import { GraphView } from '@/components/editor/graph-view';
 
 export default function EditorPage() {
   const { projectId } = useParams<{ projectId: string }>();

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { API_BASE_URL, EXPLORE_PAGE_SIZE } from "./config";
 import { authHeaders } from "./auth";
 import { toFeedItem, type ProjectFeedItem, type ProjectFeedItemDTO } from "./feed";
-import type { TitleAlign } from "@/app/editor/types";
+import type { Association, TitleAlign } from "@/app/editor/types";
 
 export type { ProjectFeedItem } from "./feed";
 
@@ -19,11 +19,19 @@ export interface PublicItem {
   type: string | null;
   content: string;
   titleAlign: TitleAlign;
+  // This occurrence's step metadata within its trail — powers the trail view.
+  annotation: string | null;
+  associationId: string | null;
+  // Outgoing ITEM-target associations, restricted to targets within this project — powers the graph view.
+  associations: Association[];
 }
 
 export interface PublicTrail {
   id: string;
   title: string;
+  description: string;
+  version: number;
+  forkedFromId: string | null;
   items: PublicItem[];
 }
 
@@ -41,17 +49,31 @@ export interface PublicProject {
   commentCount: number;
 }
 
+interface AssociationDTO {
+  id: string;
+  type: string;
+  targetType: string;
+  targetId: string;
+  targetTitle: string;
+}
+
 interface PublicItemDTO {
   id: number;
   title: string;
   type: string | null;
   content: string;
   titleAlign: TitleAlign | null;
+  annotation: string | null;
+  associationId: string | null;
+  associations: AssociationDTO[];
 }
 
 interface PublicTrailDTO {
   id: number;
   title: string;
+  description: string | null;
+  version: number;
+  forkedFromId: string | null;
   items: PublicItemDTO[];
 }
 
@@ -148,12 +170,24 @@ export async function getPublicProject(projectId: string): Promise<PublicProject
     trails: data.trails.map((trail) => ({
       id: String(trail.id),
       title: trail.title,
+      description: trail.description ?? "",
+      version: trail.version,
+      forkedFromId: trail.forkedFromId,
       items: trail.items.map((item) => ({
         id: String(item.id),
         title: item.title,
         type: item.type,
         content: item.content,
         titleAlign: item.titleAlign ?? "center",
+        annotation: item.annotation,
+        associationId: item.associationId,
+        associations: item.associations.map((a) => ({
+          id: a.id,
+          type: a.type as Association["type"],
+          targetType: a.targetType as Association["targetType"],
+          targetId: a.targetId,
+          targetTitle: a.targetTitle,
+        })),
       })),
     })),
   };

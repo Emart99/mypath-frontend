@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { KnowledgeGraph } from '@/components/editor/knowledge-graph';
-import { Trail, Item } from '../../types';
+import { Trail, Item } from '@/app/editor/types';
 
 interface GraphViewProps {
   trails: Trail[];

@@ -1,6 +1,7 @@
 "use client"
 
-import { ChevronRight } from "lucide-react"
+import { useState } from "react"
+import { ChevronRight, Search } from "lucide-react"
 
 import {
   Sidebar,
@@ -14,8 +15,10 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Input } from "@/components/ui/input"
 import type { PublicItem, PublicTrail } from "@/lib/public-project"
 
 interface PublicSidebarProps {
@@ -25,9 +28,34 @@ interface PublicSidebarProps {
 }
 
 export function PublicSidebar({ trails, selectedItemId, onSelectItem }: PublicSidebarProps) {
+  const { state } = useSidebar();
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const visibleTrails = q
+    ? trails.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.items.some((item) => item.title.toLowerCase().includes(q))
+      )
+    : trails;
+
   return (
-    <Sidebar variant="floating" className="top-16 h-[calc(100svh-64px)] pt-0 px-3 pb-3">
-      <SidebarContent>
+    <Sidebar variant="sidebar" collapsible="icon" className="border-r">
+      <SidebarContent className="gap-0.5">
+        {state !== "collapsed" && (
+          <div className="px-2.5 pt-4">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                placeholder="Search this project"
+                className="h-8 pl-8 rounded-full"
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
         <SidebarGroup>
           <SidebarGroupLabel>
             <span className="text-xs font-medium text-muted-foreground">
@@ -36,7 +64,7 @@ export function PublicSidebar({ trails, selectedItemId, onSelectItem }: PublicSi
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {trails.map((trail) => (
+              {visibleTrails.map((trail) => (
                 <Collapsible key={trail.id} defaultOpen className="group/collapsible">
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>

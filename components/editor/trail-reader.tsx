@@ -12,7 +12,9 @@ interface TrailReaderProps {
   associationById: Map<string, Association>;
   selectedItemId?: string;
   onSelectItem: (item: Item) => void;
-  onSetDescription: (trailId: string, description: string) => void;
+  // Omit for read-only contexts (the public project view): the description
+  // renders as plain text instead of the click-to-edit textarea.
+  onSetDescription?: (trailId: string, description: string) => void;
 }
 
 // Optional trail description under the header; click to edit, blur/Esc to close.
@@ -89,7 +91,15 @@ export function TrailReader({ trail, items, associationById, selectedItemId, onS
           {trail.forkedFrom && <span className="italic">forked · </span>}
           version {trail.version} · {trail.itemIds.length} items
         </p>
-        <TrailDescriptionEditor key={trail.id} trailId={trail.id} description={trail.description} onSave={onSetDescription} />
+        {onSetDescription ? (
+          <TrailDescriptionEditor key={trail.id} trailId={trail.id} description={trail.description} onSave={onSetDescription} />
+        ) : (
+          trail.description.trim() && (
+            <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground/80">
+              {trail.description}
+            </p>
+          )
+        )}
 
 
         <div className="mt-8 flex flex-col">
