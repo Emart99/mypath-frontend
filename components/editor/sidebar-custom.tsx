@@ -184,6 +184,7 @@ export function SidebarCustom({
 
   return (
     <Sidebar
+      data-tour="sidebar"
       variant="sidebar"
       collapsible="icon"
       className="border-r"

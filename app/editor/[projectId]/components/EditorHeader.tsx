@@ -49,6 +49,7 @@ export function EditorTitleSlot({ projectTitle, onRenameProject, saveStatus }: E
   return (
     <div className="flex gap-4">
       <span
+        data-tour="editor-title"
         className="text-[15px] font-medium"
         onDoubleClick={startEditTitle}
         title="Double-click to rename"
@@ -120,6 +121,7 @@ export function EditorActions({
       )}
       {hasActiveTrail && (
         <Button
+          data-tour="trail-toggle"
           variant={trailViewActive ? 'secondary' : 'ghost'}
           size="lg"
           onClick={onToggleTrailView}

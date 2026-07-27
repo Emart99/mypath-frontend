@@ -148,7 +148,7 @@ export function ShareDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="lg">
+        <Button data-tour="share" variant="secondary" size="lg">
           <Share2 className="h-[15px] w-[15px]" />
           Share
         </Button>

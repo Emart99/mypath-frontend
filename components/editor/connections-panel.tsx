@@ -65,6 +65,7 @@ export function ConnectionsPanel({
 
   return (
     <div
+      data-tour="connections-toggle"
       className={`mb-3 flex shrink-0 flex-col transition-all duration-200 ease-linear ${
         open ? "w-72 overflow-hidden rounded-2xl sidebar sidebar-right py-5 px-4" : "w-9 pt-5"
       }`}

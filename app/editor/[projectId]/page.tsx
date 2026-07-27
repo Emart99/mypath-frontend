@@ -10,6 +10,7 @@ import { ThumbnailCapture } from '@/components/editor/thumbnail-capture';
 import { countTextStats, SIDEBAR_OPEN_STORAGE_KEY, CONNECTIONS_OPEN_STORAGE_KEY } from '../editor-utils';
 import { useProjectEditorState } from './hooks/useProjectEditorState';
 import { useAutoSave } from './hooks/useAutoSave';
+import { useEditorTour } from './hooks/useEditorTour';
 import { EditorTitleSlot, EditorActions } from './components/EditorHeader';
 import { WriteView } from './components/WriteView';
 import { TrailView } from '@/components/editor/trail-view';
@@ -44,6 +45,8 @@ export default function EditorPage() {
     () => countTextStats(project.selectedItem?.content ?? ''),
     [project.selectedItem?.content]
   );
+
+  useEditorTour(project.loaded && !!project.selectedItem);
 
   if (!project.loaded) {
     return null;

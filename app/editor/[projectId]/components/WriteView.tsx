@@ -87,7 +87,7 @@ export function WriteView({
 
   return (
     <>
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden ">
+      <div data-tour="write-panel" className="flex min-w-0 flex-1 flex-col overflow-hidden ">
         <LexicalComposer key={item.id} initialConfig={editorConfig}>
           <div className="editor-container flex flex-1 min-h-0 flex-col">
             <ToolbarPlugin
