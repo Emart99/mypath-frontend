@@ -112,6 +112,7 @@ export function PublicProjectView({
   return (
     <ProjectShell
       homeHref={homeHref}
+      showLogo={false}
       titleSlot={
         <div className="flex min-w-0 items-center gap-3">
           <span className="min-w-0 truncate text-[15px] font-medium">{project.title}</span>
@@ -186,6 +187,7 @@ export function PublicProjectView({
       }
       sidebar={
         <PublicSidebar
+          homeHref={homeHref}
           trails={project.trails}
           selectedItemId={selectedItem?.id}
           onSelectItem={handleSelectItem}

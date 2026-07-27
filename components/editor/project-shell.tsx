@@ -4,12 +4,16 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 
 export function ProjectShell({
   homeHref,
+  showLogo = true,
   titleSlot,
   actions,
   sidebar,
   content,
 }: {
   homeHref: string
+  // The editor view moves the brand mark into its sidebar (next to the search
+  // box), so the navbar shouldn't show it twice.
+  showLogo?: boolean
   titleSlot: React.ReactNode
   actions?: React.ReactNode
   sidebar: React.ReactNode
@@ -21,10 +25,14 @@ export function ProjectShell({
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-4 px-4 md:px-8">
           <SidebarTrigger className="md:hidden" />
-          <Link href={homeHref} title="Back to projects">
-            <Mark />
-          </Link>
-          <span className="h-[18px] w-px bg-border shrink-0" />
+          {showLogo && (
+            <>
+              <Link href={homeHref} title="Back to projects">
+                <Mark />
+              </Link>
+              <span className="h-[18px] w-px bg-border shrink-0" />
+            </>
+          )}
           <div className="min-w-0 flex-1">{titleSlot}</div>
           <div className="ml-auto flex shrink-0 items-center gap-3 overflow-x-auto">
             {actions}

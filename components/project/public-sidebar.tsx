@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { ChevronRight, Search } from "lucide-react"
 
+import { Mark } from "@/components/layout/logo"
 import {
   Sidebar,
   SidebarContent,
@@ -22,12 +24,13 @@ import { Input } from "@/components/ui/input"
 import type { PublicItem, PublicTrail } from "@/lib/public-project"
 
 interface PublicSidebarProps {
+  homeHref: string;
   trails: PublicTrail[];
   selectedItemId?: string;
   onSelectItem: (item: PublicItem) => void;
 }
 
-export function PublicSidebar({ trails, selectedItemId, onSelectItem }: PublicSidebarProps) {
+export function PublicSidebar({ homeHref, trails, selectedItemId, onSelectItem }: PublicSidebarProps) {
   const { state } = useSidebar();
   const [query, setQuery] = useState("");
 
@@ -44,8 +47,11 @@ export function PublicSidebar({ trails, selectedItemId, onSelectItem }: PublicSi
     <Sidebar variant="sidebar" collapsible="icon" className="border-r">
       <SidebarContent className="gap-0.5">
         {state !== "collapsed" && (
-          <div className="px-2.5 pt-4">
-            <div className="relative">
+          <div className="flex items-center gap-2 px-2.5 pt-4">
+            <Link href={homeHref} title="Back to projects" className="shrink-0">
+              <Mark size={26} />
+            </Link>
+            <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}

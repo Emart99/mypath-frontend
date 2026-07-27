@@ -1,5 +1,7 @@
 import { ChevronRight, GitBranch, Link2, ListPlus, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react"
 import { useState } from "react"
+import Link from "next/link"
+import { Mark } from "@/components/layout/logo"
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +24,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Trail, Item } from "@/app/editor/types"
 
 interface SidebarCustomProps {
+  homeHref: string;
   trails: Trail[];
   items: Record<string, Item>;
   selectedItemId?: string;
@@ -38,6 +41,7 @@ interface SidebarCustomProps {
 }
 
 export function SidebarCustom({
+  homeHref,
   trails,
   items,
   selectedItemId,
@@ -186,8 +190,11 @@ export function SidebarCustom({
     >
       <SidebarContent className="gap-0.5">
         {state !== "collapsed" && (
-          <div className="px-2.5 pt-4 ">
-            <div className="relative ">
+          <div className="flex items-center gap-2 px-2.5 pt-4">
+            <Link href={homeHref} title="Back to projects" className="shrink-0">
+              <Mark size={26} />
+            </Link>
+            <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}

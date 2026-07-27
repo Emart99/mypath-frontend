@@ -72,6 +72,7 @@ export default function EditorPage() {
     >
       <ProjectShell
         homeHref="/projects"
+        showLogo={false}
         titleSlot={
           <EditorTitleSlot
             projectTitle={project.projectTitle}
@@ -98,6 +99,7 @@ export default function EditorPage() {
         }
         sidebar={
           <SidebarCustom
+            homeHref="/projects"
             trails={project.trails}
             items={project.items}
             selectedItemId={project.selectedItemId}
