@@ -38,7 +38,7 @@ export function BioEditor({ initialBio }: { initialBio: string | null }) {
 
   if (editing) {
     return (
-      <div className="w-full">
+      <div className="w-[28rem]">
         <textarea
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -76,7 +76,7 @@ export function BioEditor({ initialBio }: { initialBio: string | null }) {
   }
 
   return (
-    <div className="group flex w-full items-start gap-2">
+    <div className="group flex w-fit max-w-2xl items-start gap-2">
       <p
         className={`text-sm leading-[1.6] ${bio ? "text-foreground not-italic" : "text-muted-foreground italic"}`}
       >

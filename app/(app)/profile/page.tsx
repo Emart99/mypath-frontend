@@ -83,7 +83,7 @@ export default async function ProfilePage({
                 </Link>
                 <PlanUsageChip />
               </div>
-              <div className="mb-3.5 w-3/4">
+              <div className="mb-3.5">
                 <BioEditor initialBio={profile.bio} />
               </div>
               <BadgesPanel badges={badges} />

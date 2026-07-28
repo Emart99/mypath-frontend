@@ -69,7 +69,7 @@ export function AvatarUpload({ username, imageUrl }: { username: string; imageUr
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
       {error && (
         <span
-          className="absolute left-0 top-full mt-1 max-w-[220px] text-[11px] font-medium text-destructive"
+          className="absolute left-1/2 -top-7 z-20 w-max max-w-[220px] -translate-x-1/2 text-center text-[11px] font-medium text-destructive"
         >
           {error}
         </span>
