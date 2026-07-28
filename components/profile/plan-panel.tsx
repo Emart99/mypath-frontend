@@ -4,8 +4,9 @@ import { useState, useTransition } from "react"
 import { Heart, CircleCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
-import { mockUpgrade, cancelSubscription, type SubscriptionStatus } from "@/lib/subscription"
+import { cancelSubscription, type SubscriptionStatus } from "@/lib/subscription"
 import { formatBytes } from "@/lib/format-bytes"
+import { getPatreonAuthorizeUrl } from "@/lib/patreon"
 
 function Meter({ label, used, total, pct }: { label: string; used: string; total: string; pct: number }) {
   return (
@@ -77,8 +78,13 @@ export function PlanPanel({ initialStatus }: { initialStatus: SubscriptionStatus
               10GB storage
             </div>
           </div>
-          <Button disabled={pending} onClick={() => startTransition(async () => setStatus(await mockUpgrade()))}>
-            Upgrade
+          <Button
+            disabled={pending}
+            onClick={() => startTransition(async () => {
+              window.location.href = await getPatreonAuthorizeUrl()
+            })}
+          >
+            Connect with Patreon
           </Button>
         </section>
       )}
