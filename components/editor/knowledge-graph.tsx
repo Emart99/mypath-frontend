@@ -230,22 +230,31 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
     const typesPresent = (Object.keys(TYPE_VAR) as AssociationType[]).filter((t) =>
       assocs.some((a) => a.type === t)
     );
-    return { pos, kind, col, assocs, spineEdges, typesPresent };
+    return { pos, kind, col, assocs, spineEdges, typesPresent, rootPos: pos.get(spineIds[0]) };
   }, [trails, items, activeTrailId]);
 
-  const { pos, kind, col, assocs, spineEdges, typesPresent } = layout;
+  const { pos, kind, col, assocs, spineEdges, typesPresent, rootPos } = layout;
 
-  const nodes: ItemNode[] = useMemo(
-    () =>
-      [...pos.entries()].map(([id, p]) => ({
+  const nodes: ItemNode[] = useMemo(() => {
+    // In the preview miniature the layout only grows rightward, so the root sits
+    // top-left. Shift the loose (child) nodes so their group is centred under the
+    // root — then fitView frames the whole thing balanced.
+    const looseXs = [...pos.entries()].filter(([id]) => kind.get(id) === "loose").map(([, p]) => p.x);
+    const shiftX =
+      preview && rootPos && looseXs.length
+        ? rootPos.x - (Math.min(...looseXs) + Math.max(...looseXs)) / 2
+        : 0;
+    return [...pos.entries()].map(([id, p]) => {
+      const x = kind.get(id) === "loose" ? p.x + shiftX : p.x;
+      return {
         id,
         type: "item" as const,
-        position: { x: p.x - NODE_W / 2, y: p.y - NODE_H / 2 },
+        position: { x: x - NODE_W / 2, y: p.y - NODE_H / 2 },
         data: { title: items[id]?.title ?? "", selected: id === selectedItemId, kind: kind.get(id) ?? "spine" },
         draggable: false,
-      })),
-    [pos, kind, items, selectedItemId]
-  );
+      };
+    });
+  }, [pos, kind, items, selectedItemId, preview, rootPos]);
 
   const edges: Edge[] = useMemo(() => {
     const incident = (from: string, to: string) => from === selectedItemId || to === selectedItemId;
@@ -289,9 +298,9 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
       edgeTypes={edgeTypes}
       colorMode={resolvedTheme === "dark" ? "dark" : "light"}
       fitView
-      fitViewOptions={{ padding: 0.2 }}
+      fitViewOptions={{ padding: preview ? 0.05 : 0.2 }}
       minZoom={0.2}
-      maxZoom={2.5}
+      maxZoom={preview ? 4 : 2.5}
       nodesDraggable={false}
       nodesConnectable={false}
       proOptions={preview ? { hideAttribution: true } : undefined}
