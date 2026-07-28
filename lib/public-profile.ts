@@ -11,6 +11,7 @@ interface PublicProfileDTO {
   username: string;
   bio: string | null;
   imageUrl: string | null;
+  bannerUrl: string | null;
   createdAt: string;
   stats: ProfileStats;
   badges: Badge[];
@@ -23,6 +24,7 @@ export interface PublicProfile {
   username: string;
   bio: string | null;
   imageUrl: string | null;
+  bannerUrl: string | null;
   createdAt: string;
   stats: ProfileStats;
   badges: Badge[];

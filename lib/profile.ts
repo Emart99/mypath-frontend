@@ -25,6 +25,7 @@ export interface UserProfile {
   email: string;
   bio: string | null;
   imageUrl: string | null;
+  bannerUrl: string | null;
   createdAt: string | null;
   role: "ADMIN" | "USER";
 }
@@ -78,7 +79,7 @@ export async function getMyProfile(): Promise<UserProfile | null> {
   return response.json();
 }
 
-export async function updateMyProfile(fields: { bio?: string; imageUrl?: string }): Promise<UserProfile> {
+export async function updateMyProfile(fields: { bio?: string; imageUrl?: string; bannerUrl?: string }): Promise<UserProfile> {
   const response = await authenticatedFetch(`${API_BASE_URL}/api/profile/me`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

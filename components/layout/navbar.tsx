@@ -27,8 +27,14 @@ export async function Navbar() {
         >
           Product
         </a>
+        <a
+          href="#pricing"
+          className="hidden md:block text-sm font-medium text-muted-foreground px-4 py-2.5 rounded-full transition-colors hover:bg-muted hover:text-foreground"
+        >
+          Plans
+        </a>
         <Link
-          href="/explore"
+          href="/plans"
           className="hidden md:block text-sm font-medium text-muted-foreground px-4 py-2.5 rounded-full transition-colors hover:bg-muted hover:text-foreground"
         >
           Explore
@@ -40,7 +46,7 @@ export async function Navbar() {
             <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/login"
-                className="text-sm font-medium text-primary px-4 py-2.5 rounded-full transition-colors hover:bg-muted ml-2"
+                className="text-sm font-medium text-primary px-4 py-2.5 rounded-full transition-colors hover:bg-muted"
               >
                 Sign in
               </Link>

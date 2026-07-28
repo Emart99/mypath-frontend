@@ -34,21 +34,34 @@ export default async function PublicProfilePage({
   const { stats, badges } = profile
   const { items: published, hasMore: publishedHasMore } = await getPublicUserPublishedPage(username, 0, PAGE_SIZE)
 
+  const avatar = (
+    <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-[32px] sm:text-[46px] font-medium w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] bg-primary text-primary-foreground ring-4 ring-background">
+      {profile.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={profile.imageUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        initial(profile.username)
+      )}
+    </span>
+  )
+
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
         <div className="pt-9 px-6 md:px-18 pb-14">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-7 rounded-[28px] bg-card p-5 sm:p-8">
-            <span
-              className="flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-[32px] sm:text-[46px] font-medium w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] bg-primary text-primary-foreground"
-            >
-              {profile.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.imageUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                initial(profile.username)
-              )}
-            </span>
-            <div className="min-w-0 flex-1 text-center sm:text-left">
+          {profile.bannerUrl && (
+            <div className="relative mb-3">
+              <div className="aspect-[6/1] w-full overflow-hidden rounded-[28px] bg-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={profile.bannerUrl} alt="" className="h-full w-full object-cover" />
+              </div>
+              <div className="absolute left-1/2 -bottom-[50px] z-10 -translate-x-1/2 sm:left-8 sm:-bottom-[70px] sm:translate-x-0">
+                {avatar}
+              </div>
+            </div>
+          )}
+          <div className={`flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-7 rounded-[28px] bg-card p-5 sm:p-8 ${profile.bannerUrl ? "pt-16 sm:pt-20" : ""}`}>
+            {!profile.bannerUrl && avatar}
+            <div className={`min-w-0 flex-1 text-center sm:text-left ${profile.bannerUrl ? "sm:pl-[200px]" : ""}`}>
               <div className="mb-2 flex flex-wrap items-center justify-center sm:justify-start gap-4">
                 <h1 className="font-display text-[28px] sm:text-[36px] font-normal leading-[1.1]">
                   {profile.username}

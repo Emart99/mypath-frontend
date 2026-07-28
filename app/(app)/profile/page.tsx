@@ -3,6 +3,7 @@ import { ArrowUpRight, Calendar, Users } from "lucide-react"
 import { BadgesPanel } from "@/components/profile/badges-panel"
 import { PlanUsageChip } from "@/components/profile/plan-usage-chip"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
+import { BannerUpload } from "@/components/profile/banner-upload"
 import { BioEditor } from "@/components/profile/bio-editor"
 import { PublishedPanel } from "@/components/profile/published-panel"
 import { BookmarksPanel } from "@/components/profile/bookmarks-panel"
@@ -48,21 +49,23 @@ export default async function ProfilePage({
   ])
   const { stats, badges } = statsBundle
 
-  const profile = fetchedProfile ?? { username: cookieUsername ?? "", bio: null, imageUrl: null, createdAt: null }
+  const profile = fetchedProfile ?? { username: cookieUsername ?? "", bio: null, imageUrl: null, bannerUrl: null, createdAt: null }
 
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
         <div className="pt-9 px-18 pb-0">
-          <div className="flex items-start gap-7 rounded-[28px] bg-card p-8">
-            <AvatarUpload username={profile.username} imageUrl={profile.imageUrl} />
-            <div className="min-w-0 flex-1">
-              <span className="block text-[13px] font-medium text-primary mb-1.5">
-                My profile
-              </span>
+          <div className="relative mb-3">
+            <BannerUpload bannerUrl={profile.bannerUrl} />
+            <div className="absolute left-1/2 -bottom-12 z-10 -translate-x-1/2">
+              <AvatarUpload username={profile.username} imageUrl={profile.imageUrl} />
+            </div>
+          </div>
+          <div className="rounded-[28px] bg-card p-8 pt-16">
+            <div className="flex min-w-0 flex-1 flex-col items-center">
               <h1 className="font-display text-[36px] font-normal leading-[1.1] mb-2.5">
                 {profile.username}
               </h1>
-              <div className="flex items-center gap-4 text-[13px] mb-3.5 text-muted-foreground">
+              <div className="flex items-center justify-center gap-4 text-[13px] mb-3.5 text-muted-foreground">
                 {profile.createdAt && (
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-[14px] w-[14px]" />
@@ -80,7 +83,7 @@ export default async function ProfilePage({
                 </Link>
                 <PlanUsageChip />
               </div>
-              <div className="mb-3.5">
+              <div className="mb-3.5 w-3/4">
                 <BioEditor initialBio={profile.bio} />
               </div>
               <BadgesPanel badges={badges} />
