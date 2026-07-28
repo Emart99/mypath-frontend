@@ -104,12 +104,12 @@
   --sidebar-accent-foreground: #1A1A1A;
   --sidebar-border: #E4E4E4;
   --sidebar-ring: #1A1A1A;
-  --ed-red: #B3261E;
-  --ed-orange: #9A5B00;
-  --ed-green: #1B6E38;
-  --ed-blue: #0B57D0;
-  --ed-purple: #6750A4;
-  --ed-gray: #5F6368;
+  --ed-red: #e79591;
+  --ed-orange: #f0aa54;
+  --ed-green: #56a767;
+  --ed-blue: #476eac;
+  --ed-purple: #7c61bf;
+  --ed-gray: #9AA0A6;
 }
 
 .dark {

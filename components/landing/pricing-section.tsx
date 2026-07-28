@@ -3,8 +3,7 @@ import { Check, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FadeUp } from '@/components/landing/landing-motion';
 
-// TODO: confirmar la URL pública del Patreon de Tramo con el equipo.
-const PATREON_URL = 'https://www.patreon.com/tramo';
+const PATREON_URL = 'https://www.patreon.com/tramodev';
 
 const FREE_FEATURES = [
   'Unlimited public paths',
@@ -27,7 +26,6 @@ export const PricingSection: React.FC = () => {
       <span className="mb-6 block text-sm font-medium text-primary">Plans</span>
 
       <div className="grid items-stretch gap-4 md:grid-cols-[1.55fr_1fr]">
-        {/* FREE */}
         <FadeUp>
           <div className="flex h-full flex-col rounded-[28px] bg-card p-11">
             <span className="mb-[22px] self-start rounded-full bg-secondary px-[13px] py-[5px] text-xs font-semibold text-secondary-foreground">
@@ -54,7 +52,6 @@ export const PricingSection: React.FC = () => {
           </div>
         </FadeUp>
 
-        {/* SUPPORTER */}
         <FadeUp delay={0.1}>
           <div className="flex h-full flex-col rounded-[28px] border border-border bg-card p-11">
             <div className="mb-2 flex items-center gap-[9px]">
