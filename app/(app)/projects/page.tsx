@@ -107,7 +107,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <main className="mx-auto w-full flex-1 max-w-[1280px] pt-11 px-18 pb-[84px]">
+    <main className="mx-auto w-full flex-1 max-w-[1216px] pt-11 px-18 pb-[84px]">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-sm font-medium text-primary">
             Your workspace

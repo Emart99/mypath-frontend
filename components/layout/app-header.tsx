@@ -5,6 +5,7 @@ import { PrimaryNav } from "@/components/layout/primary-nav"
 import { getNavItems } from "@/lib/nav-items"
 import { UserMenu } from "@/components/layout/user-menu"
 import { NotificationButton } from "@/components/layout/notification-button"
+import { Button } from "@/components/ui/button"
 
 export function AppHeader({
   homeHref,
@@ -30,6 +31,19 @@ export function AppHeader({
         </div>
         <NotificationButton loggedIn={loggedIn} />
         <UserMenu loggedIn={loggedIn} username={username} imageUrl={imageUrl} navItems={getNavItems(loggedIn, isAdmin)} />
+        {!loggedIn && (
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-primary px-4 py-2.5 rounded-full transition-colors hover:bg-muted"
+            >
+              Sign in
+            </Link>
+            <Button asChild size="lg">
+              <Link href="/signup">Get started</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   )
