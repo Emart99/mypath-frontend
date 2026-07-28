@@ -107,7 +107,6 @@ const CONNECTIONS = [
 export const BrowserMockup: React.FC = () => {
   return (
     <div className="w-full flex flex-col overflow-hidden rounded-[28px] border border-border bg-background shadow-elevation-2">
-      {/* Browser chrome */}
       <div className="h-9 flex items-center gap-2 px-4 shrink-0 bg-card border-b border-border">
         <span className="flex gap-1.5 shrink-0">
           <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
@@ -129,7 +128,6 @@ export const BrowserMockup: React.FC = () => {
       <div
         className="absolute top-1/2 left-1/2 flex h-[383px] w-[680px] overflow-hidden [transform:translate(-50%,-50%)_scale(calc(100cqw/680px))] md:static md:h-full md:w-full md:[transform:none]"
       >
-        {/* Full-height left sidebar, flush to the edge */}
         <div className="w-[184px] hidden lg:flex flex-col shrink-0 p-2.5 gap-2.5 overflow-hidden bg-card border-r border-border">
           <div className="flex items-center gap-2 pt-0.5">
             <Mark size={22} className="shrink-0" />
@@ -191,7 +189,6 @@ export const BrowserMockup: React.FC = () => {
           </ul>
         </div>
 
-        {/* Right column: header sits only over the editor + connections, not the sidebar */}
         <div className="flex flex-1 flex-col min-w-0">
       <div className="h-12 flex items-center gap-3 px-5 shrink-0 bg-card border-b border-border">
         <span className="lg:hidden font-display font-semibold text-[14px]">

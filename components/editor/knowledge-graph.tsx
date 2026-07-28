@@ -175,6 +175,8 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
   const preview = variant === "preview";
   const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Resolve the CSS custom properties to literal hex (edges/markers).
   const [colors, setColors] = useState<Record<string, string>>(FALLBACK);
@@ -236,9 +238,6 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
   const { pos, kind, col, assocs, spineEdges, typesPresent, rootPos } = layout;
 
   const nodes: ItemNode[] = useMemo(() => {
-    // In the preview miniature the layout only grows rightward, so the root sits
-    // top-left. Shift the loose (child) nodes so their group is centred under the
-    // root — then fitView frames the whole thing balanced.
     const looseXs = [...pos.entries()].filter(([id]) => kind.get(id) === "loose").map(([, p]) => p.x);
     const shiftX =
       preview && rootPos && looseXs.length
@@ -296,7 +295,7 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
       edges={edges}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
-      colorMode={resolvedTheme === "dark" ? "dark" : "light"}
+      colorMode={mounted && resolvedTheme === "dark" ? "dark" : "light"}
       fitView
       fitViewOptions={{ padding: preview ? 0.05 : 0.2 }}
       minZoom={0.2}
