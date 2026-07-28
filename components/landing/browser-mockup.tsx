@@ -28,6 +28,7 @@ import {
   ArrowUp,
   Waypoints,
   Share as GraphIcon,
+  Lock,
 } from 'lucide-react';
 import { KnowledgeGraph } from '@/components/editor/knowledge-graph';
 import { Mark } from '@/components/layout/logo';
@@ -105,7 +106,20 @@ const CONNECTIONS = [
 
 export const BrowserMockup: React.FC = () => {
   return (
-    <div className="relative w-full aspect-[16/9] overflow-hidden rounded-[28px] border border-border bg-background shadow-elevation-2 [container-type:inline-size]">
+    <div className="w-full flex flex-col overflow-hidden rounded-[28px] border border-border bg-background shadow-elevation-2">
+      {/* Browser chrome */}
+      <div className="h-9 flex items-center gap-2 px-4 shrink-0 bg-card border-b border-border">
+        <span className="flex gap-1.5 shrink-0">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+        </span>
+        <div className="mx-auto flex items-center gap-1.5 rounded-full bg-popover px-3 py-1 text-[11px] text-muted-foreground max-w-[60%] truncate">
+          <Lock className="w-2.5 h-2.5 shrink-0" />
+          tramo.app/why-slow-down
+        </div>
+      </div>
+      <div className="relative aspect-[16/9] overflow-hidden [container-type:inline-size]">
       {/* Below md the middle column (both side panels are `hidden lg:flex` — shown together
           or not at all, since below lg there isn't enough height in this fixed-aspect card
           for a full sidebar) still doesn't fit a phone-width card, so instead of reflowing
@@ -313,6 +327,7 @@ export const BrowserMockup: React.FC = () => {
         </div>
       </div>
         </div>
+      </div>
       </div>
     </div>
   );
