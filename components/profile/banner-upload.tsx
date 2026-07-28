@@ -19,6 +19,10 @@ export function BannerUpload({ bannerUrl }: { bannerUrl: string | null }) {
     const file = event.target.files?.[0]
     event.target.value = ""
     if (!file) return
+    if (file.type === "image/gif") {
+      setError("Animated GIF banners are not supported.")
+      return
+    }
     setError(null)
     setPendingFile(file)
   }
@@ -59,7 +63,7 @@ export function BannerUpload({ bannerUrl }: { bannerUrl: string | null }) {
           <ImagePlus className="h-5 w-5 text-white" />
         </span>
       </button>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+      <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileChange} />
       {error && <p className="mt-1 text-[11px] font-medium text-destructive">{error}</p>}
       {pendingFile && (
         <CropModal
