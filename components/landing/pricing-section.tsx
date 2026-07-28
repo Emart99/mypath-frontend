@@ -14,6 +14,7 @@ const SUPPORTER_FEATURES = [
   'Everything in Free',
   '10GB storage',
   'Animated GIF avatar',
+  'Profile banner',
   'Supporter badge on your profile',
 ];
 
@@ -48,7 +49,7 @@ export const PricingSection: React.FC = () => {
               Supporter <Heart className="h-5 w-5 text-primary" />
             </h2>
             <p className="mt-1 text-sm opacity-85">More room, a thank-you badge.</p>
-            <div className="mt-4 font-display text-[40px] font-medium">Coming soon</div>
+            <div className="mt-4 font-display text-[40px] font-medium">$5</div>
             <ul className="mt-5 flex flex-col gap-2.5 text-[15px]">
               {SUPPORTER_FEATURES.map((feature) => (
                 <li key={feature} className="flex items-start gap-2.5">
@@ -58,8 +59,8 @@ export const PricingSection: React.FC = () => {
               ))}
             </ul>
             <div className="mt-auto pt-7">
-              <Button size="xl" className="w-full" disabled>
-                Not available yet
+              <Button asChild size="xl" className="w-full">
+                <a href="/signup">Sign up to connect</a>
               </Button>
             </div>
           </div>
