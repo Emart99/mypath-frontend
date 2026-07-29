@@ -181,7 +181,7 @@ export default function ProjectsPage() {
               No projects yet. Create a blank project to get started.
             </p>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-[repeat(auto-fill,208px)] justify-between gap-6">
+            <div className="grid grid-cols-[repeat(auto-fill,208px)] justify-between gap-2">
               {sortedProjects.map((project) => (
                 <Card
                   key={project.id}

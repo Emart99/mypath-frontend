@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserMenu } from '@/components/layout/user-menu';
 import { ShareDialog } from '@/components/editor/share-dialog';
+import { VersionHistorySheet } from '@/components/editor/version-history-sheet';
 import type { ProjectVisibility } from '@/lib/projects-store';
 import type { SaveStatus } from '../hooks/useAutoSave';
 
@@ -140,6 +141,7 @@ export function EditorActions({
         tags={tags}
         onTagsChange={onTagsChange}
       />
+      <VersionHistorySheet projectId={projectId} />
       <UserMenu loggedIn={!!profile} username={profile?.username ?? null} imageUrl={profile?.imageUrl ?? null} />
     </>
   );
