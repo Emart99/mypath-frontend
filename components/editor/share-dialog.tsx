@@ -20,6 +20,7 @@ import {
   setProjectVisibility,
   setProjectDescription,
   setProjectTags,
+  publishProject,
   type ProjectVisibility,
 } from "@/lib/projects-store"
 import { cn } from "@/lib/utils"
@@ -136,6 +137,29 @@ export function ShareDialog({
     }
   };
 
+  const handlePublish = async () => {
+    if (isApplying) return;
+    if (!descriptionInput.trim()) {
+      setValidationError("Add a description before publishing.");
+      return;
+    }
+    setIsApplying(true);
+    setValidationError(null);
+    try {
+      if (descriptionInput.trim() !== description) {
+        await submitDescription();
+      }
+      const { error } = await publishProject(projectId);
+      if (error) {
+        setValidationError(error);
+      }
+    } catch {
+      setValidationError("Something went wrong — try again.");
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
   const copyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
@@ -230,7 +254,7 @@ export function ShareDialog({
           </div>
         )}
 
-        {(hasPendingChange || validationError) && (
+        {(hasPendingChange || validationError || (!hasPendingChange && visibility === "published")) && (
           <DialogFooter className="flex-col items-stretch gap-2 sm:flex-col">
             {validationError && (
               <p className="text-xs text-destructive">{validationError}</p>
@@ -238,6 +262,11 @@ export function ShareDialog({
             {hasPendingChange && (
               <Button onClick={applyVisibility} disabled={isApplying} className="w-full">
                 {isApplying ? "Applying..." : `Switch to ${selected.label}`}
+              </Button>
+            )}
+            {!hasPendingChange && visibility === "published" && (
+              <Button onClick={handlePublish} disabled={isApplying} className="w-full">
+                {isApplying ? "Publishing..." : "Publish update"}
               </Button>
             )}
           </DialogFooter>

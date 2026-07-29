@@ -64,13 +64,7 @@ export async function getProjectSnapshots(projectId: string): Promise<ProjectSna
   return dtos.map(toSummary);
 }
 
-export async function getProjectSnapshot(
-  projectId: string,
-  snapshotId: string,
-): Promise<ProjectSnapshotDetail | null> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${projectId}/versions/${snapshotId}`);
-  if (response.status === 404) return null;
-  const dto = await parseResponse<ProjectSnapshotDetailDTO>(response);
+function toDetail(dto: ProjectSnapshotDetailDTO): ProjectSnapshotDetail {
   return {
     ...toSummary(dto),
     trails: dto.content.trails.map((trail) => ({
@@ -85,4 +79,26 @@ export async function getProjectSnapshot(
       })),
     })),
   };
+}
+
+export async function getProjectSnapshot(
+  projectId: string,
+  snapshotId: string,
+): Promise<ProjectSnapshotDetail | null> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${projectId}/versions/${snapshotId}`);
+  if (response.status === 404) return null;
+  const dto = await parseResponse<ProjectSnapshotDetailDTO>(response);
+  return toDetail(dto);
+}
+
+export async function getPublicProjectSnapshot(
+  projectId: string,
+  snapshotId: string,
+): Promise<ProjectSnapshotDetail | null> {
+  const response = await fetch(`${API_BASE_URL}/api/public/project/${projectId}/versions/${snapshotId}`, {
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const dto: ProjectSnapshotDetailDTO = await response.json();
+  return toDetail(dto);
 }

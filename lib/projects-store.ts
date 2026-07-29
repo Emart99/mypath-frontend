@@ -228,6 +228,17 @@ export async function setProjectVisibility(
   return { error: null };
 }
 
+export async function publishProject(id: string): Promise<{ error: string | null }> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/publish`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    const message = await response.json().then((body) => body?.message).catch(() => null);
+    return { error: message ?? `Request failed with status ${response.status}` };
+  }
+  return { error: null };
+}
+
 export async function setProjectThumbnail(id: string, thumbnail: string): Promise<void> {
   const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
     method: "PUT",

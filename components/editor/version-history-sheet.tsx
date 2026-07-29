@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { History } from "lucide-react"
+import Link from "next/link"
+import { ExternalLink, History } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Row } from "@/components/profile/row"
+import { LexicalReadOnly } from "@/components/project/lexical-read-only"
 import {
   getProjectSnapshot,
   getProjectSnapshots,
@@ -72,9 +74,18 @@ export function VersionHistorySheet({ projectId }: VersionHistorySheetProps) {
 
           {!loading && detail && (
             <div className="flex flex-col gap-6">
-              <Button variant="ghost" size="sm" className="self-start" onClick={() => setDetail(null)}>
-                Back to versions
-              </Button>
+              <div className="flex items-center justify-between">
+                <Button variant="ghost" size="sm" className="self-start" onClick={() => setDetail(null)}>
+                  Back to versions
+                </Button>
+                <Link
+                  href={`/p/${projectId}/versions/${detail.id}`}
+                  target="_blank"
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Public link <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
               {detail.trails.map((trail) => (
                 <div key={trail.id} className="flex flex-col gap-3">
                   <h3 className="text-sm font-semibold">{trail.title}</h3>
@@ -82,7 +93,9 @@ export function VersionHistorySheet({ projectId }: VersionHistorySheetProps) {
                     <div key={item.id} className="flex flex-col gap-1">
                       <p className="text-sm font-medium">{item.title}</p>
                       {item.content && (
-                        <p className="whitespace-pre-wrap text-sm text-muted-foreground">{item.content}</p>
+                        <div className="text-sm text-muted-foreground">
+                          <LexicalReadOnly content={item.content} />
+                        </div>
                       )}
                     </div>
                   ))}
