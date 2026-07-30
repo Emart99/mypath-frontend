@@ -5,8 +5,10 @@ import { BookmarkButton } from "@/components/social/bookmark-button"
 import { PostOptionsMenu } from "@/components/project/post-options-menu"
 import { AuthorAvatar, initial } from "@/components/shared/author-avatar"
 import { ExploreFeed } from "@/components/feed/explore-feed"
+import { PatreonSupportCard } from "@/components/feed/patreon-support-card"
 import { getExploreBundle, type FeedSort } from "@/lib/public-project"
 import { isLoggedIn, getUsername } from "@/lib/auth"
+import { getSubscriptionStatus } from "@/lib/subscription"
 
 export default async function ExplorePage({
   searchParams,
@@ -15,14 +17,17 @@ export default async function ExplorePage({
 }) {
   const { q, sort: sortParam } = await searchParams
   const sort: FeedSort = sortParam === "hot" ? "hot" : sortParam === "following" ? "following" : "recent"
-  const [bundle, loggedIn, username] = await Promise.all([
+  const loggedIn = await isLoggedIn()
+  const [bundle, username, subscription] = await Promise.all([
     getExploreBundle(q, sort),
-    isLoggedIn(),
     getUsername(),
+    // A stale/expired session shouldn't take down Explore — fall back to "unknown" (no card).
+    loggedIn ? getSubscriptionStatus().catch(() => null) : Promise.resolve(null),
   ])
 
   const { featured, hotTopics, activeAuthors } = bundle
-  const hasSidebar = hotTopics.length > 0 || activeAuthors.length > 0
+  const showSupportCard = loggedIn && !subscription?.supporter
+  const hasSidebar = hotTopics.length > 0 || activeAuthors.length > 0 || showSupportCard
 
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
@@ -190,6 +195,7 @@ export default async function ExplorePage({
 
         {hasSidebar && (
           <aside className="sticky top-6 hidden flex-col gap-5 self-start lg:flex">
+            {showSupportCard && <PatreonSupportCard />}
             {hotTopics.length > 0 && (
               <div className="rounded-2xl bg-card p-5">
                 <h3 className="text-[13px] font-medium text-muted-foreground">

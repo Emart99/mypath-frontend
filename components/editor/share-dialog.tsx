@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Check, Copy, Globe, Loader2, Lock, Share2, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ import {
   publishProject,
   type ProjectVisibility,
 } from "@/lib/projects-store"
+import { autocompleteTags, type TagSuggestion } from "@/lib/tags"
 import { cn } from "@/lib/utils"
 
 interface ShareDialogProps {
@@ -75,6 +76,10 @@ export function ShareDialog({
   const [selectedVisibility, setSelectedVisibility] = useState(visibility);
   const [descriptionInput, setDescriptionInput] = useState(description);
   const [tagsInput, setTagsInput] = useState(tags);
+  const [tagSuggestions, setTagSuggestions] = useState<TagSuggestion[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [highlightedSuggestion, setHighlightedSuggestion] = useState(0);
+  const tagsInputRef = useRef<HTMLInputElement>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [justPublished, setJustPublished] = useState(false);
@@ -89,6 +94,7 @@ export function ShareDialog({
       setSelectedVisibility(visibility);
       setDescriptionInput(description);
       setTagsInput(tags);
+      setSuggestionsOpen(false);
       setValidationError(null);
       setJustPublished(false);
     }
@@ -103,10 +109,43 @@ export function ShareDialog({
   };
 
   const submitTags = async () => {
+    setSuggestionsOpen(false);
     const next = tagsInput.trim();
     if (next === tags) return;
     onTagsChange(next);
     await setProjectTags(projectId, next);
+  };
+
+  // Suggests existing tags for whatever the user is typing after the last comma,
+  // pushing reuse of the shared catalog instead of near-duplicate tags.
+  useEffect(() => {
+    const fragment = tagsInput.split(",").pop()?.trim() ?? "";
+    if (!fragment) {
+      setTagSuggestions([]);
+      setSuggestionsOpen(false);
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      try {
+        const results = await autocompleteTags(fragment);
+        setTagSuggestions(results);
+        setSuggestionsOpen(results.length > 0);
+        setHighlightedSuggestion(0);
+      } catch {
+        setTagSuggestions([]);
+        setSuggestionsOpen(false);
+      }
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [tagsInput]);
+
+  const selectTagSuggestion = (name: string) => {
+    const segments = tagsInput.split(",");
+    segments[segments.length - 1] = ` ${name}`;
+    setTagsInput(segments.join(",").trimStart() + ", ");
+    setTagSuggestions([]);
+    setSuggestionsOpen(false);
+    tagsInputRef.current?.focus();
   };
 
   const applyVisibility = async () => {
@@ -233,19 +272,71 @@ export function ShareDialog({
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="share-tags">Tags</Label>
-          <Input
-            id="share-tags"
-            placeholder="webdev, react, tutorial"
-            value={tagsInput}
-            onChange={(e) => setTagsInput(e.target.value)}
-            onBlur={submitTags}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                submitTags();
-              }
-            }}
-          />
+          <div className="relative">
+            <Input
+              id="share-tags"
+              ref={tagsInputRef}
+              placeholder="webdev, react, tutorial"
+              autoComplete="off"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              onFocus={() => setSuggestionsOpen(tagSuggestions.length > 0)}
+              onBlur={submitTags}
+              onKeyDown={(e) => {
+                if (suggestionsOpen && tagSuggestions.length > 0) {
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setHighlightedSuggestion((i) => (i + 1) % tagSuggestions.length);
+                    return;
+                  }
+                  if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setHighlightedSuggestion((i) => (i - 1 + tagSuggestions.length) % tagSuggestions.length);
+                    return;
+                  }
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    selectTagSuggestion(tagSuggestions[highlightedSuggestion].name);
+                    return;
+                  }
+                  if (e.key === "Escape") {
+                    setSuggestionsOpen(false);
+                    return;
+                  }
+                }
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  submitTags();
+                }
+              }}
+            />
+            {suggestionsOpen && tagSuggestions.length > 0 && (
+              <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
+                {tagSuggestions.map((suggestion, index) => (
+                  <button
+                    key={suggestion.name}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => selectTagSuggestion(suggestion.name)}
+                    className={cn(
+                      "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors",
+                      index === highlightedSuggestion ? "bg-muted" : "hover:bg-muted"
+                    )}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      {suggestion.name}
+                      {suggestion.official && (
+                        <span className="text-[10px] font-medium tracking-wide text-primary uppercase">
+                          Official
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{suggestion.usageCount}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             Comma-separated. Helps people find this on Explore and shows up in Hot topics.
           </p>
