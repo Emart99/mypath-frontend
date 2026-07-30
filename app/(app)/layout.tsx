@@ -1,5 +1,4 @@
 import { AppHeader } from "@/components/layout/app-header"
-import { Footer } from "@/components/layout/footer"
 import { isLoggedIn } from "@/lib/auth"
 import { getMyProfile } from "@/lib/profile"
 import { getHomeHref } from "@/lib/nav"
@@ -19,7 +18,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         imageUrl={profile?.imageUrl ?? null}
       />
       {children}
-      <Footer />
     </div>
   )
 }

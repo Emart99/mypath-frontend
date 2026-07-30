@@ -53,13 +53,15 @@ export function ExploreFeed({
   return (
     <>
       {items.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          {query
-            ? `Nothing found for "${query}".`
-            : sort === "following"
-              ? "Nothing here yet — follow people to see what they publish."
-              : "Nothing published yet."}
-        </p>
+        <div className="min-h-[325px]">
+          <p className="text-sm text-muted-foreground">
+            {query
+              ? `Nothing found for "${query}".`
+              : sort === "following"
+                ? "Nothing here yet — follow people to see what they publish."
+                : "Nothing published yet."}
+          </p>
+        </div>
       )}
       <div className="flex flex-col gap-3">
         {items.map((project) => (

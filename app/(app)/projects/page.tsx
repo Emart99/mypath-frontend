@@ -129,7 +129,7 @@ export default function ProjectsPage() {
           </button>
         </div>
 
-        <div className="mt-[70px]">
+        <div className="mt-[70px] min-h-[310px]">
           <div className="mb-5 flex items-center justify-between">
             <span className="block text-sm font-medium text-muted-foreground">My projects</span>
             <div className="flex items-center gap-2">

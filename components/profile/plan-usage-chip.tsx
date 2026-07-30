@@ -6,7 +6,7 @@ import { HardDrive } from "lucide-react"
 import { getSubscriptionStatus, type SubscriptionStatus } from "@/lib/subscription"
 import { formatBytes } from "@/lib/format-bytes"
 
-/** Compact storage/publish usage pill linking to the Plan settings tab. Renders nothing until loaded. */
+/** Compact storage/publish usage pill linking to the Plan settings tab. */
 export function PlanUsageChip({ className }: { className?: string }) {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null)
 
@@ -14,12 +14,12 @@ export function PlanUsageChip({ className }: { className?: string }) {
     getSubscriptionStatus().then(setStatus).catch(() => {})
   }, [])
 
-  if (!status) return null
+  if (!status) return <div className={`h-7 w-28 rounded-full bg-secondary ${className ?? ""}`} />;
 
   return (
     <Link
       href="/settings?tab=plan"
-      className={`inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:bg-muted ${className ?? ""}`}
+      className={`inline-flex h-7 items-center gap-1.5 rounded-full bg-secondary px-3 text-xs font-medium text-secondary-foreground transition-colors hover:bg-muted ${className ?? ""}`}
     >
       <HardDrive className="h-3.5 w-3.5" />
       {formatBytes(status.storageUsedBytes)} / {formatBytes(status.storageQuotaBytes)}
