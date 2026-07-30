@@ -6,6 +6,8 @@ import Link from "next/link"
 import { Flag, MessageCircle, Reply, Trash2 } from "lucide-react"
 
 import { AuthorAvatar } from "@/components/shared/author-avatar"
+import { ProfileHoverCard } from "@/components/social/profile-hover-card"
+import { NameBadge } from "@/components/profile/badges-panel"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
@@ -33,10 +35,12 @@ function timeAgo(iso: string) {
 export function CommentsSection({
   projectId,
   isLoggedIn,
+  username,
   commentCount,
 }: {
   projectId: string
   isLoggedIn: boolean
+  username: string | null
   commentCount: number
 }) {
   const [comments, setComments] = useState<Comment[] | null>(null)
@@ -153,6 +157,8 @@ export function CommentsSection({
             <div key={comment.id} className="flex flex-col gap-3">
               <CommentItem
                 comment={comment}
+                isLoggedIn={isLoggedIn}
+                viewerUsername={username}
                 onReply={() => (requireLogin() ? undefined : setReplyTo(replyTo === comment.id ? null : comment.id))}
                 onDelete={() => setDeleteTarget(comment.id)}
                 onReport={() => (requireLogin() ? undefined : setReportTarget(comment.id))}
@@ -181,6 +187,8 @@ export function CommentsSection({
                 <div key={reply.id} className="ml-8">
                   <CommentItem
                     comment={reply}
+                    isLoggedIn={isLoggedIn}
+                    viewerUsername={username}
                     onReply={() => (requireLogin() ? undefined : setReplyTo(replyTo === reply.id ? null : reply.id))}
                     onDelete={() => setDeleteTarget(reply.id)}
                     onReport={() => (requireLogin() ? undefined : setReportTarget(reply.id))}
@@ -251,11 +259,15 @@ export function CommentsSection({
 
 function CommentItem({
   comment,
+  isLoggedIn,
+  viewerUsername,
   onReply,
   onDelete,
   onReport,
 }: {
   comment: Comment
+  isLoggedIn: boolean
+  viewerUsername: string | null
   onReply: () => void
   onDelete: () => void
   onReport: () => void
@@ -275,9 +287,14 @@ function CommentItem({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-sm">
           {comment.authorUsername && (
-            <Link href={`/u/${encodeURIComponent(comment.authorUsername)}`} className="font-medium hover:underline">
-              {comment.authorUsername}
-            </Link>
+            <ProfileHoverCard username={comment.authorUsername} avatar={comment.authorAvatar} isLoggedIn={isLoggedIn} viewerUsername={viewerUsername}>
+              <span className="inline-flex items-center gap-1">
+                <Link href={`/u/${encodeURIComponent(comment.authorUsername)}`} className="font-medium hover:underline">
+                  {comment.authorUsername}
+                </Link>
+                <NameBadge code={comment.authorBadge} />
+              </span>
+            </ProfileHoverCard>
           )}
           <span className="text-xs text-muted-foreground">{timeAgo(comment.createdDate)}</span>
         </div>

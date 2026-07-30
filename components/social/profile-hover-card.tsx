@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { AuthorAvatar } from "@/components/shared/author-avatar"
-import { BadgeIcon } from "@/components/profile/badges-panel"
+import { NameBadge } from "@/components/profile/badges-panel"
 import { FollowButton } from "@/components/social/follow-button"
 import { getPublicProfile, type PublicProfile } from "@/lib/public-profile"
 
@@ -62,20 +62,11 @@ export function ProfileHoverCard({
                 <FollowButton username={username} initialFollowing={profile.following} isLoggedIn={isLoggedIn} />
               )}
             </div>
-            <div className="mt-2.5 flex items-center gap-1.5">
+            <div className="mt-2.5 flex items-center gap-1">
               <Link href={`/u/${encodeURIComponent(username)}`} className="font-medium hover:underline">
                 {username}
               </Link>
-              {profile.badges.filter((badge) => badge.earned).length > 0 && (
-                <div className="flex items-center gap-1">
-                  {profile.badges
-                    .filter((badge) => badge.earned)
-                    .slice(0, 2)
-                    .map((badge) => (
-                      <BadgeIcon key={badge.code} badge={badge} size={12} />
-                    ))}
-                </div>
-              )}
+              <NameBadge code={profile.selectedBadge} size={12} />
             </div>
             {profile.bio && (
               <p className="mt-1 text-sm leading-[1.5] text-muted-foreground line-clamp-3">{profile.bio}</p>

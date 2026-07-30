@@ -57,7 +57,7 @@ export default async function ProfilePage({
   ])
   const { stats, badges } = statsBundle
 
-  const profile = fetchedProfile ?? { username: cookieUsername ?? "", bio: null, birthDate: null, location: null, website: null, imageUrl: null, bannerUrl: null, createdAt: null }
+  const profile = fetchedProfile ?? { username: cookieUsername ?? "", bio: null, birthDate: null, location: null, website: null, imageUrl: null, bannerUrl: null, createdAt: null, selectedBadge: null }
 
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
@@ -89,6 +89,8 @@ export default async function ProfilePage({
                 initialLocation={profile.location}
                 initialWebsite={profile.website}
                 initialShowAge={privacy.showAge}
+                badges={badges}
+                initialSelectedBadge={profile.selectedBadge}
               />
             </div>
             <div className="flex min-w-0 flex-1 flex-col items-center">

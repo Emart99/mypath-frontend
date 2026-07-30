@@ -18,6 +18,7 @@ interface PublicProfileDTO {
   createdAt: string;
   stats: ProfileStats;
   badges: Badge[];
+  selectedBadge: string | null;
   following: boolean;
   self: boolean;
   blocked: boolean;
@@ -34,6 +35,7 @@ export interface PublicProfile {
   createdAt: string;
   stats: ProfileStats;
   badges: Badge[];
+  selectedBadge: string | null;
   following: boolean;
   self: boolean;
   blocked: boolean;

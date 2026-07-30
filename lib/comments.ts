@@ -10,6 +10,7 @@ export interface Comment {
   deleted: boolean;
   authorUsername: string | null;
   authorAvatar: string | null;
+  authorBadge: string | null;
   parentId: string | null;
   createdDate: string;
   canDelete: boolean;
@@ -21,6 +22,7 @@ interface CommentDTO {
   deleted: boolean;
   authorUsername: string | null;
   authorAvatar: string | null;
+  authorBadge: string | null;
   parentId: number | null;
   createdDate: string;
   canDelete: boolean;

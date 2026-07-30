@@ -227,7 +227,7 @@ export function PublicProjectView({
                 </div>
               ) : emptyState}
               <div className="rounded-2xl bg-popover">
-                <CommentsSection projectId={project.id} isLoggedIn={isLoggedIn} commentCount={project.commentCount} />
+                <CommentsSection projectId={project.id} isLoggedIn={isLoggedIn} username={username} commentCount={project.commentCount} />
               </div>
             </div>
           )}

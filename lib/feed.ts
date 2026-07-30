@@ -7,6 +7,7 @@ export interface ProjectFeedItem {
   description: string | null;
   ownerUsername: string;
   ownerAvatar: string | null;
+  ownerBadge: string | null;
   thumbnail: string | null;
   tags: string[];
   modifiedDate: string;
@@ -27,6 +28,7 @@ export interface ProjectFeedItemDTO {
   description: string | null;
   ownerUsername: string;
   ownerAvatar: string | null;
+  ownerBadge: string | null;
   thumbnail: string | null;
   tags: string | null;
   modifiedDate: string;
@@ -53,6 +55,7 @@ export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
     description: item.description,
     ownerUsername: item.ownerUsername,
     ownerAvatar: item.ownerAvatar,
+    ownerBadge: item.ownerBadge,
     thumbnail: item.thumbnail,
     tags: parseTags(item.tags),
     modifiedDate: item.modifiedDate,

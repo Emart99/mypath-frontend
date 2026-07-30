@@ -30,6 +30,17 @@ const BADGE_COLORS: Record<string, string> = {
   remix_king: "var(--ed-orange)",
 }
 
+export function NameBadge({ code, size = 14 }: { code: string | null; size?: number }) {
+  if (!code) return null
+  const Icon = BADGE_ICONS[code] ?? Star
+  const color = BADGE_COLORS[code] ?? "var(--ed-gray)"
+  return (
+    <span className="inline-flex shrink-0 items-center">
+      <Icon style={{ width: size, height: size, color }} />
+    </span>
+  )
+}
+
 export function BadgeIcon({ badge, size = 16 }: { badge: Badge; size?: number }) {
   const Icon = BADGE_ICONS[badge.code] ?? Star
   const color = BADGE_COLORS[badge.code] ?? "var(--ed-gray)"

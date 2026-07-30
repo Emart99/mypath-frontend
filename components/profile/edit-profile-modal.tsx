@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { CropModal } from "@/components/profile/crop-modal"
-import { updateMyProfile } from "@/lib/profile"
+import { updateMyProfile, type Badge } from "@/lib/profile"
 import { updatePrivacySettings } from "@/lib/privacy"
 import { uploadImage } from "@/lib/upload-image"
 import { getSubscriptionStatus } from "@/lib/subscription"
@@ -36,6 +36,8 @@ export function EditProfileModal({
   initialLocation,
   initialWebsite,
   initialShowAge,
+  badges,
+  initialSelectedBadge,
 }: {
   username: string
   initialImageUrl: string | null
@@ -45,6 +47,8 @@ export function EditProfileModal({
   initialLocation: string | null
   initialWebsite: string | null
   initialShowAge: boolean
+  badges: Badge[]
+  initialSelectedBadge: string | null
 }) {
   const [open, setOpen] = useState(false)
   const [bio, setBio] = useState(initialBio ?? "")
@@ -52,6 +56,8 @@ export function EditProfileModal({
   const [location, setLocation] = useState(initialLocation ?? "")
   const [website, setWebsite] = useState(initialWebsite ?? "")
   const [showAge, setShowAge] = useState(initialShowAge)
+  const [selectedBadge, setSelectedBadge] = useState(initialSelectedBadge ?? "")
+  const earnedBadges = badges.filter((badge) => badge.earned)
 
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(initialImageUrl)
   const [avatarBlob, setAvatarBlob] = useState<Blob | null>(null)
@@ -78,6 +84,7 @@ export function EditProfileModal({
     setLocation(initialLocation ?? "")
     setWebsite(initialWebsite ?? "")
     setShowAge(initialShowAge)
+    setSelectedBadge(initialSelectedBadge ?? "")
     setAvatarBlob(null)
     setAvatarPreviewUrl((prev) => {
       if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev)
@@ -155,6 +162,7 @@ export function EditProfileModal({
           birthDate,
           location: location.trim(),
           website: website.trim(),
+          selectedBadge: selectedBadge || null,
         }
         if (avatarBlob) fields.imageUrl = await uploadImage(avatarBlob, "avatar")
         if (bannerBlob) fields.bannerUrl = await uploadImage(bannerBlob, "banner")
@@ -293,6 +301,24 @@ export function EditProfileModal({
                 onChange={(event) => setWebsite(event.target.value)}
                 placeholder="Optional"
               />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="edit-profile-badge">Showcase badge</Label>
+              <select
+                id="edit-profile-badge"
+                value={selectedBadge}
+                onChange={(event) => setSelectedBadge(event.target.value)}
+                disabled={earnedBadges.length === 0}
+                className="border-input h-14 w-full min-w-0 rounded-xs border bg-transparent px-4 py-1 text-base outline-none focus-visible:border-primary focus-visible:shadow-[inset_0_0_0_1px_var(--primary)] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-[38%] md:text-sm"
+              >
+                <option value="">None</option>
+                {earnedBadges.map((badge) => (
+                  <option key={badge.code} value={badge.code}>
+                    {badge.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {error && (

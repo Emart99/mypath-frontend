@@ -9,6 +9,7 @@ import { BookmarkButton } from "@/components/social/bookmark-button"
 import { PostOptionsMenu } from "@/components/project/post-options-menu"
 import { AuthorAvatar, initial } from "@/components/shared/author-avatar"
 import { ProfileHoverCard } from "@/components/social/profile-hover-card"
+import { NameBadge } from "@/components/profile/badges-panel"
 import { getExploreBundle, type FeedSort, type ProjectFeedItem } from "@/lib/public-project"
 import { EXPLORE_PAGE_SIZE } from "@/lib/config"
 
@@ -77,9 +78,12 @@ export function ExploreFeed({
                 <ProfileHoverCard username={project.ownerUsername} avatar={project.ownerAvatar} isLoggedIn={loggedIn} viewerUsername={username}>
                   <span className="relative z-10 flex items-center gap-2.5">
                     <AuthorAvatar username={project.ownerUsername} avatar={project.ownerAvatar} />
-                    <Link href={`/u/${encodeURIComponent(project.ownerUsername)}`} className="font-medium text-foreground hover:underline">
-                      {project.ownerUsername}
-                    </Link>
+                    <span className="flex items-center gap-1">
+                      <Link href={`/u/${encodeURIComponent(project.ownerUsername)}`} className="font-medium text-foreground hover:underline">
+                        {project.ownerUsername}
+                      </Link>
+                      <NameBadge code={project.ownerBadge} />
+                    </span>
                   </span>
                 </ProfileHoverCard>
                 <span>
