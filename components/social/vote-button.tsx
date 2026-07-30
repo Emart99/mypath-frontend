@@ -62,7 +62,7 @@ export function VoteButton({
           aria-pressed={voted}
           className={`relative z-10 flex h-8 shrink-0 px-2 cursor-pointer items-center rounded-full text-sm font-medium transition-colors ${
             voted
-              ? "bg-secondary text-secondary-foreground"
+              ? "bg-secondary text-[var(--ed-blue)]"
               : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
           }`}
         >

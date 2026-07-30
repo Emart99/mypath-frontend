@@ -256,6 +256,7 @@ export function EditProfileModal({
                 rows={3}
                 maxLength={255}
                 placeholder="Tell people a bit about yourself"
+                className="resize-none"
               />
             </div>
 

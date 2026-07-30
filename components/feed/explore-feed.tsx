@@ -8,6 +8,7 @@ import { VoteButton } from "@/components/social/vote-button"
 import { BookmarkButton } from "@/components/social/bookmark-button"
 import { PostOptionsMenu } from "@/components/project/post-options-menu"
 import { AuthorAvatar, initial } from "@/components/shared/author-avatar"
+import { ProfileHoverCard } from "@/components/social/profile-hover-card"
 import { getExploreBundle, type FeedSort, type ProjectFeedItem } from "@/lib/public-project"
 import { EXPLORE_PAGE_SIZE } from "@/lib/config"
 
@@ -73,10 +74,14 @@ export function ExploreFeed({
 
             <div className="min-w-0 w-full">
               <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground mb-3">
-                <AuthorAvatar username={project.ownerUsername} avatar={project.ownerAvatar} />
-                <Link href={`/u/${encodeURIComponent(project.ownerUsername)}`} className="relative z-10 font-medium text-foreground">
-                  {project.ownerUsername}
-                </Link>
+                <ProfileHoverCard username={project.ownerUsername} avatar={project.ownerAvatar} isLoggedIn={loggedIn} viewerUsername={username}>
+                  <span className="relative z-10 flex items-center gap-2.5">
+                    <AuthorAvatar username={project.ownerUsername} avatar={project.ownerAvatar} />
+                    <Link href={`/u/${encodeURIComponent(project.ownerUsername)}`} className="font-medium text-foreground hover:underline">
+                      {project.ownerUsername}
+                    </Link>
+                  </span>
+                </ProfileHoverCard>
                 <span>
                   Published {formatCardDate(project.publishedDate)}
                   {project.lastPublishedDate && ` · Updated ${formatCardDate(project.lastPublishedDate)}`}

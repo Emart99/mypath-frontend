@@ -53,7 +53,7 @@ export function BookmarkButton({
           disabled={isPending}
           aria-pressed={bookmarked}
           className={`relative z-10 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-muted ${
-            bookmarked ? "text-primary" : "text-muted-foreground"
+            bookmarked ? "text-[var(--ed-orange)]" : "text-muted-foreground"
           }`}
         >
           <span key={burstId} className="relative inline-flex">
