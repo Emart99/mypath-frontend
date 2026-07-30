@@ -10,6 +10,9 @@ import type { ProfileStats, Badge } from "./profile";
 interface PublicProfileDTO {
   username: string;
   bio: string | null;
+  age: number | null;
+  location: string | null;
+  website: string | null;
   imageUrl: string | null;
   bannerUrl: string | null;
   createdAt: string;
@@ -23,6 +26,9 @@ interface PublicProfileDTO {
 export interface PublicProfile {
   username: string;
   bio: string | null;
+  age: number | null;
+  location: string | null;
+  website: string | null;
   imageUrl: string | null;
   bannerUrl: string | null;
   createdAt: string;

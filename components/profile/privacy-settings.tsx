@@ -26,6 +26,7 @@ function initial(username: string) {
 export function PrivacySettings({
   initialVisibility,
   initialShowUpvotes,
+  initialShowAge,
   initialAllowForks,
   initialCommentsPolicy,
   initialBlockedUsers,
@@ -34,6 +35,7 @@ export function PrivacySettings({
 }: {
   initialVisibility: ProfileVisibility
   initialShowUpvotes: boolean
+  initialShowAge: boolean
   initialAllowForks: boolean
   initialCommentsPolicy: CommentsPolicy
   initialBlockedUsers: BlockedUser[]
@@ -42,6 +44,7 @@ export function PrivacySettings({
 }) {
   const [visibility, setVisibility] = useState<ProfileVisibility>(initialVisibility)
   const [showUpvotes, setShowUpvotes] = useState(initialShowUpvotes)
+  const [showAge, setShowAge] = useState(initialShowAge)
   const [allowForks, setAllowForks] = useState(initialAllowForks)
   const [comments, setComments] = useState<CommentsPolicy>(initialCommentsPolicy)
   const [saveError, setSaveError] = useState(false)
@@ -68,6 +71,12 @@ export function PrivacySettings({
     const prev = showUpvotes
     setShowUpvotes(value)
     save({ showUpvotes: value }, () => setShowUpvotes(prev))
+  }
+
+  function handleShowAgeChange(value: boolean) {
+    const prev = showAge
+    setShowAge(value)
+    save({ showAge: value }, () => setShowAge(prev))
   }
 
   function handleAllowForksChange(value: boolean) {
@@ -132,6 +141,13 @@ export function PrivacySettings({
               <div className="mt-0.5 text-[13px] text-muted-foreground">Let others see which projects you&apos;ve upvoted.</div>
             </div>
             <Switch checked={showUpvotes} onCheckedChange={handleShowUpvotesChange} />
+          </div>
+          <div className="flex items-center gap-4 border-t border-border py-3.5">
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium">Show age on my profile</div>
+              <div className="mt-0.5 text-[13px] text-muted-foreground">Let others see your age on your public profile.</div>
+            </div>
+            <Switch checked={showAge} onCheckedChange={handleShowAgeChange} />
           </div>
           <div className="flex items-center gap-4 border-t border-border py-3.5">
             <div className="min-w-0 flex-1">

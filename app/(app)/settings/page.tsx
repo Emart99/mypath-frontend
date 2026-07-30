@@ -29,7 +29,7 @@ export default async function SettingsPage({
   const tab: Tab = TAB_KEYS.includes(tabParam as Tab) ? (tabParam as Tab) : "account"
 
   const [fetchedProfile, cookieUsername] = await Promise.all([getMyProfile(), getUsername()])
-  const profile = fetchedProfile ?? { username: cookieUsername ?? "", email: "", bio: null, imageUrl: null, createdAt: null }
+  const profile = fetchedProfile ?? { username: cookieUsername ?? "", email: "", bio: null, birthDate: null, location: null, website: null, imageUrl: null, createdAt: null }
 
   const [privacy, blockedUsers] = tab === "privacy"
     ? await Promise.all([getPrivacySettings(), getBlockedUsersPage(0, PAGE_SIZE)])
@@ -92,6 +92,7 @@ export default async function SettingsPage({
               <PrivacySettings
                 initialVisibility={privacy.profileVisibility}
                 initialShowUpvotes={privacy.showUpvotes}
+                initialShowAge={privacy.showAge}
                 initialAllowForks={privacy.allowForks}
                 initialCommentsPolicy={privacy.commentsPolicy}
                 initialBlockedUsers={blockedUsers.items}

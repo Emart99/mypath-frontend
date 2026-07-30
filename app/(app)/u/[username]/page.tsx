@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
-import { ArrowUpRight, Calendar, Users } from "lucide-react"
+import { ArrowUpRight, Calendar, MapPin, Link as LinkIcon, Users } from "lucide-react"
 import { BadgesPanel } from "@/components/profile/badges-panel"
 import { PublishedPanel } from "@/components/profile/published-panel"
 import { FollowButton } from "@/components/social/follow-button"
@@ -70,6 +70,26 @@ export default async function PublicProfilePage({
                 <BlockButton username={profile.username} initialBlocked={profile.blocked} isLoggedIn={loggedIn} />
               </div>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-[13px] mb-3.5 text-muted-foreground">
+                {profile.location && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-[14px] w-[14px]" />
+                    {profile.location}
+                  </span>
+                )}
+                {profile.website && (
+                  <a
+                    href={/^https?:\/\//.test(profile.website) ? profile.website : `https://${profile.website}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 hover:text-foreground"
+                  >
+                    <LinkIcon className="h-[14px] w-[14px]" />
+                    {profile.website}
+                  </a>
+                )}
+                {profile.age != null && (
+                  <span className="inline-flex items-center gap-1.5">{profile.age} years old</span>
+                )}
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar className="h-[14px] w-[14px]" />
                   Joined {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}

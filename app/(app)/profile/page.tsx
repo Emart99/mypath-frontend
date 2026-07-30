@@ -1,10 +1,7 @@
 import Link from "next/link"
-import { ArrowUpRight, Calendar, Users } from "lucide-react"
+import { ArrowUpRight, Cake, Calendar, MapPin, Link as LinkIcon, Users } from "lucide-react"
 import { BadgesPanel } from "@/components/profile/badges-panel"
-import { PlanUsageChip } from "@/components/profile/plan-usage-chip"
-import { AvatarUpload } from "@/components/profile/avatar-upload"
-import { BannerUpload } from "@/components/profile/banner-upload"
-import { BioEditor } from "@/components/profile/bio-editor"
+import { EditProfileModal } from "@/components/profile/edit-profile-modal"
 import { PublishedPanel } from "@/components/profile/published-panel"
 import { BookmarksPanel } from "@/components/profile/bookmarks-panel"
 import { UpvotedPanel } from "@/components/profile/upvoted-panel"
@@ -20,7 +17,17 @@ import {
   getMyForksPage,
   getMyActivityPage,
 } from "@/lib/profile"
+import { getPrivacySettings } from "@/lib/privacy"
 import { PAGE_SIZE } from "@/lib/config"
+
+function formatBirthDate(birthDate: string) {
+  const [year, month, day] = birthDate.split("-").map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+}
+
+function initial(username: string) {
+  return username.charAt(0).toUpperCase()
+}
 
 type Tab = "activity" | "published" | "bookmarks" | "forks" | "upvoted"
 
@@ -41,31 +48,82 @@ export default async function ProfilePage({
   const { tab: tabParam } = await searchParams
   const tab: Tab = TAB_KEYS.includes(tabParam as Tab) ? (tabParam as Tab) : "activity"
 
-  const [fetchedProfile, statsBundle, loggedIn, cookieUsername] = await Promise.all([
+  const [fetchedProfile, statsBundle, loggedIn, cookieUsername, privacy] = await Promise.all([
     getMyProfile(),
     getMyProfileStats(),
     isLoggedIn(),
     getUsername(),
+    getPrivacySettings(),
   ])
   const { stats, badges } = statsBundle
 
-  const profile = fetchedProfile ?? { username: cookieUsername ?? "", bio: null, imageUrl: null, bannerUrl: null, createdAt: null }
+  const profile = fetchedProfile ?? { username: cookieUsername ?? "", bio: null, birthDate: null, location: null, website: null, imageUrl: null, bannerUrl: null, createdAt: null }
 
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
         <div className="pt-9 px-18 pb-0">
           <div className="relative mb-3">
-            <BannerUpload bannerUrl={profile.bannerUrl} />
-            <div className="absolute left-1/2 -bottom-12 z-10 -translate-x-1/2">
-              <AvatarUpload username={profile.username} imageUrl={profile.imageUrl} />
+            <div className="aspect-[6/1] w-full overflow-hidden rounded-[28px] bg-muted">
+              {profile.bannerUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.bannerUrl} alt="" className="h-full w-full object-cover" />
+              )}
+            </div>
+            <div className="absolute left-1/2 -bottom-12 z-10 flex h-24 w-24 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full bg-primary text-[34px] font-medium font-display text-primary-foreground ring-4 ring-background">
+              {profile.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.imageUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                initial(profile.username)
+              )}
             </div>
           </div>
-          <div className="rounded-[28px] bg-card p-8 pt-16">
+          <div className="relative rounded-[28px] bg-card p-8 pt-16">
+            <div className="absolute right-8 top-8">
+              <EditProfileModal
+                username={profile.username}
+                initialImageUrl={profile.imageUrl}
+                initialBannerUrl={profile.bannerUrl}
+                initialBio={profile.bio}
+                initialBirthDate={profile.birthDate}
+                initialLocation={profile.location}
+                initialWebsite={profile.website}
+                initialShowAge={privacy.showAge}
+              />
+            </div>
             <div className="flex min-w-0 flex-1 flex-col items-center">
               <h1 className="font-display text-[36px] font-normal leading-[1.1] mb-2.5">
                 {profile.username}
               </h1>
-              <div className="flex items-center justify-center gap-4 text-[13px] mb-3.5 text-muted-foreground">
+
+              {profile.bio && (
+                <p className="mb-2 max-w-2xl text-center text-sm text-foreground">{profile.bio}</p>
+              )}
+
+              <div className="flex flex-wrap items-center justify-center gap-4 text-[13px] mb-3.5 text-muted-foreground">
+                {profile.birthDate && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Cake className="h-[14px] w-[14px]" />
+                    Born {formatBirthDate(profile.birthDate)}
+                  </span>
+                )}
+                {profile.location && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-[14px] w-[14px]" />
+                    {profile.location}
+                  </span>
+                )}
+                {profile.website && (
+                  <a
+                    href={/^https?:\/\//.test(profile.website) ? profile.website : `https://${profile.website}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 hover:text-foreground"
+                  >
+                    <LinkIcon className="h-[14px] w-[14px]" />
+                    {profile.website}
+                  </a>
+                )}
                 {profile.createdAt && (
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-[14px] w-[14px]" />
@@ -73,6 +131,9 @@ export default async function ProfilePage({
                     {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                   </span>
                 )}
+              </div>
+
+              <div className="flex items-center justify-center gap-4 text-[13px] mb-3.5 text-muted-foreground">
                 <Link href={`/u/${encodeURIComponent(profile.username)}/followers?tab=followers`} className="inline-flex items-center gap-1.5 hover:text-foreground">
                   <Users className="h-[14px] w-[14px]" />
                   {(stats?.followersCount ?? 0).toLocaleString('en-US')} followers
@@ -81,11 +142,8 @@ export default async function ProfilePage({
                   <Users className="h-[14px] w-[14px]" />
                   {(stats?.followingCount ?? 0).toLocaleString('en-US')} following
                 </Link>
-                <PlanUsageChip />
               </div>
-              <div className="mb-3.5">
-                <BioEditor initialBio={profile.bio} />
-              </div>
+
               <BadgesPanel badges={badges} />
             </div>
           </div>

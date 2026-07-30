@@ -9,6 +9,7 @@ export type CommentsPolicy = "everyone" | "following" | "noone";
 export interface PrivacySettings {
   profileVisibility: ProfileVisibility;
   showUpvotes: boolean;
+  showAge: boolean;
   allowForks: boolean;
   commentsPolicy: CommentsPolicy;
 }
