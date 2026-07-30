@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Copy, Globe, Lock, Share2, Users } from "lucide-react"
+import { Check, Copy, Globe, Loader2, Lock, Share2, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -77,6 +77,7 @@ export function ShareDialog({
   const [tagsInput, setTagsInput] = useState(tags);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
+  const [justPublished, setJustPublished] = useState(false);
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/p/${projectId}`
     : "";
@@ -89,6 +90,7 @@ export function ShareDialog({
       setDescriptionInput(description);
       setTagsInput(tags);
       setValidationError(null);
+      setJustPublished(false);
     }
     setOpen(next);
   };
@@ -121,12 +123,16 @@ export function ShareDialog({
       if (descriptionInput.trim() !== description) {
         await submitDescription();
       }
+      const publishing = selectedVisibility === "published";
       onVisibilityChange(selectedVisibility);
       const { error } = await setProjectVisibility(projectId, selectedVisibility);
       if (error) {
         setSelectedVisibility(visibility);
         onVisibilityChange(visibility);
         setValidationError(error);
+      } else if (publishing) {
+        setJustPublished(true);
+        setTimeout(() => setJustPublished(false), 2000);
       }
     } catch {
       setSelectedVisibility(visibility);
@@ -152,6 +158,9 @@ export function ShareDialog({
       const { error } = await publishProject(projectId);
       if (error) {
         setValidationError(error);
+      } else {
+        setJustPublished(true);
+        setTimeout(() => setJustPublished(false), 2000);
       }
     } catch {
       setValidationError("Something went wrong — try again.");
@@ -261,12 +270,31 @@ export function ShareDialog({
             )}
             {hasPendingChange && (
               <Button onClick={applyVisibility} disabled={isApplying} className="w-full">
-                {isApplying ? "Applying..." : `Switch to ${selected.label}`}
+                {isApplying ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {selectedVisibility === "published" ? "Publishing..." : "Applying..."}
+                  </>
+                ) : (
+                  `Switch to ${selected.label}`
+                )}
               </Button>
             )}
             {!hasPendingChange && visibility === "published" && (
-              <Button onClick={handlePublish} disabled={isApplying} className="w-full">
-                {isApplying ? "Publishing..." : "Publish update"}
+              <Button onClick={handlePublish} disabled={isApplying || justPublished} className="w-full">
+                {isApplying ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Publishing...
+                  </>
+                ) : justPublished ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Published
+                  </>
+                ) : (
+                  "Publish update"
+                )}
               </Button>
             )}
           </DialogFooter>

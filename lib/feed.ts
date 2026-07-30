@@ -10,6 +10,8 @@ export interface ProjectFeedItem {
   thumbnail: string | null;
   tags: string[];
   modifiedDate: string;
+  publishedDate: string;
+  lastPublishedDate: string | null;
   voteCount: number;
   votedByRequester: boolean;
   bookmarkedByRequester: boolean;
@@ -28,6 +30,8 @@ export interface ProjectFeedItemDTO {
   thumbnail: string | null;
   tags: string | null;
   modifiedDate: string;
+  publishedDate: string;
+  lastPublishedDate: string | null;
   voteCount: number;
   votedByRequester: boolean;
   bookmarkedByRequester: boolean;
@@ -52,6 +56,8 @@ export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
     thumbnail: item.thumbnail,
     tags: parseTags(item.tags),
     modifiedDate: item.modifiedDate,
+    publishedDate: item.publishedDate,
+    lastPublishedDate: item.lastPublishedDate,
     voteCount: item.voteCount,
     votedByRequester: item.votedByRequester,
     bookmarkedByRequester: item.bookmarkedByRequester,

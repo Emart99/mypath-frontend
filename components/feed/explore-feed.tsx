@@ -11,6 +11,10 @@ import { AuthorAvatar, initial } from "@/components/shared/author-avatar"
 import { getExploreBundle, type FeedSort, type ProjectFeedItem } from "@/lib/public-project"
 import { EXPLORE_PAGE_SIZE } from "@/lib/config"
 
+function formatCardDate(timestamp: string) {
+  return new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
 export function ExploreFeed({
   initialItems,
   initialHasMore,
@@ -71,6 +75,10 @@ export function ExploreFeed({
                 <Link href={`/u/${encodeURIComponent(project.ownerUsername)}`} className="relative z-10 font-medium text-foreground">
                   {project.ownerUsername}
                 </Link>
+                <span>
+                  Published {formatCardDate(project.publishedDate)}
+                  {project.lastPublishedDate && ` · Updated ${formatCardDate(project.lastPublishedDate)}`}
+                </span>
               </div>
               <div className="mb-2 font-display text-[22px] font-medium leading-[1.25]">
                 {project.title}
