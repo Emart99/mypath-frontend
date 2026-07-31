@@ -6,9 +6,15 @@ import { PostOptionsMenu } from "@/components/project/post-options-menu"
 import { AuthorAvatar, initial } from "@/components/shared/author-avatar"
 import { ExploreFeed } from "@/components/feed/explore-feed"
 import { PatreonSupportCard } from "@/components/feed/patreon-support-card"
+import { ProfileHoverCard } from "@/components/social/profile-hover-card"
+import { NameBadge } from "@/components/profile/badges-panel"
 import { getExploreBundle, type FeedSort } from "@/lib/public-project"
 import { isLoggedIn, getUsername } from "@/lib/auth"
 import { getSubscriptionStatus } from "@/lib/subscription"
+
+function formatCardDate(timestamp: string) {
+  return new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
 
 export default async function ExplorePage({
   searchParams,
@@ -93,10 +99,21 @@ export default async function ExplorePage({
               Featured today
             </span>
             <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground mb-3.5">
-              <AuthorAvatar username={featured.ownerUsername} avatar={featured.ownerAvatar} />
-              <Link href={`/u/${encodeURIComponent(featured.ownerUsername)}`} className="relative z-10 font-medium text-foreground">
-                {featured.ownerUsername}
-              </Link>
+              <ProfileHoverCard username={featured.ownerUsername} avatar={featured.ownerAvatar} isLoggedIn={loggedIn} viewerUsername={username}>
+                <span className="relative z-10 flex items-center gap-2.5">
+                  <AuthorAvatar username={featured.ownerUsername} avatar={featured.ownerAvatar} />
+                  <span className="flex items-center gap-1">
+                    <Link href={`/u/${encodeURIComponent(featured.ownerUsername)}`} className="font-medium text-foreground hover:underline">
+                      {featured.ownerUsername}
+                    </Link>
+                    <NameBadge code={featured.ownerBadge} />
+                  </span>
+                </span>
+              </ProfileHoverCard>
+              <span>
+                Published {formatCardDate(featured.publishedDate)}
+                {featured.lastPublishedDate && ` · Updated ${formatCardDate(featured.lastPublishedDate)}`}
+              </span>
             </div>
             <h2 className="font-display text-[34px] font-normal leading-[1.2] mb-2.5">
               {featured.title}
