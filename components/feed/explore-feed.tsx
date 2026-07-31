@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { VoteButton } from "@/components/social/vote-button"
 import { BookmarkButton } from "@/components/social/bookmark-button"
 import { PostOptionsMenu } from "@/components/project/post-options-menu"
-import { AuthorAvatar, initial } from "@/components/shared/author-avatar"
+import { AuthorAvatar } from "@/components/shared/author-avatar"
+import { ProjectThumbnail } from "@/components/project/project-thumbnail"
 import { ProfileHoverCard } from "@/components/social/profile-hover-card"
 import { NameBadge } from "@/components/profile/badges-panel"
 import { getExploreBundle, type FeedSort, type ProjectFeedItem } from "@/lib/public-project"
@@ -145,20 +146,12 @@ export function ExploreFeed({
               </div>
             </div>
             <div className="flex items-center gap-4 sm:shrink-0 sm:self-center">
-              <div className="grid place-items-center overflow-hidden rounded-lg w-full h-[180px] sm:w-[156px] sm:h-[128px] bg-surface-container-high">
-                {project.thumbnail ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={project.thumbnail}
-                    alt=""
-                    className="h-full w-full object-cover object-top"
-                  />
-                ) : (
-                  <span className="font-display text-2xl font-medium text-primary">
-                    {initial(project.title)}
-                  </span>
-                )}
-              </div>
+              <ProjectThumbnail
+                thumbnailImageUrl={project.thumbnailImageUrl}
+                thumbnailGraph={project.thumbnailGraph}
+                title={project.title}
+                className="rounded-lg w-full h-[180px] sm:w-[156px] sm:h-[128px]"
+              />
             </div>
           </div>
         ))}

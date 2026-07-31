@@ -3,37 +3,30 @@ import type { EditorState } from 'lexical';
 import { saveItemContent } from '@/lib/item-content-client';
 import { isAuthError } from '../../editor-utils';
 
-const THUMBNAIL_RECAPTURE_INTERVAL_MS = 10000;
-
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface UseAutoSaveParams {
   selectedItemId: string | undefined;
-  firstItemIdRef: React.RefObject<string | undefined>;
   onOptimisticUpdate: (itemId: string, content: string) => void;
-  onThumbnailDue: (itemId: string, content: string) => void;
   redirectToLogin: () => void;
 }
 
 
 export function useAutoSave({
   selectedItemId,
-  firstItemIdRef,
   onOptimisticUpdate,
-  onThumbnailDue,
   redirectToLogin,
 }: UseAutoSaveParams) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const pendingContentRef = useRef<{ itemId: string; content: string } | null>(null);
   const saveContentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastThumbnailCaptureRef = useRef(0);
   const loadedItemContentRef = useRef<string | null>(null);
 
   const handleContentApplied = useCallback((itemId: string) => {
     loadedItemContentRef.current = itemId;
   }, []);
 
-  const flushPendingContent = useCallback((captureThumbnail: boolean) => {
+  const flushPendingContent = useCallback(() => {
     if (saveContentTimeoutRef.current) {
       clearTimeout(saveContentTimeoutRef.current);
       saveContentTimeoutRef.current = null;
@@ -45,10 +38,6 @@ export function useAutoSave({
     saveItemContent(pending.itemId, pending.content)
       .then(() => {
         setSaveStatus('saved');
-        if (captureThumbnail && pending.itemId === firstItemIdRef.current) {
-          lastThumbnailCaptureRef.current = Date.now();
-          onThumbnailDue(pending.itemId, pending.content);
-        }
       })
       .catch((err) => {
         console.error(err);
@@ -58,16 +47,16 @@ export function useAutoSave({
         }
         if (isAuthError(err)) redirectToLogin();
       });
-  }, [firstItemIdRef, onThumbnailDue, redirectToLogin]);
+  }, [redirectToLogin]);
 
   useEffect(() => {
-    return () => flushPendingContent(true);
+    return () => flushPendingContent();
   }, [selectedItemId, flushPendingContent]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!pendingContentRef.current) return;
-      flushPendingContent(false);
+      flushPendingContent();
       event.preventDefault();
       event.returnValue = '';
     };
@@ -85,8 +74,7 @@ export function useAutoSave({
       pendingContentRef.current = { itemId: selectedItemId, content: json };
       setSaveStatus('saving');
       if (saveContentTimeoutRef.current) clearTimeout(saveContentTimeoutRef.current);
-      const dueForThumbnailRecapture = Date.now() - lastThumbnailCaptureRef.current > THUMBNAIL_RECAPTURE_INTERVAL_MS;
-      saveContentTimeoutRef.current = setTimeout(() => flushPendingContent(dueForThumbnailRecapture), 600);
+      saveContentTimeoutRef.current = setTimeout(() => flushPendingContent(), 600);
     });
   }, [selectedItemId, flushPendingContent, onOptimisticUpdate]);
 

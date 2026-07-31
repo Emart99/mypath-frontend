@@ -21,12 +21,11 @@ import {
   tie,
   untie,
   linkItems as linkItemsRequest,
-  setProjectThumbnail,
   type ProjectVisibility,
 } from '@/lib/projects-store';
 import { getItemContent } from '@/lib/item-content-client';
 import { getMyProfile } from '@/lib/profile';
-import { uploadImage } from '@/lib/upload-image';
+import type { GraphPreviewData } from '@/lib/feed';
 
 export interface IncomingStep {
   trailId: string;
@@ -35,12 +34,6 @@ export interface IncomingStep {
   annotation: string | null;
   associationType: AssociationType | null;
   connectionTitle: string | null;
-}
-
-export interface ThumbnailCapturePayload {
-  title: string;
-  titleAlign: TitleAlign;
-  content: string;
 }
 
 export function useProjectEditorState(projectId: string) {
@@ -58,17 +51,14 @@ export function useProjectEditorState(projectId: string) {
   const [visibility, setVisibility] = useState<ProjectVisibility>('private');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string | null>(null);
+  const [thumbnailGraph, setThumbnailGraph] = useState<GraphPreviewData | null>(null);
 
   const [trails, setTrails] = useState<Trail[]>([]);
   const [items, setItems] = useState<Record<string, Item>>({});
-  const itemsRef = useRef<Record<string, Item>>({});
-  useEffect(() => {
-    itemsRef.current = items;
-  }, [items]);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const [activeTrailId, setActiveTrailId] = useState<string | undefined>(undefined);
   const [view, setView] = useState<'write' | 'trail' | 'graph'>('write');
-  const [thumbnailCapture, setThumbnailCapture] = useState<ThumbnailCapturePayload | null>(null);
   const [profile, setProfile] = useState<{ username: string; imageUrl: string | null } | null>(null);
 
   useEffect(() => {
@@ -93,6 +83,8 @@ export function useProjectEditorState(projectId: string) {
       setVisibility(project.visibility);
       setDescription(project.description);
       setTags(project.tags);
+      setThumbnailImageUrl(project.thumbnailImageUrl);
+      setThumbnailGraph(project.thumbnailGraph);
       setTrails(project.trails);
       setItems(project.items);
       setLoaded(true);
@@ -387,48 +379,9 @@ export function useProjectEditorState(projectId: string) {
     });
   };
 
-  const firstItemIdRef = useRef<string | undefined>(undefined);
-  useEffect(() => {
-    firstItemIdRef.current = trails.flatMap(trail => trail.itemIds)[0];
-  }, [trails]);
-
   const handleVisibilityChange = async (next: ProjectVisibility) => {
     setVisibility(next);
-    if (next !== 'published') return;
-
-    const firstItemId = firstItemIdRef.current;
-    if (!firstItemId) return;
-
-    try {
-      const content = await getItemContent(firstItemId);
-      if (content) setThumbnailCapture({
-        title: itemsRef.current[firstItemId]?.title ?? '',
-        titleAlign: itemsRef.current[firstItemId]?.titleAlign ?? 'center',
-        content,
-      });
-    } catch (err) {
-      console.error(err);
-    }
   };
-
-  const handleThumbnailCaptured = useCallback(async (blob: Blob | null) => {
-    setThumbnailCapture(null);
-    if (!blob) return;
-    try {
-      const publicUrl = await uploadImage(blob, 'thumbnail', projectId);
-      await setProjectThumbnail(projectId, publicUrl);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [projectId]);
-
-  const handleAutoSaveThumbnailDue = useCallback((itemId: string, content: string) => {
-    setThumbnailCapture({
-      title: itemsRef.current[itemId]?.title ?? '',
-      titleAlign: itemsRef.current[itemId]?.titleAlign ?? 'center',
-      content,
-    });
-  }, []);
 
   const updateItemContentLocally = useCallback((itemId: string, content: string) => {
     setItems(prevItems => {
@@ -443,6 +396,11 @@ export function useProjectEditorState(projectId: string) {
     renameProject(projectId, title);
   };
 
+  const handleThumbnailChange = useCallback((imageUrl: string | null, graph: GraphPreviewData | null) => {
+    setThumbnailImageUrl(imageUrl);
+    setThumbnailGraph(graph);
+  }, []);
+
   return {
     loaded,
     projectTitle,
@@ -451,6 +409,9 @@ export function useProjectEditorState(projectId: string) {
     setDescription,
     tags,
     setTags,
+    thumbnailImageUrl,
+    thumbnailGraph,
+    handleThumbnailChange,
     profile,
     trails,
     items,
@@ -462,8 +423,6 @@ export function useProjectEditorState(projectId: string) {
     setView,
     associationById,
     incomingStep,
-    thumbnailCapture,
-    firstItemIdRef,
     redirectToLogin,
     handleUpdateAnnotation,
     commitItemTitle,
@@ -483,8 +442,6 @@ export function useProjectEditorState(projectId: string) {
     handleTie,
     handleUntie,
     handleVisibilityChange,
-    handleThumbnailCaptured,
-    handleAutoSaveThumbnailDue,
     updateItemContentLocally,
     handleRenameProject,
   };

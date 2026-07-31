@@ -1,6 +1,17 @@
 // Shared project-feed types and DTO mapping. Plain module (no "use server") so
 // the sync mapper can be exported and reused across server-action files.
 
+import type { Association } from "@/app/editor/types";
+
+// Lightweight graph shape for a GRAPH-type thumbnail — item titles + associations
+// only, no Lexical content, so cards never ship item bodies over the wire.
+export interface GraphPreviewData {
+  trailId: string;
+  trailTitle: string;
+  itemIds: string[];
+  items: { id: string; title: string; associations: Association[] }[];
+}
+
 export interface ProjectFeedItem {
   id: string;
   title: string;
@@ -8,7 +19,8 @@ export interface ProjectFeedItem {
   ownerUsername: string;
   ownerAvatar: string | null;
   ownerBadge: string | null;
-  thumbnail: string | null;
+  thumbnailImageUrl: string | null;
+  thumbnailGraph: GraphPreviewData | null;
   tags: string[];
   modifiedDate: string;
   publishedDate: string;
@@ -29,7 +41,8 @@ export interface ProjectFeedItemDTO {
   ownerUsername: string;
   ownerAvatar: string | null;
   ownerBadge: string | null;
-  thumbnail: string | null;
+  thumbnailImageUrl: string | null;
+  thumbnailGraph: GraphPreviewData | null;
   tags: string[] | null;
   modifiedDate: string;
   publishedDate: string;
@@ -51,7 +64,8 @@ export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
     ownerUsername: item.ownerUsername,
     ownerAvatar: item.ownerAvatar,
     ownerBadge: item.ownerBadge,
-    thumbnail: item.thumbnail,
+    thumbnailImageUrl: item.thumbnailImageUrl,
+    thumbnailGraph: item.thumbnailGraph,
     tags: item.tags ?? [],
     modifiedDate: item.modifiedDate,
     publishedDate: item.publishedDate,

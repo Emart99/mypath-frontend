@@ -6,8 +6,10 @@ import { authenticatedFetch } from "./api";
 import { API_BASE_URL } from "./config";
 import { parseResponse, expectOk } from "./http";
 import { anonIdHeader } from "./public-project";
+import type { GraphPreviewData } from "./feed";
 
 export type ProjectVisibility = "private" | "unlisted" | "published";
+export type ProjectThumbnailType = "NONE" | "GRAPH" | "PROJECT_IMAGE" | "DEDICATED";
 
 export interface Project {
   id: string;
@@ -16,7 +18,8 @@ export interface Project {
   trails: Trail[];
   items: Record<string, Item>;
   visibility: ProjectVisibility;
-  thumbnail: string | null;
+  thumbnailImageUrl: string | null;
+  thumbnailGraph: GraphPreviewData | null;
   tags: string;
   createdAt: string;
   updatedAt: string;
@@ -29,7 +32,8 @@ interface ProjectDTO {
   title: string;
   description: string | null;
   visibility: ProjectVisibility | null;
-  thumbnail: string | null;
+  thumbnailImageUrl: string | null;
+  thumbnailGraph: GraphPreviewData | null;
   tags: string[] | null;
   creationDate: string;
   modifiedDate: string;
@@ -83,7 +87,8 @@ function toProjectSummary(dto: ProjectDTO): Project {
     trails: [],
     items: {},
     visibility: dto.visibility ?? "private",
-    thumbnail: dto.thumbnail,
+    thumbnailImageUrl: dto.thumbnailImageUrl,
+    thumbnailGraph: dto.thumbnailGraph,
     tags: dto.tags?.join(", ") ?? "",
     createdAt: dto.creationDate,
     updatedAt: dto.modifiedDate,
@@ -178,7 +183,8 @@ export async function getProject(id: string): Promise<Project | null> {
     trails,
     items,
     visibility: projectDto.visibility ?? "private",
-    thumbnail: projectDto.thumbnail,
+    thumbnailImageUrl: projectDto.thumbnailImageUrl,
+    thumbnailGraph: projectDto.thumbnailGraph,
     tags: projectDto.tags?.join(", ") ?? "",
     createdAt: projectDto.creationDate,
     updatedAt: projectDto.modifiedDate,
@@ -239,13 +245,35 @@ export async function publishProject(id: string): Promise<{ error: string | null
   return { error: null };
 }
 
-export async function setProjectThumbnail(id: string, thumbnail: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
+export type ThumbnailChoice =
+  | { type: "NONE" }
+  | { type: "GRAPH"; trailId: string }
+  | { type: "PROJECT_IMAGE" | "DEDICATED"; imageUrl: string };
+
+export async function setProjectThumbnail(id: string, choice: ThumbnailChoice): Promise<void> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/thumbnail`, {
     method: "PUT",
     headers: jsonHeaders,
-    body: JSON.stringify({ thumbnail }),
+    body: JSON.stringify(choice),
   });
   await expectOk(response);
+}
+
+export interface ProjectImage {
+  url: string;
+  itemId: string;
+  itemTitle: string;
+}
+
+interface ProjectImageDTO {
+  url: string;
+  itemId: string;
+  itemTitle: string;
+}
+
+export async function getProjectImages(id: string): Promise<ProjectImage[]> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/images`);
+  return parseResponse<ProjectImageDTO[]>(response);
 }
 
 export async function setProjectDescription(id: string, description: string): Promise<void> {

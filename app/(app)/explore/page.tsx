@@ -4,6 +4,7 @@ import { VoteButton } from "@/components/social/vote-button"
 import { BookmarkButton } from "@/components/social/bookmark-button"
 import { PostOptionsMenu } from "@/components/project/post-options-menu"
 import { AuthorAvatar, initial } from "@/components/shared/author-avatar"
+import { ProjectThumbnail } from "@/components/project/project-thumbnail"
 import { ExploreFeed } from "@/components/feed/explore-feed"
 import { PatreonSupportCard } from "@/components/feed/patreon-support-card"
 import { ProfileHoverCard } from "@/components/social/profile-hover-card"
@@ -170,20 +171,17 @@ export default async function ExplorePage({
               </div>
             </div>
           </div>
-          <div className="grid place-items-center overflow-hidden rounded-[20px] h-[250px] bg-accent">
-            {featured.thumbnail ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={featured.thumbnail}
-                alt=""
-                className="h-full w-full object-cover object-top"
-              />
-            ) : (
+          <ProjectThumbnail
+            thumbnailImageUrl={featured.thumbnailImageUrl}
+            thumbnailGraph={featured.thumbnailGraph}
+            title={featured.title}
+            className="rounded-[20px] h-[250px] bg-accent"
+            placeholder={
               <span className="font-display text-[84px] font-medium text-accent-foreground leading-none">
                 {initial(featured.title)}
               </span>
-            )}
-          </div>
+            }
+          />
         </div>
       )}
 

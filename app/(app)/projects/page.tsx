@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
+import { ProjectThumbnail } from "@/components/project/project-thumbnail"
 import { PlanUsageChip } from "@/components/profile/plan-usage-chip"
 import { formatBytes } from "@/lib/format-bytes"
 import {
@@ -188,24 +189,14 @@ export default function ProjectsPage() {
                   className="group/card flex h-[255px] w-[208px] flex-col cursor-pointer gap-0 overflow-hidden p-0 transition-colors hover:bg-muted hover:shadow-elevation-1"
                   onClick={() => router.push(`/editor/${project.id}`)}
                 >
-                  <CardContent
-                    className={`mx-2 mt-2 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-sm p-0 ${
-                      project.thumbnail ? "" : "bg-surface-container-high"
-                    }`}
-                  >
-                    {project.thumbnail ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={project.thumbnail}
-                        alt=""
-                        className="h-full w-full object-cover object-top"
-                      />
-                    ) : (
-                      <FolderKanban
-                        strokeWidth={1.5}
-                        className="h-9 w-9 text-muted-foreground"
-                      />
-                    )}
+                  <CardContent className="mx-2 mt-2 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-sm p-0">
+                    <ProjectThumbnail
+                      thumbnailImageUrl={project.thumbnailImageUrl}
+                      thumbnailGraph={project.thumbnailGraph}
+                      title={project.title}
+                      className="h-full w-full"
+                      placeholder={<FolderKanban strokeWidth={1.5} className="h-9 w-9 text-muted-foreground" />}
+                    />
                   </CardContent>
                   <CardHeader className="shrink-0 gap-0 p-0 py-3 px-4">
                     <div className="flex items-center justify-between gap-2">
@@ -286,22 +277,13 @@ export default function ProjectsPage() {
                   className="relative flex cursor-pointer items-center gap-4 px-4 py-3 transition-colors hover:bg-muted"
                   onClick={() => router.push(`/editor/${project.id}`)}
                 >
-                  <div
-                    className={`grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-md ${
-                      project.thumbnail ? "" : "bg-surface-container-high"
-                    }`}
-                  >
-                    {project.thumbnail ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={project.thumbnail}
-                        alt=""
-                        className="h-full w-full object-cover object-top"
-                      />
-                    ) : (
-                      <FolderKanban strokeWidth={1.5} className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
+                  <ProjectThumbnail
+                    thumbnailImageUrl={project.thumbnailImageUrl}
+                    thumbnailGraph={project.thumbnailGraph}
+                    title={project.title}
+                    className="h-12 w-12 shrink-0 rounded-md"
+                    placeholder={<FolderKanban strokeWidth={1.5} className="h-5 w-5 text-muted-foreground" />}
+                  />
                   <div className="min-w-0 flex-1">
                     {editingId === project.id ? (
                       <Input

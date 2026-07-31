@@ -7,6 +7,8 @@ import { ShareDialog } from '@/components/editor/share-dialog';
 import { VersionHistorySheet } from '@/components/editor/version-history-sheet';
 import type { ProjectVisibility } from '@/lib/projects-store';
 import type { SaveStatus } from '../hooks/useAutoSave';
+import type { Trail } from '@/app/editor/types';
+import type { GraphPreviewData } from '@/lib/feed';
 
 interface EditorTitleSlotProps {
   projectTitle: string;
@@ -94,6 +96,10 @@ interface EditorActionsProps {
   onDescriptionChange: (description: string) => void;
   tags: string;
   onTagsChange: (tags: string) => void;
+  trails: Trail[];
+  thumbnailImageUrl: string | null;
+  thumbnailGraph: GraphPreviewData | null;
+  onThumbnailChange: (imageUrl: string | null, graph: GraphPreviewData | null) => void;
   profile: { username: string; imageUrl: string | null } | null;
 }
 
@@ -111,6 +117,10 @@ export function EditorActions({
   onDescriptionChange,
   tags,
   onTagsChange,
+  trails,
+  thumbnailImageUrl,
+  thumbnailGraph,
+  onThumbnailChange,
   profile,
 }: EditorActionsProps) {
   return (
@@ -140,6 +150,10 @@ export function EditorActions({
         onDescriptionChange={onDescriptionChange}
         tags={tags}
         onTagsChange={onTagsChange}
+        trails={trails}
+        thumbnailImageUrl={thumbnailImageUrl}
+        thumbnailGraph={thumbnailGraph}
+        onThumbnailChange={onThumbnailChange}
       />
       <VersionHistorySheet projectId={projectId} />
       <UserMenu loggedIn={!!profile} username={profile?.username ?? null} imageUrl={profile?.imageUrl ?? null} />

@@ -6,7 +6,6 @@ import { FolderPlus } from 'lucide-react';
 import { ProjectShell } from '@/components/editor/project-shell';
 import { SidebarCustom } from '@/components/editor/sidebar-custom';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { ThumbnailCapture } from '@/components/editor/thumbnail-capture';
 import { countTextStats, SIDEBAR_OPEN_STORAGE_KEY, CONNECTIONS_OPEN_STORAGE_KEY } from '../editor-utils';
 import { useProjectEditorState } from './hooks/useProjectEditorState';
 import { useAutoSave } from './hooks/useAutoSave';
@@ -35,9 +34,7 @@ export default function EditorPage() {
   const project = useProjectEditorState(projectId);
   const autoSave = useAutoSave({
     selectedItemId: project.selectedItemId,
-    firstItemIdRef: project.firstItemIdRef,
     onOptimisticUpdate: project.updateItemContentLocally,
-    onThumbnailDue: project.handleAutoSaveThumbnailDue,
     redirectToLogin: project.redirectToLogin,
   });
 
@@ -97,6 +94,10 @@ export default function EditorPage() {
             onDescriptionChange={project.setDescription}
             tags={project.tags}
             onTagsChange={project.setTags}
+            trails={project.trails}
+            thumbnailImageUrl={project.thumbnailImageUrl}
+            thumbnailGraph={project.thumbnailGraph}
+            onThumbnailChange={project.handleThumbnailChange}
             profile={project.profile}
           />
         }
@@ -165,14 +166,6 @@ export default function EditorPage() {
           </div>
         }
       />
-      {project.thumbnailCapture && (
-        <ThumbnailCapture
-          title={project.thumbnailCapture.title}
-          titleAlign={project.thumbnailCapture.titleAlign}
-          content={project.thumbnailCapture.content}
-          onCapture={project.handleThumbnailCaptured}
-        />
-      )}
     </SidebarProvider>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Check, Copy, Globe, Loader2, Lock, Share2, Users } from "lucide-react"
+import { Check, Copy, Globe, ImageIcon, Loader2, Lock, Share2, Upload, Users, Waypoints } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,10 +21,18 @@ import {
   setProjectDescription,
   setProjectTags,
   publishProject,
+  setProjectThumbnail,
+  getProject,
+  getProjectImages,
   type ProjectVisibility,
+  type ProjectImage,
 } from "@/lib/projects-store"
 import { autocompleteTags, type TagSuggestion } from "@/lib/tags"
+import { uploadImage } from "@/lib/upload-image"
 import { cn } from "@/lib/utils"
+import { ProjectThumbnail } from "@/components/project/project-thumbnail"
+import type { Trail } from "@/app/editor/types"
+import type { GraphPreviewData } from "@/lib/feed"
 
 interface ShareDialogProps {
   projectId: string;
@@ -34,6 +42,10 @@ interface ShareDialogProps {
   onDescriptionChange: (description: string) => void;
   tags: string;
   onTagsChange: (tags: string) => void;
+  trails: Trail[];
+  thumbnailImageUrl: string | null;
+  thumbnailGraph: GraphPreviewData | null;
+  onThumbnailChange: (imageUrl: string | null, graph: GraphPreviewData | null) => void;
 }
 
 const OPTIONS: {
@@ -70,6 +82,10 @@ export function ShareDialog({
   onDescriptionChange,
   tags,
   onTagsChange,
+  trails,
+  thumbnailImageUrl,
+  thumbnailGraph,
+  onThumbnailChange,
 }: ShareDialogProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -83,6 +99,11 @@ export function ShareDialog({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [justPublished, setJustPublished] = useState(false);
+  const [thumbnailTab, setThumbnailTab] = useState<"graph" | "image" | "upload">("graph");
+  const [projectImages, setProjectImages] = useState<ProjectImage[] | null>(null);
+  const [imagesLoading, setImagesLoading] = useState(false);
+  const [thumbnailSaving, setThumbnailSaving] = useState(false);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/p/${projectId}`
     : "";
@@ -205,6 +226,43 @@ export function ShareDialog({
       setValidationError("Something went wrong — try again.");
     } finally {
       setIsApplying(false);
+    }
+  };
+
+  useEffect(() => {
+    if (thumbnailTab !== "image" || projectImages !== null) return;
+    setImagesLoading(true);
+    getProjectImages(projectId)
+      .then(setProjectImages)
+      .catch(() => setProjectImages([]))
+      .finally(() => setImagesLoading(false));
+  }, [thumbnailTab, projectImages, projectId]);
+
+  const applyThumbnail = async (
+    choice: Parameters<typeof setProjectThumbnail>[1],
+    optimistic: { imageUrl: string | null; graph: GraphPreviewData | null }
+  ) => {
+    setThumbnailSaving(true);
+    onThumbnailChange(optimistic.imageUrl, optimistic.graph);
+    try {
+      await setProjectThumbnail(projectId, choice);
+      const project = await getProject(projectId);
+      if (project) onThumbnailChange(project.thumbnailImageUrl, project.thumbnailGraph);
+    } catch {
+      setValidationError("Couldn't update the thumbnail — try again.");
+    } finally {
+      setThumbnailSaving(false);
+    }
+  };
+
+  const handleThumbnailUpload = async (file: File) => {
+    setThumbnailSaving(true);
+    try {
+      const url = await uploadImage(file, "thumbnail", projectId);
+      await applyThumbnail({ type: "DEDICATED", imageUrl: url }, { imageUrl: url, graph: null });
+    } catch {
+      setValidationError("Upload failed — try again.");
+      setThumbnailSaving(false);
     }
   };
 
@@ -341,6 +399,113 @@ export function ShareDialog({
             Comma-separated. Helps people find this on Explore and shows up in Hot topics.
           </p>
         </div>
+
+        {selectedVisibility === "published" && (
+          <div className="flex flex-col gap-1.5">
+            <Label>Thumbnail</Label>
+            <div className="flex gap-3">
+              <ProjectThumbnail
+                thumbnailImageUrl={thumbnailImageUrl}
+                thumbnailGraph={thumbnailGraph}
+                title={descriptionInput || "Project"}
+                className="h-16 w-16 shrink-0 rounded-md bg-surface-container-high"
+              />
+              <div className="flex flex-1 flex-col gap-2 min-w-0">
+                <div className="flex gap-1">
+                  {[
+                    { key: "graph" as const, label: "Trail", icon: Waypoints },
+                    { key: "image" as const, label: "Image", icon: ImageIcon },
+                    { key: "upload" as const, label: "Upload", icon: Upload },
+                  ].map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setThumbnailTab(key)}
+                      className={cn(
+                        "flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors",
+                        thumbnailTab === key ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
+                      )}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {label}
+                    </button>
+                  ))}
+                  {thumbnailSaving && <Loader2 className="h-3.5 w-3.5 animate-spin self-center text-muted-foreground" />}
+                </div>
+
+                {thumbnailTab === "graph" && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {trails.filter((t) => t.itemIds.length > 0).map((trail) => (
+                      <button
+                        key={trail.id}
+                        type="button"
+                        disabled={thumbnailSaving}
+                        onClick={() => applyThumbnail({ type: "GRAPH", trailId: trail.id }, { imageUrl: null, graph: null })}
+                        className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted disabled:opacity-50"
+                      >
+                        {trail.title}
+                      </button>
+                    ))}
+                    {trails.every((t) => t.itemIds.length === 0) && (
+                      <p className="text-xs text-muted-foreground">No trails with items yet.</p>
+                    )}
+                  </div>
+                )}
+
+                {thumbnailTab === "image" && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {imagesLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                    {!imagesLoading && projectImages?.length === 0 && (
+                      <p className="text-xs text-muted-foreground">No images in this project yet.</p>
+                    )}
+                    {projectImages?.map((img) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={img.url}
+                        src={img.url}
+                        alt={img.itemTitle}
+                        title={img.itemTitle}
+                        onClick={() =>
+                          !thumbnailSaving &&
+                          applyThumbnail(
+                            { type: "PROJECT_IMAGE", imageUrl: img.url },
+                            { imageUrl: img.url, graph: null }
+                          )
+                        }
+                        className="h-12 w-12 cursor-pointer rounded-md border border-border object-cover hover:border-primary"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {thumbnailTab === "upload" && (
+                  <div>
+                    <input
+                      ref={uploadInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) handleThumbnailUpload(file);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={thumbnailSaving}
+                      onClick={() => uploadInputRef.current?.click()}
+                    >
+                      Choose image
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {visibility !== "private" && (
           <div className="flex items-center gap-2">
