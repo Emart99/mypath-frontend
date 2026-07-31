@@ -30,7 +30,7 @@ export interface ProjectFeedItemDTO {
   ownerAvatar: string | null;
   ownerBadge: string | null;
   thumbnail: string | null;
-  tags: string | null;
+  tags: string[] | null;
   modifiedDate: string;
   publishedDate: string;
   lastPublishedDate: string | null;
@@ -43,11 +43,6 @@ export interface ProjectFeedItemDTO {
   featured: boolean;
 }
 
-export function parseTags(tags: string | null): string[] {
-  if (!tags) return [];
-  return tags.split(",").map((tag) => tag.trim()).filter(Boolean);
-}
-
 export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
   return {
     id: String(item.id),
@@ -57,7 +52,7 @@ export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
     ownerAvatar: item.ownerAvatar,
     ownerBadge: item.ownerBadge,
     thumbnail: item.thumbnail,
-    tags: parseTags(item.tags),
+    tags: item.tags ?? [],
     modifiedDate: item.modifiedDate,
     publishedDate: item.publishedDate,
     lastPublishedDate: item.lastPublishedDate,

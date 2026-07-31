@@ -30,7 +30,7 @@ interface ProjectDTO {
   description: string | null;
   visibility: ProjectVisibility | null;
   thumbnail: string | null;
-  tags: string | null;
+  tags: string[] | null;
   creationDate: string;
   modifiedDate: string;
   storageBytes: number;
@@ -84,7 +84,7 @@ function toProjectSummary(dto: ProjectDTO): Project {
     items: {},
     visibility: dto.visibility ?? "private",
     thumbnail: dto.thumbnail,
-    tags: dto.tags ?? "",
+    tags: dto.tags?.join(", ") ?? "",
     createdAt: dto.creationDate,
     updatedAt: dto.modifiedDate,
     storageBytes: dto.storageBytes,
@@ -179,7 +179,7 @@ export async function getProject(id: string): Promise<Project | null> {
     items,
     visibility: projectDto.visibility ?? "private",
     thumbnail: projectDto.thumbnail,
-    tags: projectDto.tags ?? "",
+    tags: projectDto.tags?.join(", ") ?? "",
     createdAt: projectDto.creationDate,
     updatedAt: projectDto.modifiedDate,
     storageBytes: projectDto.storageBytes,
@@ -258,10 +258,11 @@ export async function setProjectDescription(id: string, description: string): Pr
 }
 
 export async function setProjectTags(id: string, tags: string): Promise<void> {
+  const tagNames = tags.split(",").map((tag) => tag.trim()).filter(Boolean);
   const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
     method: "PUT",
     headers: jsonHeaders,
-    body: JSON.stringify({ tags }),
+    body: JSON.stringify({ tags: tagNames }),
   });
   await expectOk(response);
 }
