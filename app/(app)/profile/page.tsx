@@ -62,23 +62,15 @@ export default async function ProfilePage({
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
         <div className="pt-9 px-18 pb-0">
-          <div className="relative mb-3">
+          <div className="mb-3">
             <div className="aspect-[6/1] w-full overflow-hidden rounded-[28px] bg-muted">
               {profile.bannerUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={profile.bannerUrl} alt="" className="h-full w-full object-cover" />
               )}
             </div>
-            <div className="absolute left-1/2 -bottom-12 z-10 flex h-24 w-24 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full bg-primary text-[34px] font-medium font-display text-primary-foreground ring-4 ring-background">
-              {profile.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.imageUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                initial(profile.username)
-              )}
-            </div>
           </div>
-          <div className="relative rounded-[28px] bg-card p-8 pt-16">
+          <div className="relative rounded-[28px] bg-card p-8">
             <div className="absolute right-8 top-8">
               <EditProfileModal
                 username={profile.username}
@@ -93,60 +85,70 @@ export default async function ProfilePage({
                 initialSelectedBadge={profile.selectedBadge}
               />
             </div>
-            <div className="flex min-w-0 flex-1 flex-col items-center">
-              <h1 className="font-display text-[36px] font-normal leading-[1.1] mb-2.5">
-                {profile.username}
-              </h1>
-
-              {profile.bio && (
-                <p className="mb-2 max-w-2xl text-center text-sm text-foreground">{profile.bio}</p>
-              )}
-
-              <div className="flex flex-wrap items-center justify-center gap-4 text-[13px] mb-3.5 text-muted-foreground">
-                {profile.birthDate && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Cake className="h-[14px] w-[14px]" />
-                    Born {formatBirthDate(profile.birthDate)}
-                  </span>
-                )}
-                {profile.location && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-[14px] w-[14px]" />
-                    {profile.location}
-                  </span>
-                )}
-                {profile.website && (
-                  <a
-                    href={/^https?:\/\//.test(profile.website) ? profile.website : `https://${profile.website}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 hover:text-foreground"
-                  >
-                    <LinkIcon className="h-[14px] w-[14px]" />
-                    {profile.website}
-                  </a>
-                )}
-                {profile.createdAt && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="h-[14px] w-[14px]" />
-                    Joined{" "}
-                    {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                  </span>
+            <div className="flex items-start gap-7">
+              <div className="flex h-[104px] w-[104px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-[38px] font-medium font-display text-primary-foreground">
+                {profile.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.imageUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  initial(profile.username)
                 )}
               </div>
+              <div className="flex min-w-0 flex-col items-start pt-1">
+                <h1 className="font-display text-[36px] font-normal leading-[1.1] mb-2">
+                  {profile.username}
+                </h1>
 
-              <div className="flex items-center justify-center gap-4 text-[13px] mb-3.5 text-muted-foreground">
-                <Link href={`/u/${encodeURIComponent(profile.username)}/followers?tab=followers`} className="inline-flex items-center gap-1.5 hover:text-foreground">
-                  <Users className="h-[14px] w-[14px]" />
-                  {(stats?.followersCount ?? 0).toLocaleString('en-US')} followers
-                </Link>
-                <Link href={`/u/${encodeURIComponent(profile.username)}/followers?tab=following`} className="inline-flex items-center gap-1.5 hover:text-foreground">
-                  <Users className="h-[14px] w-[14px]" />
-                  {(stats?.followingCount ?? 0).toLocaleString('en-US')} following
-                </Link>
+                {profile.bio && (
+                  <p className="mb-2 max-w-2xl text-left text-sm text-foreground">{profile.bio}</p>
+                )}
+
+                <div className="flex flex-wrap items-center justify-start gap-4 text-[13px] mb-3.5 text-muted-foreground">
+                  {profile.birthDate && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Cake className="h-[14px] w-[14px]" />
+                      Born {formatBirthDate(profile.birthDate)}
+                    </span>
+                  )}
+                  {profile.location && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="h-[14px] w-[14px]" />
+                      {profile.location}
+                    </span>
+                  )}
+                  {profile.website && (
+                    <a
+                      href={/^https?:\/\//.test(profile.website) ? profile.website : `https://${profile.website}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 hover:text-foreground"
+                    >
+                      <LinkIcon className="h-[14px] w-[14px]" />
+                      {profile.website}
+                    </a>
+                  )}
+                  {profile.createdAt && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="h-[14px] w-[14px]" />
+                      Joined{" "}
+                      {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-start gap-4 text-[13px] mb-3.5 text-muted-foreground">
+                  <Link href={`/u/${encodeURIComponent(profile.username)}/followers?tab=followers`} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                    <Users className="h-[14px] w-[14px]" />
+                    {(stats?.followersCount ?? 0).toLocaleString('en-US')} followers
+                  </Link>
+                  <Link href={`/u/${encodeURIComponent(profile.username)}/followers?tab=following`} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                    <Users className="h-[14px] w-[14px]" />
+                    {(stats?.followingCount ?? 0).toLocaleString('en-US')} following
+                  </Link>
+                </div>
+
+                <BadgesPanel badges={badges} />
               </div>
-
-              <BadgesPanel badges={badges} />
             </div>
           </div>
 
