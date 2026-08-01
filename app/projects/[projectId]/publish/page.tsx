@@ -310,19 +310,19 @@ export default function PublishPage() {
 
       <div className="flex-1 overflow-y-auto lg:col-start-1 lg:row-start-2 lg:min-h-0">
         <div className="flex flex-col gap-3 bg-muted p-7">
-          <span className="text-[12px] font-semibold uppercase tracking-[.04em] text-muted-foreground">
+          <span className="mx-auto w-full max-w-[752px] text-[12px] font-semibold uppercase tracking-[.04em] text-muted-foreground">
             Explore preview
           </span>
-          <div className="opacity-40">
+          <div className="mx-auto w-full max-w-[752px] opacity-40">
             <ExploreCard project={MOCK_NEIGHBORS[0]} loggedIn={false} username={null} interactive={false} />
           </div>
-          <div className="relative rounded-[14px] ring-2 ring-foreground">
+          <div className="relative mx-auto w-full max-w-[752px] rounded-[14px] ring-2 ring-foreground">
             <span className="absolute -top-3 left-4 z-10 rounded-full bg-foreground px-2.5 py-0.5 text-[11px] font-medium uppercase text-background">
               Your project
             </span>
             <ExploreCard project={yourCard} loggedIn={false} username={null} interactive={false} />
           </div>
-          <div className="opacity-40">
+          <div className="mx-auto w-full max-w-[752px] opacity-40">
             <ExploreCard project={MOCK_NEIGHBORS[1]} loggedIn={false} username={null} interactive={false} />
           </div>
         </div>
