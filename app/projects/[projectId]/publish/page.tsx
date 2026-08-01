@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import {
   ChevronLeft,
@@ -33,6 +33,7 @@ import {
   type ThumbnailChoice,
 } from "@/lib/projects-store"
 import { getMyProfile } from "@/lib/profile"
+import { autocompleteTags, type TagSuggestion } from "@/lib/tags"
 import type { ProjectFeedItem } from "@/lib/public-project"
 import { uploadImage } from "@/lib/upload-image"
 import { cn } from "@/lib/utils"
@@ -104,6 +105,11 @@ export default function PublishPage() {
 
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
+  const [tagSuggestions, setTagSuggestions] = useState<TagSuggestion[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [tagsFocused, setTagsFocused] = useState(false);
+  const [highlightedSuggestion, setHighlightedSuggestion] = useState(0);
+  const tagsInputRef = useRef<HTMLInputElement>(null);
   const [visibility, setVisibility] = useState<ProjectVisibility>("private");
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string | null>(null);
   const [thumbnailGraph, setThumbnailGraph] = useState<Project["thumbnailGraph"]>(null);
@@ -142,9 +148,37 @@ export default function PublishPage() {
       .finally(() => setImagesLoading(false));
   }, [thumbnailTab, projectImages, projectId]);
 
+  // Suggests existing tags for whatever the user is typing after the last comma,
+  // pushing reuse of the shared catalog instead of near-duplicate tags.
+  useEffect(() => {
+    const fragment = tags.split(",").pop()?.trim() ?? "";
+    if (!tagsFocused || !fragment) {
+      setTagSuggestions([]);
+      setSuggestionsOpen(false);
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      try {
+        const results = await autocompleteTags(fragment);
+        setTagSuggestions(results);
+        setSuggestionsOpen(results.length > 0);
+        setHighlightedSuggestion(0);
+      } catch {
+        setTagSuggestions([]);
+        setSuggestionsOpen(false);
+      }
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [tags, tagsFocused]);
+
   if (!project) return null;
 
   const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
+  // "publish" = going public for the first time, "update" = already live, re-saving
+  // edits (still calls the publish endpoint to bump the published date), "save" =
+  // staying Private/Unlisted, so the publish endpoint is never touched.
+  const confirmLabel =
+    visibility !== "published" ? "save" : project.visibility === "published" ? "update" : "publish";
 
   const yourCard: ProjectFeedItem = {
     id: project.id,
@@ -176,10 +210,20 @@ export default function PublishPage() {
   };
 
   const submitTags = async () => {
+    setSuggestionsOpen(false);
     const next = tags.trim();
     if (next === project.tags) return;
     setProject({ ...project, tags: next });
     await setProjectTags(projectId, next);
+  };
+
+  const selectTagSuggestion = (name: string) => {
+    const segments = tags.split(",");
+    segments[segments.length - 1] = ` ${name}`;
+    setTags(segments.join(",").trimStart() + ", ");
+    setTagSuggestions([]);
+    setSuggestionsOpen(false);
+    tagsInputRef.current?.focus();
   };
 
   const changeVisibility = async (next: ProjectVisibility) => {
@@ -221,9 +265,12 @@ export default function PublishPage() {
     }
   };
 
-  const handlePublish = async () => {
+  // Visibility itself is already applied instantly by the pills (changeVisibility) —
+  // this only saves the description and, when the chosen visibility is Published,
+  // actually calls the publish endpoint. It never publishes on a Private/Unlisted save.
+  const handleConfirm = async () => {
     if (isPublishing) return;
-    if (!description.trim()) {
+    if (visibility === "published" && !description.trim()) {
       setError("Add a description before publishing.");
       return;
     }
@@ -231,14 +278,15 @@ export default function PublishPage() {
     setError(null);
     try {
       if (description.trim() !== project.description) await submitDescription();
-      if (visibility === "private") await changeVisibility("published");
-      const { error: err } = await publishProject(projectId);
-      if (err) {
-        setError(err);
-      } else {
-        setJustPublished(true);
-        setTimeout(() => setJustPublished(false), 2000);
+      if (visibility === "published") {
+        const { error: err } = await publishProject(projectId);
+        if (err) {
+          setError(err);
+          return;
+        }
       }
+      setJustPublished(true);
+      setTimeout(() => setJustPublished(false), 2000);
     } catch {
       setError("Something went wrong — try again.");
     } finally {
@@ -248,17 +296,16 @@ export default function PublishPage() {
 
   return (
     <div className="flex h-svh flex-col bg-background lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:grid-rows-[60px_1fr]">
-      <div className="flex h-[60px] shrink-0 items-center gap-3 border-b border-border px-6 lg:col-start-1 lg:row-start-1 lg:border-b-0">
+      <div className="flex h-[60px] shrink-0 items-center gap-4 border-b border-border px-6 lg:col-start-1 lg:row-start-1 lg:border-b-0">
         <button
           type="button"
           onClick={() => router.push(`/editor/${projectId}`)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-0.5 text-sm leading-none text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
-          Editor
+          <span className="leading-none">Editor</span>
         </button>
-        <span className="h-4 w-px bg-border" />
-        <span className="text-[15px] font-semibold">Publish</span>
+        <span className="text-[17px] font-semibold leading-none">Share</span>
       </div>
 
       <div className="flex-1 overflow-y-auto lg:col-start-1 lg:row-start-2 lg:min-h-0">
@@ -270,7 +317,7 @@ export default function PublishPage() {
             <ExploreCard project={MOCK_NEIGHBORS[0]} loggedIn={false} username={null} interactive={false} />
           </div>
           <div className="relative rounded-[14px] ring-2 ring-foreground">
-            <span className="absolute -top-3 left-4 z-10 rounded-full bg-foreground px-2.5 py-0.5 text-[11px] font-medium text-background">
+            <span className="absolute -top-3 left-4 z-10 rounded-full bg-foreground px-2.5 py-0.5 text-[11px] font-medium uppercase text-background">
               Your project
             </span>
             <ExploreCard project={yourCard} loggedIn={false} username={null} interactive={false} />
@@ -326,13 +373,77 @@ export default function PublishPage() {
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="publish-tags">Tags</Label>
-              <Input
-                id="publish-tags"
-                placeholder="webdev, react, tutorial"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                onBlur={submitTags}
-              />
+              <div className="relative">
+                <Input
+                  id="publish-tags"
+                  ref={tagsInputRef}
+                  placeholder="webdev, react, tutorial"
+                  autoComplete="off"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  onFocus={() => {
+                    setTagsFocused(true);
+                    setSuggestionsOpen(tagSuggestions.length > 0);
+                  }}
+                  onBlur={() => {
+                    setTagsFocused(false);
+                    submitTags();
+                  }}
+                  onKeyDown={(e) => {
+                    if (suggestionsOpen && tagSuggestions.length > 0) {
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setHighlightedSuggestion((i) => (i + 1) % tagSuggestions.length);
+                        return;
+                      }
+                      if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setHighlightedSuggestion((i) => (i - 1 + tagSuggestions.length) % tagSuggestions.length);
+                        return;
+                      }
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        selectTagSuggestion(tagSuggestions[highlightedSuggestion].name);
+                        return;
+                      }
+                      if (e.key === "Escape") {
+                        setSuggestionsOpen(false);
+                        return;
+                      }
+                    }
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      submitTags();
+                    }
+                  }}
+                />
+                {suggestionsOpen && tagSuggestions.length > 0 && (
+                  <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
+                    {tagSuggestions.map((suggestion, index) => (
+                      <button
+                        key={suggestion.name}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => selectTagSuggestion(suggestion.name)}
+                        className={cn(
+                          "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors",
+                          index === highlightedSuggestion ? "bg-muted" : "hover:bg-muted"
+                        )}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          {suggestion.name}
+                          {suggestion.official && (
+                            <span className="text-[10px] font-medium tracking-wide text-primary uppercase">
+                              Official
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{suggestion.usageCount}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {tagList.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {tagList.map((tag) => (
@@ -449,22 +560,22 @@ export default function PublishPage() {
 
             <button
               type="button"
-              onClick={handlePublish}
+              onClick={handleConfirm}
               disabled={isPublishing || justPublished}
               className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-foreground text-[14px] font-medium text-background shadow-elevation-2 disabled:opacity-60"
             >
               {isPublishing ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {project.visibility === "published" ? "Updating..." : "Publishing..."}
+                  {confirmLabel === "publish" ? "Publishing..." : confirmLabel === "update" ? "Updating..." : "Saving..."}
                 </>
               ) : justPublished ? (
                 <>
                   <Check className="h-4 w-4" />
-                  {project.visibility === "published" ? "Updated" : "Published"}
+                  {confirmLabel === "publish" ? "Published" : confirmLabel === "update" ? "Updated" : "Saved"}
                 </>
               ) : (
-                project.visibility === "published" ? "Update" : "Publish"
+                confirmLabel === "publish" ? "Publish" : confirmLabel === "update" ? "Update" : "Save"
               )}
             </button>
           </div>

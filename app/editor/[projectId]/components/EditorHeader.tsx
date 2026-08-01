@@ -122,7 +122,7 @@ export function EditorActions({
       <Button data-tour="share" variant="secondary" size="lg" asChild>
         <Link href={`/projects/${projectId}/publish`}>
           <Share2 className="h-[15px] w-[15px]" />
-          Share
+          Publish &amp; Share
         </Link>
       </Button>
       <VersionHistorySheet projectId={projectId} />

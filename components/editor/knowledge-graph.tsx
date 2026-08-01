@@ -56,8 +56,8 @@ const FALLBACK: Record<string, string> = {
 // Twitter-blue selection accent — graph-only (the rest of the app stays mono).
 const ACCENT = "#1D9BF0";
 
-const NODE_W = 168;
-const NODE_H = 52;
+const NODE_W = 132;
+const NODE_H = 44;
 const X_GAP = 210;
 const MARGIN_X = 60;
 const TOP_Y = 150;
@@ -73,7 +73,7 @@ const ItemNodeComp = memo(function ItemNodeComp({ data }: NodeProps<ItemNode>) {
   const spine = data.kind === "spine";
   return (
     <div
-      className={`flex items-center justify-center rounded-lg px-3 text-center text-[12.5px] font-medium leading-tight ${
+      className={`flex items-center justify-center rounded-lg px-2 text-center text-[17.5px] font-medium leading-tight ${
         spine ? "bg-primary text-primary-foreground" : "border border-border bg-card text-foreground"
       }`}
       style={{
