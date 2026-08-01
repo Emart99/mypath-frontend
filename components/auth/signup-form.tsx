@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { CheckCircle2, Loader2 } from "lucide-react"
-import { useActionState, useEffect, useState } from "react"
+import { startTransition, useActionState, useEffect, useState } from "react"
 import { registerHandler } from "@/app/(auth)/signup/actions"
 import { getPasswordStrength } from "@/lib/password-strength"
 import { GoogleAuthButton } from "@/components/auth/google-auth-button"
@@ -20,6 +20,15 @@ type Availability = "idle" | "checking" | "available" | "taken"
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (callback: () => void) => void
+      execute: (siteKey: string, options: { action: string }) => Promise<string>
+    }
+  }
+}
 
 function useAvailabilityCheck(
   value: string,
@@ -56,6 +65,7 @@ export function SignupForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [captchaError, setCaptchaError] = useState("");
   const strength = getPasswordStrength(password);
   const errors = state?.errors;
   const passwordsMatch = password.length > 0 && confirmPassword.length > 0 && password === confirmPassword;
@@ -66,8 +76,34 @@ export function SignupForm({
     "username"
   );
   const emailAvailability = useAvailabilityCheck(email, EMAIL_PATTERN, "/api/auth/check-email", "email");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setCaptchaError("");
+    const form = e.currentTarget;
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+    if (!siteKey || !window.grecaptcha) {
+      setCaptchaError("Captcha failed to load. Please refresh and try again.");
+      return;
+    }
+
+    try {
+      const captchaToken = await new Promise<string>((resolve, reject) => {
+        window.grecaptcha!.ready(() => {
+          window.grecaptcha!.execute(siteKey, { action: "register" }).then(resolve, reject);
+        });
+      });
+      const formData = new FormData(form);
+      formData.set("captchaToken", captchaToken);
+      startTransition(() => formAction(formData));
+    } catch {
+      setCaptchaError("Captcha verification failed. Please try again.");
+    }
+  };
+
   return (
-    <form action={formAction} className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <div>
         <h1 className="font-display text-[36px] font-normal">Create your account</h1>
         <p className="mt-3 text-[15px] leading-6 text-muted-foreground">
@@ -75,9 +111,9 @@ export function SignupForm({
         </p>
       </div>
       <FieldGroup className="mt-2 gap-[22px]">
-        {errors?.general && (
+        {(errors?.general || captchaError) && (
           <div className="text-sm text-center text-destructive">
-            {errors.general}
+            {errors?.general || captchaError}
           </div>
         )}
         <Field floatingLabel>

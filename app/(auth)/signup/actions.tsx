@@ -23,6 +23,11 @@ export async function registerHandler(
   const email = formData.get('email');
   const password = formData.get('password');
   const confirmPassword = formData.get('confirm-password');
+  const captchaToken = formData.get('captchaToken');
+
+  if (typeof captchaToken !== 'string' || !captchaToken) {
+    return { errors: { general: 'Captcha verification failed. Please try again.' } };
+  }
 
   if (typeof password === 'string' && !PASSWORD_COMPLEXITY_PATTERN.test(password)) {
     return {
@@ -41,7 +46,7 @@ export async function registerHandler(
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ username, email, password }),
+    body: JSON.stringify({ username, email, password, captchaToken }),
   });
 
   if (!response.ok) {

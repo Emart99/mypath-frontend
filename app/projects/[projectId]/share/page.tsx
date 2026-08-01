@@ -256,6 +256,10 @@ export default function PublishPage() {
   };
 
   const handleUpload = async (file: File) => {
+    if (file.type === "image/gif") {
+      setError("GIFs aren't supported — upload a static image instead.");
+      return;
+    }
     setThumbnailSaving(true);
     try {
       const url = await uploadImage(file, "thumbnail", projectId);
