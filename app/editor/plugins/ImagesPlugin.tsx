@@ -58,11 +58,11 @@ function getImageFiles(dataTransfer: DataTransfer): File[] {
 
 // Inserts a local preview immediately (optimistic UI), then swaps it for the
 // real R2 URL once the background upload finishes - or removes it on failure.
-export function insertImageWithUpload(
+export async function insertImageWithUpload(
   editor: ReturnType<typeof useLexicalComposerContext>[0],
   file: File,
   projectId?: string,
-): void {
+): Promise<void> {
   const previewUrl = URL.createObjectURL(file);
   let key: NodeKey | null = null;
 
@@ -73,37 +73,48 @@ export function insertImageWithUpload(
     $placeCaretBelowImage(imageNode);
   });
 
-  (async () => {
-    try {
-      const blob = await resizeImageToBlob(file, EDITOR_IMAGE_MAX_DIMENSION, EDITOR_IMAGE_QUALITY);
-      const src = await uploadImage(blob, 'editor-image', projectId);
-      editor.update(() => {
-        if (key === null) return;
-        const node = $getNodeByKey(key);
-        if ($isImageNode(node)) {
-          node.setSrc(src);
-        }
-      });
-      URL.revokeObjectURL(previewUrl);
-    } catch (err) {
-      console.error('Failed to upload image', err);
-      editor.update(() => {
-        if (key === null) return;
-        $getNodeByKey(key)?.remove();
-      });
-      URL.revokeObjectURL(previewUrl);
-    }
-  })();
+  try {
+    const blob = await resizeImageToBlob(file, EDITOR_IMAGE_MAX_DIMENSION, EDITOR_IMAGE_QUALITY);
+    const src = await uploadImage(blob, 'editor-image', projectId);
+    editor.update(() => {
+      if (key === null) return;
+      const node = $getNodeByKey(key);
+      if ($isImageNode(node)) {
+        node.setSrc(src);
+      }
+    });
+    URL.revokeObjectURL(previewUrl);
+  } catch (err) {
+    console.error('Failed to upload image', err);
+    editor.update(() => {
+      if (key === null) return;
+      $getNodeByKey(key)?.remove();
+    });
+    URL.revokeObjectURL(previewUrl);
+  }
 }
 
-function insertImageFiles(
+const IMAGE_UPLOAD_CONCURRENCY = 3;
+
+// Bounds how many resize+upload pipelines run at once so a large paste/drop
+// batch doesn't slam the network (and the presign rate limit) all at once.
+async function insertImageFiles(
   editor: ReturnType<typeof useLexicalComposerContext>[0],
   files: File[],
   projectId?: string,
-): void {
-  for (const file of files) {
-    insertImageWithUpload(editor, file, projectId);
+): Promise<void> {
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < files.length) {
+      const file = files[nextIndex++];
+      await insertImageWithUpload(editor, file, projectId);
+    }
   }
+
+  await Promise.all(
+    Array.from({ length: Math.min(IMAGE_UPLOAD_CONCURRENCY, files.length) }, worker)
+  );
 }
 
 export default function ImagesPlugin({ projectId }: { projectId?: string }): null {

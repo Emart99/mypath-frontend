@@ -77,6 +77,12 @@ export function SignupForm({
   );
   const emailAvailability = useAvailabilityCheck(email, EMAIL_PATTERN, "/api/auth/check-email", "email");
 
+  useEffect(() => {
+    return () => {
+      document.querySelector(".grecaptcha-badge")?.remove();
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setCaptchaError("");
