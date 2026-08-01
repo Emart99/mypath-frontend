@@ -88,16 +88,6 @@ export default function EditorPage() {
             trailViewActive={project.view === 'trail'}
             onToggleTrailView={() => project.setView((v) => (v === 'trail' ? 'write' : 'trail'))}
             projectId={projectId}
-            visibility={project.visibility}
-            onVisibilityChange={project.handleVisibilityChange}
-            description={project.description}
-            onDescriptionChange={project.setDescription}
-            tags={project.tags}
-            onTagsChange={project.setTags}
-            trails={project.trails}
-            thumbnailImageUrl={project.thumbnailImageUrl}
-            thumbnailGraph={project.thumbnailGraph}
-            onThumbnailChange={project.handleThumbnailChange}
             profile={project.profile}
           />
         }

@@ -1,14 +1,11 @@
 import { useState } from 'react';
-import { AlertCircle, Check, Loader2, Route } from 'lucide-react';
+import Link from 'next/link';
+import { AlertCircle, Check, Loader2, Route, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserMenu } from '@/components/layout/user-menu';
-import { ShareDialog } from '@/components/editor/share-dialog';
 import { VersionHistorySheet } from '@/components/editor/version-history-sheet';
-import type { ProjectVisibility } from '@/lib/projects-store';
 import type { SaveStatus } from '../hooks/useAutoSave';
-import type { Trail } from '@/app/editor/types';
-import type { GraphPreviewData } from '@/lib/feed';
 
 interface EditorTitleSlotProps {
   projectTitle: string;
@@ -90,20 +87,10 @@ interface EditorActionsProps {
   trailViewActive: boolean;
   onToggleTrailView: () => void;
   projectId: string;
-  visibility: ProjectVisibility;
-  onVisibilityChange: (next: ProjectVisibility) => void;
-  description: string;
-  onDescriptionChange: (description: string) => void;
-  tags: string;
-  onTagsChange: (tags: string) => void;
-  trails: Trail[];
-  thumbnailImageUrl: string | null;
-  thumbnailGraph: GraphPreviewData | null;
-  onThumbnailChange: (imageUrl: string | null, graph: GraphPreviewData | null) => void;
   profile: { username: string; imageUrl: string | null } | null;
 }
 
-// Word count, the Trail-view toggle, share settings, and the user menu.
+// Word count, the Trail-view toggle, the link to the publish view, and the user menu.
 export function EditorActions({
   showWordCount,
   textStats,
@@ -111,16 +98,6 @@ export function EditorActions({
   trailViewActive,
   onToggleTrailView,
   projectId,
-  visibility,
-  onVisibilityChange,
-  description,
-  onDescriptionChange,
-  tags,
-  onTagsChange,
-  trails,
-  thumbnailImageUrl,
-  thumbnailGraph,
-  onThumbnailChange,
   profile,
 }: EditorActionsProps) {
   return (
@@ -142,19 +119,12 @@ export function EditorActions({
           Trail
         </Button>
       )}
-      <ShareDialog
-        projectId={projectId}
-        visibility={visibility}
-        onVisibilityChange={onVisibilityChange}
-        description={description}
-        onDescriptionChange={onDescriptionChange}
-        tags={tags}
-        onTagsChange={onTagsChange}
-        trails={trails}
-        thumbnailImageUrl={thumbnailImageUrl}
-        thumbnailGraph={thumbnailGraph}
-        onThumbnailChange={onThumbnailChange}
-      />
+      <Button data-tour="share" variant="secondary" size="lg" asChild>
+        <Link href={`/projects/${projectId}/publish`}>
+          <Share2 className="h-[15px] w-[15px]" />
+          Share
+        </Link>
+      </Button>
       <VersionHistorySheet projectId={projectId} />
       <UserMenu loggedIn={!!profile} username={profile?.username ?? null} imageUrl={profile?.imageUrl ?? null} />
     </>

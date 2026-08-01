@@ -1,3 +1,5 @@
+"use client"
+
 import type { Item, Trail } from "@/app/editor/types"
 import type { GraphPreviewData } from "@/lib/feed"
 import { KnowledgeGraph } from "@/components/editor/knowledge-graph"
