@@ -90,7 +90,7 @@ interface EditorActionsProps {
   profile: { username: string; imageUrl: string | null } | null;
 }
 
-// Word count, the Trail-view toggle, the link to the publish view, and the user menu.
+// Word count, the Trail-view toggle, the link to the share view, and the user menu.
 export function EditorActions({
   showWordCount,
   textStats,
@@ -120,7 +120,7 @@ export function EditorActions({
         </Button>
       )}
       <Button data-tour="share" variant="secondary" size="lg" asChild>
-        <Link href={`/projects/${projectId}/publish`}>
+        <Link href={`/projects/${projectId}/share`}>
           <Share2 className="h-[15px] w-[15px]" />
           Publish &amp; Share
         </Link>

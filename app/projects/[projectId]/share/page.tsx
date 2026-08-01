@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import {
   ChevronLeft,
@@ -17,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Mark } from "@/components/layout/logo"
 import { ExploreCard } from "@/components/feed/explore-card"
 import { ProjectThumbnail } from "@/components/project/project-thumbnail"
 import {
@@ -296,7 +298,11 @@ export default function PublishPage() {
 
   return (
     <div className="flex h-svh flex-col bg-background lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:grid-rows-[60px_1fr]">
-      <div className="flex h-[60px] shrink-0 items-center gap-4 border-b border-border px-6 lg:col-start-1 lg:row-start-1 lg:border-b-0">
+      <div className="flex h-[60px] shrink-0 items-center gap-4 border-b border-border pl-2.5 pr-6 lg:col-start-1 lg:row-start-1 lg:border-b-0">
+        <Link href="/projects" title="Back to projects">
+          <Mark />
+        </Link>
+        <span className="h-[18px] w-px shrink-0 bg-border" />
         <button
           type="button"
           onClick={() => router.push(`/editor/${projectId}`)}
