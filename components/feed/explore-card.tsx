@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowBigUp, Eye, MessageCircle } from "lucide-react"
+import { ArrowBigUp, Bookmark, Eye, MessageCircle, MoreHorizontal } from "lucide-react"
 import { VoteButton } from "@/components/social/vote-button"
 import { BookmarkButton } from "@/components/social/bookmark-button"
 import { PostOptionsMenu } from "@/components/project/post-options-menu"
@@ -108,7 +108,7 @@ export function ExploreCard({
               {project.commentCount.toLocaleString('en-US')}
             </span>
           </div>
-          {interactive && (
+          {interactive ? (
             <div className="flex items-center gap-1 text-muted-foreground">
               <BookmarkButton
                 projectId={project.id}
@@ -121,6 +121,15 @@ export function ExploreCard({
                 isLoggedIn={loggedIn}
                 isOwnPost={project.ownerUsername === username}
               />
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+                <Bookmark className="h-4 w-4" />
+              </span>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+                <MoreHorizontal className="h-4 w-4" />
+              </span>
             </div>
           )}
         </div>
