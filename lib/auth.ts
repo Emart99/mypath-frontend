@@ -116,6 +116,14 @@ export async function refreshAccessToken(): Promise<boolean> {
 
 export async function logout() {
   const cookieStore = await cookies();
+  const refreshToken = cookieStore.get('refreshToken')?.value;
+  if (refreshToken) {
+    await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    }).catch(() => {});
+  }
   cookieStore.delete('accessToken');
   cookieStore.delete('refreshToken');
   cookieStore.delete('username');
