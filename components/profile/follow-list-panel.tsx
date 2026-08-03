@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { FollowButton } from "@/components/social/follow-button"
@@ -58,10 +59,9 @@ export function FollowListPanel({
         {items.map((item) => (
           <div key={item.username} className="relative flex items-center gap-4 rounded-2xl transition-colors hover:bg-card -mx-4 py-3 px-4">
             <Link href={`/u/${encodeURIComponent(item.username)}`} className="absolute inset-0 z-0" aria-label={item.username} />
-            <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-lg font-medium w-12 h-12 bg-primary text-primary-foreground">
+            <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-lg font-medium w-12 h-12 bg-primary text-primary-foreground">
               {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                <Image src={item.imageUrl} alt="" fill sizes="48px" className="object-cover" />
               ) : (
                 initial(item.username)
               )}

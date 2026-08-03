@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import {
@@ -545,12 +546,13 @@ export default function PublishPage() {
                   {projectImages?.slice(0, 3).map((img) => {
                     const isActive = thumbnailImageUrl === img.url;
                     return (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         key={img.url}
                         src={img.url}
                         alt={img.itemTitle}
                         title={img.itemTitle}
+                        width={104}
+                        height={96}
                         onClick={() => !thumbnailSaving && applyThumbnail(
                           { type: "PROJECT_IMAGE", imageUrl: img.url },
                           { imageUrl: img.url, graph: null }

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import type { Item, Trail } from "@/app/editor/types"
 import type { GraphPreviewData } from "@/lib/feed"
 import { KnowledgeGraph } from "@/components/editor/knowledge-graph"
@@ -48,9 +49,8 @@ export function ProjectThumbnail({
 }) {
   if (thumbnailImageUrl) {
     return (
-      <div className={`overflow-hidden ${className}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={thumbnailImageUrl} alt="" className="h-full w-full object-cover object-top" />
+      <div className={`relative overflow-hidden ${className}`}>
+        <Image src={thumbnailImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover object-top" />
       </div>
     )
   }

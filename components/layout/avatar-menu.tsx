@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import {
@@ -43,12 +44,11 @@ export function AvatarMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-medium text-primary-foreground outline-none"
+          className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-medium text-primary-foreground outline-none"
           aria-label="Account menu"
         >
           {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+            <Image src={imageUrl} alt="" fill sizes="40px" className="object-cover" />
           ) : (
             initials
           )}
@@ -60,11 +60,10 @@ export function AvatarMenu({
             <Link href="/profile">
               <div className="flex items-center gap-2">
                 <span
-                  className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full text-[11px] font-medium w-6 h-6 bg-primary text-primary-foreground"
+                  className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full text-[11px] font-medium w-6 h-6 bg-primary text-primary-foreground"
                 >
                   {imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+                    <Image src={imageUrl} alt="" fill sizes="24px" className="object-cover" />
                   ) : (
                     initials
                   )}

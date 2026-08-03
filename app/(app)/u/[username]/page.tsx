@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { ArrowUpRight, Calendar, MapPin, Link as LinkIcon, Users } from "lucide-react"
@@ -35,10 +36,9 @@ export default async function PublicProfilePage({
   const { items: published, hasMore: publishedHasMore } = await getPublicUserPublishedPage(username, 0, PAGE_SIZE)
 
   const avatar = (
-    <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-[32px] sm:text-[46px] font-medium w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] bg-primary text-primary-foreground ring-4 ring-background">
+    <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-[32px] sm:text-[46px] font-medium w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] bg-primary text-primary-foreground ring-4 ring-background">
       {profile.imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={profile.imageUrl} alt="" className="h-full w-full object-cover" />
+        <Image src={profile.imageUrl} alt="" fill sizes="140px" className="object-cover" />
       ) : (
         initial(profile.username)
       )}
@@ -50,9 +50,8 @@ export default async function PublicProfilePage({
         <div className="pt-9 px-6 md:px-18 pb-14">
           {profile.bannerUrl && (
             <div className="relative mb-3">
-              <div className="aspect-[6/1] w-full overflow-hidden rounded-[28px] bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={profile.bannerUrl} alt="" className="h-full w-full object-cover" />
+              <div className="relative aspect-[6/1] w-full overflow-hidden rounded-[28px] bg-muted">
+                <Image src={profile.bannerUrl} alt="" fill sizes="1216px" className="object-cover" />
               </div>
               <div className="absolute left-1/2 -bottom-[50px] z-10 -translate-x-1/2 sm:left-8 sm:-bottom-[70px] sm:translate-x-0">
                 {avatar}

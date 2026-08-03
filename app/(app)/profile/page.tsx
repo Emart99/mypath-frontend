@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight, Cake, Calendar, MapPin, Link as LinkIcon, Users } from "lucide-react"
 import { BadgesPanel } from "@/components/profile/badges-panel"
@@ -63,10 +64,9 @@ export default async function ProfilePage({
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
         <div className="pt-9 px-18 pb-0">
           <div className="mb-3">
-            <div className="aspect-[6/1] w-full overflow-hidden rounded-[28px] bg-muted">
+            <div className="relative aspect-[6/1] w-full overflow-hidden rounded-[28px] bg-muted">
               {profile.bannerUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.bannerUrl} alt="" className="h-full w-full object-cover" />
+                <Image src={profile.bannerUrl} alt="" fill sizes="1216px" className="object-cover" />
               )}
             </div>
           </div>
@@ -86,10 +86,9 @@ export default async function ProfilePage({
               />
             </div>
             <div className="flex items-start gap-7">
-              <div className="flex h-[104px] w-[104px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-[38px] font-medium font-display text-primary-foreground">
+              <div className="relative flex h-[104px] w-[104px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-[38px] font-medium font-display text-primary-foreground">
                 {profile.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={profile.imageUrl} alt="" className="h-full w-full object-cover" />
+                  <Image src={profile.imageUrl} alt="" fill sizes="104px" className="object-cover" />
                 ) : (
                   initial(profile.username)
                 )}

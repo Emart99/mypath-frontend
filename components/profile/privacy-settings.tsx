@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Image from "next/image"
 import { Switch } from "@/components/ui/switch"
 import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Button } from "@/components/ui/button"
@@ -235,10 +236,9 @@ function BlockedUsersPanel({
       <div className="flex flex-col">
         {items.map((item) => (
           <div key={item.username} className="flex items-center gap-4 rounded-2xl py-3">
-            <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-lg font-medium w-12 h-12 bg-primary text-primary-foreground">
+            <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-lg font-medium w-12 h-12 bg-primary text-primary-foreground">
               {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                <Image src={item.imageUrl} alt="" fill sizes="48px" className="object-cover" />
               ) : (
                 initial(item.username)
               )}
