@@ -19,7 +19,6 @@ import { GoogleAuthButton } from "@/components/auth/google-auth-button"
 type Availability = "idle" | "checking" | "available" | "taken"
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 declare global {
   interface Window {
@@ -75,7 +74,6 @@ export function SignupForm({
     "/api/auth/check-username",
     "username"
   );
-  const emailAvailability = useAvailabilityCheck(email, EMAIL_PATTERN, "/api/auth/check-email", "email");
 
   useEffect(() => {
     return () => {
@@ -158,29 +156,18 @@ export function SignupForm({
         </Field>
         <Field floatingLabel>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <div className="relative">
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="m@example.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={!!errors?.email || emailAvailability === "taken"}
-              className={emailAvailability !== "idle" ? "pr-9" : undefined}
-            />
-            {emailAvailability === "checking" && (
-              <Loader2 className="absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-            )}
-            {emailAvailability === "available" && (
-              <CheckCircle2 className="absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-success" />
-            )}
-          </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="m@example.com"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-invalid={!!errors?.email}
+          />
           {errors?.email ? (
             <FieldError>{errors.email}</FieldError>
-          ) : emailAvailability === "taken" ? (
-            <FieldError>Email is already registered</FieldError>
           ) : (
             <FieldDescription>
               We&apos;ll use this to contact you. We will not share your email
