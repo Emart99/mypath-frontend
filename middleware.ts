@@ -95,11 +95,15 @@ export async function middleware(request: NextRequest) {
 
   const isLoggedIn = !!(accessToken || refreshToken);
 
-  const needsAdminCheck = isLoggedIn && !!accessToken && (path.startsWith('/projects') || path === '/login' || path === '/signup');
+  const needsAdminCheck = isLoggedIn && !!accessToken && (path.startsWith('/projects') || path.startsWith('/admin') || path === '/login' || path === '/signup');
   const admin = needsAdminCheck && accessToken ? await isAdminUser(accessToken) : false;
 
   if (path.startsWith('/projects') && admin) {
     return NextResponse.redirect(new URL('/explore', request.url));
+  }
+
+  if (path.startsWith('/admin') && !admin) {
+    return NextResponse.redirect(new URL('/projects', request.url));
   }
 
   if ((path === '/login' || path === '/signup') && isLoggedIn) {
