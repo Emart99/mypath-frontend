@@ -18,15 +18,28 @@ const REFRESH_MARGIN_SECONDS = 60;
 // token on every refresh (and treats a re-presented revoked token as theft,
 // nuking the whole session), so we must persist BOTH new tokens — dropping the
 // rotated refresh token would log the user out on the next refresh.
-function isExpiringSoon(token: string): boolean {
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(base64));
-    if (typeof payload.exp !== 'number') return false;
-    return payload.exp * 1000 - Date.now() < REFRESH_MARGIN_SECONDS * 1000;
+    return JSON.parse(atob(base64));
   } catch {
-    return true;
+    return null;
   }
+}
+
+function isExpiringSoon(token: string): boolean {
+  const payload = decodeJwtPayload(token);
+  if (!payload) return true;
+  if (typeof payload.exp !== 'number') return false;
+  return payload.exp * 1000 - Date.now() < REFRESH_MARGIN_SECONDS * 1000;
+}
+
+// Only used for redirect UX (e.g. bouncing an admin away from /projects) — not
+// an authorization check, so an unverified decode is fine here. Any real admin
+// action still gets the JWT signature re-verified backend-side.
+function getRole(token: string): string | null {
+  const role = decodeJwtPayload(token)?.role;
+  return typeof role === 'string' ? role : null;
 }
 
 async function refreshAccessToken(
@@ -46,20 +59,6 @@ async function refreshAccessToken(
     return { accessToken: data.accessToken, refreshToken: data.refreshToken ?? refreshToken };
   } catch {
     return null;
-  }
-}
-
-async function isAdminUser(accessToken: string): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/profile/me`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      cache: 'no-store',
-    });
-    if (!response.ok) return false;
-    const data = await response.json();
-    return data.role === 'ADMIN';
-  } catch {
-    return false;
   }
 }
 
@@ -95,8 +94,7 @@ export async function middleware(request: NextRequest) {
 
   const isLoggedIn = !!(accessToken || refreshToken);
 
-  const needsAdminCheck = isLoggedIn && !!accessToken && (path.startsWith('/projects') || path.startsWith('/admin') || path === '/login' || path === '/signup');
-  const admin = needsAdminCheck && accessToken ? await isAdminUser(accessToken) : false;
+  const admin = !!accessToken && getRole(accessToken) === 'ADMIN';
 
   if (path.startsWith('/projects') && admin) {
     return NextResponse.redirect(new URL('/explore', request.url));

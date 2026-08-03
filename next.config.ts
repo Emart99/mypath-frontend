@@ -1,8 +1,15 @@
 import type { NextConfig } from "next";
 
+// Same env var lib/config.ts reads at runtime — keeps the R2 domain in one
+// place so switching to a custom domain doesn't require code changes here.
+const R2_PUBLIC_BASE_URL =
+  process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL ??
+  "https://pub-809332af245f4f50954cd6523674cc35.r2.dev";
+const r2Hostname = new URL(R2_PUBLIC_BASE_URL).hostname;
+
 const csp = [
   "default-src 'self'",
-  "img-src 'self' data: https://pub-809332af245f4f50954cd6523674cc35.r2.dev",
+  `img-src 'self' data: ${R2_PUBLIC_BASE_URL}`,
   "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://accounts.google.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
@@ -19,7 +26,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "pub-809332af245f4f50954cd6523674cc35.r2.dev",
+        hostname: r2Hostname,
       },
     ],
     formats: ["image/avif", "image/webp"],
