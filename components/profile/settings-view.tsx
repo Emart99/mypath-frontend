@@ -186,7 +186,7 @@ function ChangePasswordSection() {
               </div>
             )}
             <FieldDescription>
-              Must be at least 6 characters and include an uppercase letter, a number, and a symbol.
+              Must be at least 12 characters and include an uppercase letter, a number, and a symbol.
             </FieldDescription>
           </Field>
           <Field floatingLabel>
