@@ -1,6 +1,6 @@
 'use server';
 import { cookies } from 'next/headers';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL, REFRESH_TOKEN_MAX_AGE } from './config';
 
 export async function getAccessToken(): Promise<string | null> {
   const cookieStore = await cookies();
@@ -96,7 +96,7 @@ export async function refreshAccessToken(): Promise<boolean> {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7,
+          maxAge: REFRESH_TOKEN_MAX_AGE,
           path: '/',
         });
       }

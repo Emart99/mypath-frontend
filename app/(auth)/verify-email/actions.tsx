@@ -1,5 +1,6 @@
 'use server';
 import { cookies } from 'next/headers';
+import { REFRESH_TOKEN_MAX_AGE } from '@/lib/config';
 
 export type VerifyEmailResult =
   | { success: true }
@@ -44,7 +45,7 @@ export async function verifyEmailHandler(token: string): Promise<VerifyEmailResu
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: REFRESH_TOKEN_MAX_AGE,
     path: '/',
   });
 

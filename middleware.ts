@@ -1,7 +1,7 @@
 // middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { API_BASE_URL } from '@/lib/config';
+import { API_BASE_URL, REFRESH_TOKEN_MAX_AGE } from '@/lib/config';
 
 // Backs the public-project view counter's per-visitor dedup for anonymous
 // visitors (logged-in visitors dedup by user id instead) — see
@@ -9,7 +9,6 @@ import { API_BASE_URL } from '@/lib/config';
 const ANON_ID_COOKIE = 'tramo_anon_id';
 
 const ACCESS_TOKEN_MAX_AGE = 60 * 15;
-const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7;
 const REFRESH_MARGIN_SECONDS = 60;
 
 // Server Components can't refresh the access token mid-render (cookies() is

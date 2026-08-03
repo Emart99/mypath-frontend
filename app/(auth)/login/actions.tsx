@@ -1,6 +1,7 @@
 'use server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { REFRESH_TOKEN_MAX_AGE } from '@/lib/config';
 
 export type AuthResult = {
   error?: string;
@@ -49,7 +50,7 @@ export async function authenticateHandler(
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: REFRESH_TOKEN_MAX_AGE,
     path: '/',
   });
 
