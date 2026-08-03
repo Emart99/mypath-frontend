@@ -21,7 +21,8 @@ const REFRESH_MARGIN_SECONDS = 60;
 // rotated refresh token would log the user out on the next refresh.
 function isExpiringSoon(token: string): boolean {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
     if (typeof payload.exp !== 'number') return false;
     return payload.exp * 1000 - Date.now() < REFRESH_MARGIN_SECONDS * 1000;
   } catch {
