@@ -1,9 +1,5 @@
 import type { Metadata, Viewport } from "next";
-// @ts-ignore
-
 import "./globals.css";
-// @ts-ignore
-
 import "./editor/Editor.css";
 
 import { ThemeProvider } from "@/components/layout/theme-provider";

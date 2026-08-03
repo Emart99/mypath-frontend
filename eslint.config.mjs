@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Not part of the app source: a local Claude Code worktree directory
+    // (gitignored, but ESLint's own ignores don't read .gitignore).
+    ".claude/**",
+    // Vendored third-party library (gif.js), not our code.
+    "public/gif.worker.js",
   ]),
 ]);
 

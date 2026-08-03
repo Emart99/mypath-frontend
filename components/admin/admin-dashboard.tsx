@@ -25,7 +25,7 @@ export function AdminDashboard() {
 
   const [query, setQuery] = useState("")
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [usersLoading, setUsersLoading] = useState(false)
+  const [usersLoading, setUsersLoading] = useState(true)
   const [banTarget, setBanTarget] = useState<AdminUser | null>(null)
   const [banReason, setBanReason] = useState("")
 
@@ -45,7 +45,10 @@ export function AdminDashboard() {
   }
 
   useEffect(() => {
-    refreshUsers("")
+    searchAdminUsers("").then((data) => {
+      setUsers(data)
+      setUsersLoading(false)
+    })
   }, [])
 
   async function handleDismiss(report: Report) {
