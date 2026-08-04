@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Camera, ImagePlus, Pencil } from "lucide-react"
+import { Camera, ImagePlus, Pencil, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,9 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
 import { CropModal } from "@/components/profile/crop-modal"
@@ -188,84 +187,105 @@ export function EditProfileModal({
       </Button>
 
       <Dialog open={open} onOpenChange={(next) => !next && closeAndReset()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-          </DialogHeader>
-
-          <div className="relative -mx-6 -mt-2 mb-12">
-            <button
-              type="button"
-              onClick={handleBannerClick}
+        <DialogContent
+          className="max-h-[85vh] gap-0 overflow-y-auto p-0 sm:max-w-2xl"
+          showCloseButton={false}
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
+          <div className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background px-6 py-4">
+            <DialogClose
               disabled={isPending}
-              className="group relative flex aspect-[6/1] w-full items-center justify-center overflow-hidden rounded-[28px] bg-muted"
-              title={bannerPreviewUrl ? "Change banner" : "Add banner"}
+              className="rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
             >
-              {bannerPreviewUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={bannerPreviewUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <ImagePlus className="h-4 w-4" />
-                  Add banner
-                </span>
-              )}
-              <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-[rgba(0,0,0,0.5)]">
-                <ImagePlus className="h-5 w-5 text-white" />
-              </span>
-            </button>
-            <input
-              ref={bannerInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="hidden"
-              onChange={handleBannerFileChange}
-            />
-
-            <button
-              type="button"
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={isPending}
-              className="group absolute left-1/2 -bottom-12 flex h-24 w-24 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full bg-primary text-[34px] font-medium font-display text-primary-foreground ring-4 ring-background"
-              title="Change avatar"
-            >
-              {avatarPreviewUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarPreviewUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                initial(username)
-              )}
-              <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-[rgba(0,0,0,0.5)]">
-                <Camera className="h-5 w-5 text-white" />
-              </span>
-            </button>
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarFileChange}
-            />
-
-            {error && (
-              <p className="absolute inset-x-3 top-2 z-20 rounded-md bg-black/60 px-2 py-1 text-center text-[11px] font-medium text-white">
-                {error}
-              </p>
-            )}
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+            <DialogTitle className="text-base">Edit profile</DialogTitle>
+            <Button type="button" size="sm" className="ml-auto" onClick={handleSave} disabled={isPending || !birthDate}>
+              {isPending ? "Saving..." : "Save"}
+            </Button>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="mb-2">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={handleBannerClick}
+                disabled={isPending}
+                className="group relative flex aspect-[6/1] w-full items-center justify-center overflow-hidden bg-muted"
+                title={bannerPreviewUrl ? "Change banner" : "Add banner"}
+              >
+                {bannerPreviewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={bannerPreviewUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <ImagePlus className="h-4 w-4" />
+                    Add banner
+                  </span>
+                )}
+                <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-[rgba(0,0,0,0.5)]">
+                  <ImagePlus className="h-5 w-5 text-white" />
+                </span>
+              </button>
+              <input
+                ref={bannerInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleBannerFileChange}
+              />
+
+              {error && (
+                <p className="absolute inset-x-3 top-2 z-20 rounded-md bg-black/60 px-2 py-1 text-center text-[11px] font-medium text-white">
+                  {error}
+                </p>
+              )}
+            </div>
+
+            <div className="flex px-6 pt-2">
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isPending}
+                className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary text-[34px] font-medium font-display text-primary-foreground ring-1 ring-border"
+                title="Change avatar"
+              >
+                {avatarPreviewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarPreviewUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  initial(username)
+                )}
+                <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-[rgba(0,0,0,0.5)]">
+                  <Camera className="h-5 w-5 text-white" />
+                </span>
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarFileChange}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 px-6 pb-6">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="edit-profile-bio">Bio</Label>
               <Textarea
                 id="edit-profile-bio"
                 value={bio}
                 onChange={(event) => setBio(event.target.value)}
-                rows={3}
+                rows={4}
                 maxLength={255}
                 placeholder="Tell people a bit about yourself"
-                className="resize-none"
+                className="field-sizing-fixed resize-none rounded-xs px-4 py-2 shadow-none focus-visible:border-primary focus-visible:ring-0 focus-visible:shadow-[inset_0_0_0_1px_var(--primary)]"
               />
+              <span className="self-end text-[11px] text-muted-foreground">
+                {bio.length}/255
+              </span>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -325,15 +345,6 @@ export function EditProfileModal({
               <span className="text-xs font-medium text-destructive">{error}</span>
             )}
           </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={closeAndReset} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={handleSave} disabled={isPending || !birthDate}>
-              {isPending ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
