@@ -124,7 +124,6 @@ export default function PublishPage() {
   const [projectImages, setProjectImages] = useState<ProjectImage[] | null>(null);
   const [imagesLoading, setImagesLoading] = useState(false);
   const [thumbnailSaving, setThumbnailSaving] = useState(false);
-  const [visibilitySaving, setVisibilitySaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [justPublished, setJustPublished] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -229,18 +228,10 @@ export default function PublishPage() {
     tagsInputRef.current?.focus();
   };
 
-  const changeVisibility = async (next: ProjectVisibility) => {
-    if (next === visibility || visibilitySaving) return;
-    setVisibilitySaving(true);
+  const changeVisibility = (next: ProjectVisibility) => {
+    if (next === visibility || isPublishing) return;
     setError(null);
-    const prev = visibility;
     setVisibility(next);
-    const { error: err } = await setProjectVisibility(projectId, next);
-    if (err) {
-      setVisibility(prev);
-      setError(err);
-    }
-    setVisibilitySaving(false);
   };
 
   const applyThumbnail = async (choice: ThumbnailChoice, optimistic: { imageUrl: string | null; graph: Project["thumbnailGraph"] }) => {
@@ -272,21 +263,20 @@ export default function PublishPage() {
     }
   };
 
-  // Visibility itself is already applied instantly by the pills (changeVisibility) —
-  // this only saves the description and, when the chosen visibility is Published,
-  // actually calls the publish endpoint. It never publishes on a Private/Unlisted save.
   const handleConfirm = async () => {
     if (isPublishing) return;
-    if (visibility === "published" && !description.trim()) {
-      setError("Add a description before publishing.");
-      return;
-    }
     setIsPublishing(true);
     setError(null);
     try {
       if (description.trim() !== project.description) await submitDescription();
       if (visibility === "published") {
         const { error: err } = await publishProject(projectId);
+        if (err) {
+          setError(err);
+          return;
+        }
+      } else if (visibility !== project.visibility) {
+        const { error: err } = await setProjectVisibility(projectId, visibility);
         if (err) {
           setError(err);
           return;
@@ -350,7 +340,7 @@ export default function PublishPage() {
                     <button
                       key={option.value}
                       type="button"
-                      disabled={visibilitySaving}
+                      disabled={isPublishing}
                       onClick={() => changeVisibility(option.value)}
                       className={cn(
                         "flex items-center gap-3 rounded-md border px-3.5 py-2.5 text-left transition-colors disabled:opacity-60",
