@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation"
 import {
   ChevronLeft,
   Check,
+  Copy,
   Globe,
   ImageIcon,
   Loader2,
@@ -127,6 +128,8 @@ export default function PublishPage() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [justPublished, setJustPublished] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     getProject(projectId).then((p) => {
@@ -282,12 +285,24 @@ export default function PublishPage() {
           return;
         }
       }
+      setShareUrl(visibility === "private" ? null : `${window.location.origin}/p/${projectId}`);
       setJustPublished(true);
       setTimeout(() => setJustPublished(false), 2000);
     } catch {
       setError("Something went wrong — try again.");
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const copyShareUrl = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      setError("Couldn't copy the link — copy it manually.");
     }
   };
 
@@ -580,6 +595,31 @@ export default function PublishPage() {
                 confirmLabel === "publish" ? "Publish" : confirmLabel === "update" ? "Update" : "Save"
               )}
             </button>
+
+            {shareUrl && visibility !== "private" && (
+              <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2">
+                <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
+                  {shareUrl}
+                </span>
+                <button
+                  type="button"
+                  onClick={copyShareUrl}
+                  className="flex shrink-0 items-center gap-1.5 text-[13px] font-medium hover:text-foreground"
+                >
+                  {linkCopied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
     </div>
   );

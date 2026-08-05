@@ -1,3 +1,5 @@
+import { cache } from "react"
+import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { FollowListPanel } from "@/components/profile/follow-list-panel"
@@ -6,6 +8,22 @@ import { getPublicProfile, getFollowersPage, getFollowingPage } from "@/lib/publ
 import { PAGE_SIZE } from "@/lib/config"
 
 type Tab = "followers" | "following"
+
+const fetchProfile = cache(getPublicProfile)
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ username: string }>
+  searchParams: Promise<{ tab?: string }>
+}): Promise<Metadata> {
+  const { username } = await params
+  const { tab: tabParam } = await searchParams
+  const profile = await fetchProfile(username)
+  if (!profile) return { title: "User not found" }
+  return { title: `${profile.username}'s ${tabParam === "following" ? "following" : "followers"}` }
+}
 
 export default async function FollowersPage({
   params,
@@ -19,7 +37,7 @@ export default async function FollowersPage({
   const tab: Tab = tabParam === "following" ? "following" : "followers"
 
   const [profile, loggedIn, currentUsername] = await Promise.all([
-    getPublicProfile(username),
+    fetchProfile(username),
     isLoggedIn(),
     getUsername(),
   ])

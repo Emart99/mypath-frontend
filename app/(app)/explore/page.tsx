@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Check, Eye, MessageCircle, Search } from "lucide-react"
 import { VoteButton } from "@/components/social/vote-button"
@@ -12,6 +13,11 @@ import { NameBadge } from "@/components/profile/badges-panel"
 import { getExploreBundle, type FeedSort } from "@/lib/public-project"
 import { isLoggedIn, getUsername } from "@/lib/auth"
 import { getSubscriptionStatus } from "@/lib/subscription"
+
+export const metadata: Metadata = {
+  title: "Explore",
+  description: "Discover trails and projects published by the Tramo community.",
+}
 
 function formatCardDate(timestamp: string) {
   return new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })

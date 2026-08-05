@@ -1,9 +1,29 @@
+import { cache } from "react"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { PublicProjectView } from "@/components/project/public-project-view"
 import { getPublicProject } from "@/lib/public-project"
 import { getHomeHref } from "@/lib/nav"
 import { isLoggedIn, getUsername } from "@/lib/auth"
 import { getMyProfile } from "@/lib/profile"
+
+const fetchProject = cache(getPublicProject)
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ projectId: string }>
+}): Promise<Metadata> {
+  const { projectId } = await params
+  const project = await fetchProject(projectId)
+  if (!project) return { title: "Project not found" }
+  const description = project.description ?? `A trail by ${project.ownerUsername} on Tramo.`
+  return {
+    title: project.title,
+    description,
+    openGraph: { title: project.title, description, type: "article" },
+  }
+}
 
 export default async function PublicProjectPage({
   params,
@@ -12,7 +32,7 @@ export default async function PublicProjectPage({
 }) {
   const { projectId } = await params
   const [project, homeHref, loggedIn, username] = await Promise.all([
-    getPublicProject(projectId),
+    fetchProject(projectId),
     getHomeHref(),
     isLoggedIn(),
     getUsername(),

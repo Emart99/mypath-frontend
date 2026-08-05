@@ -1,3 +1,5 @@
+import { cache } from "react"
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
@@ -14,6 +16,23 @@ function initial(username: string) {
   return username.charAt(0).toUpperCase()
 }
 
+const fetchProfile = cache(getPublicProfile)
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>
+}): Promise<Metadata> {
+  const { username } = await params
+  const profile = await fetchProfile(username)
+  if (!profile) return { title: "User not found" }
+  return {
+    title: profile.username,
+    description: profile.bio ?? `See ${profile.username}'s projects on Tramo.`,
+    openGraph: profile.imageUrl ? { images: [profile.imageUrl] } : undefined,
+  }
+}
+
 export default async function PublicProfilePage({
   params,
 }: {
@@ -21,7 +40,7 @@ export default async function PublicProfilePage({
 }) {
   const { username } = await params
   const [profile, loggedIn] = await Promise.all([
-    getPublicProfile(username),
+    fetchProfile(username),
     isLoggedIn(),
   ])
 

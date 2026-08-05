@@ -1,7 +1,13 @@
+import type { Metadata } from "next"
 import { MailCheck } from "lucide-react"
 import { Wordmark } from "@/components/layout/logo"
 import { AuthPoster } from "@/components/auth/auth-poster"
 import { ResendVerificationButton } from "@/components/auth/resend-verification-button"
+
+export const metadata: Metadata = {
+  title: "Check your email",
+  robots: { index: false, follow: false },
+}
 
 export default async function CheckEmailPage({
   searchParams,

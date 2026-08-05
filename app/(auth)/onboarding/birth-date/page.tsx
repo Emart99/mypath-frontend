@@ -1,5 +1,11 @@
+import type { Metadata } from "next"
 import { BirthDateForm } from "@/components/auth/birth-date-form"
 import { AuthPoster } from "@/components/auth/auth-poster"
+
+export const metadata: Metadata = {
+  title: "One more step",
+  robots: { index: false, follow: false },
+}
 
 export default function BirthDateOnboardingPage() {
   return (

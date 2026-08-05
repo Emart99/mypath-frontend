@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Calendar, User, CreditCard, Shield } from "lucide-react"
 import { SettingsView } from "@/components/profile/settings-view"
@@ -10,6 +11,11 @@ import { getEmailDigestFrequency } from "@/lib/notifications-prefs"
 import { getPrivacySettings } from "@/lib/privacy"
 import { getBlockedUsersPage } from "@/lib/blocked-users"
 import { PAGE_SIZE } from "@/lib/config"
+
+export const metadata: Metadata = {
+  title: "Settings",
+  robots: { index: false, follow: false },
+}
 
 type Tab = "account" | "plan" | "privacy"
 

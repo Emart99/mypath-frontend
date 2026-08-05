@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight, Cake, Calendar, MapPin, Link as LinkIcon, Users } from "lucide-react"
@@ -20,6 +21,11 @@ import {
 } from "@/lib/profile"
 import { getPrivacySettings } from "@/lib/privacy"
 import { PAGE_SIZE } from "@/lib/config"
+
+export const metadata: Metadata = {
+  title: "My Profile",
+  robots: { index: false, follow: false },
+}
 
 function formatBirthDate(birthDate: string) {
   const [year, month, day] = birthDate.split("-").map(Number)

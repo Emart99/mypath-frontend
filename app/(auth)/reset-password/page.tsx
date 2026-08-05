@@ -1,7 +1,13 @@
+import type { Metadata } from "next"
 import { Suspense } from "react"
 import { Wordmark } from "@/components/layout/logo"
 import { AuthPoster } from "@/components/auth/auth-poster"
 import { ResetPasswordClient } from "./reset-password-client"
+
+export const metadata: Metadata = {
+  title: "Reset password",
+  robots: { index: false, follow: false },
+}
 
 export default function ResetPasswordPage() {
   return (

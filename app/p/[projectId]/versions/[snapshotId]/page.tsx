@@ -1,7 +1,13 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getPublicProjectSnapshot } from "@/lib/project-snapshots"
 import { LexicalReadOnly } from "@/components/project/lexical-read-only"
+
+export const metadata: Metadata = {
+  title: "Older version",
+  robots: { index: false, follow: false },
+}
 
 export default async function PublicVersionPage({
   params,

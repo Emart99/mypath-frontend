@@ -1,6 +1,12 @@
+import type { Metadata } from "next"
 import Script from "next/script"
 import { SignupForm } from "@/components/auth/signup-form"
 import { AuthPoster } from "@/components/auth/auth-poster"
+
+export const metadata: Metadata = {
+  title: "Sign up",
+  description: "Create a free Tramo account and start mapping your ideas.",
+}
 
 export default function SignupPage() {
   return (
