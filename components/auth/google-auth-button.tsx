@@ -25,7 +25,7 @@ export function GoogleAuthButton({
       setError(result.error)
       return
     }
-    router.push("/")
+    router.push(result.requiresBirthDate ? "/onboarding/birth-date" : "/")
     router.refresh()
   }
 

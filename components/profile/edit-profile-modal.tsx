@@ -296,7 +296,13 @@ export function EditProfileModal({
                 value={birthDate}
                 onChange={(event) => setBirthDate(event.target.value)}
                 required
+                disabled={!!initialBirthDate}
               />
+              {initialBirthDate && (
+                <span className="text-[11px] text-muted-foreground">
+                  Date of birth can&apos;t be changed once set.
+                </span>
+              )}
               <div className="flex items-center justify-between pt-1">
                 <span className="text-[13px] text-muted-foreground">Show my age on my public profile</span>
                 <Switch checked={showAge} onCheckedChange={setShowAge} />

@@ -175,6 +175,22 @@ export function SignupForm({
             </FieldDescription>
           )}
         </Field>
+        <Field>
+          <FieldLabel htmlFor="birthDate">Date of birth</FieldLabel>
+          <Input
+            id="birthDate"
+            name="birthDate"
+            type="date"
+            required
+            max={new Date().toISOString().split("T")[0]}
+            aria-invalid={!!errors?.birthDate}
+          />
+          {errors?.birthDate ? (
+            <FieldError>{errors.birthDate}</FieldError>
+          ) : (
+            <FieldDescription>You must be at least 13 years old to create an account.</FieldDescription>
+          )}
+        </Field>
         <Field floatingLabel>
           <FieldLabel htmlFor="password">Password</FieldLabel>
           <Input

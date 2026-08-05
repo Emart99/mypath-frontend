@@ -2,6 +2,39 @@
 import { cookies } from 'next/headers';
 import { API_BASE_URL, REFRESH_TOKEN_MAX_AGE } from './config';
 
+export type AuthTokens = { accessToken: string; refreshToken: string; username?: string };
+
+export async function setAuthCookies({ accessToken, refreshToken, username }: AuthTokens): Promise<void> {
+  const cookieStore = await cookies();
+  const secure = process.env.NODE_ENV === 'production';
+
+  cookieStore.set('accessToken', accessToken, {
+    httpOnly: true,
+    secure,
+    sameSite: 'lax',
+    maxAge: 60 * 15,
+    path: '/',
+  });
+
+  cookieStore.set('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure,
+    sameSite: 'lax',
+    maxAge: REFRESH_TOKEN_MAX_AGE,
+    path: '/',
+  });
+
+  if (username) {
+    cookieStore.set('username', username, {
+      httpOnly: true,
+      secure,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+  }
+}
+
 export async function getAccessToken(): Promise<string | null> {
   const cookieStore = await cookies();
   return cookieStore.get('accessToken')?.value || null;

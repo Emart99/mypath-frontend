@@ -1,9 +1,9 @@
 'use server';
-import { cookies } from 'next/headers';
-import { API_BASE_URL, REFRESH_TOKEN_MAX_AGE } from './config';
+import { API_BASE_URL } from './config';
+import { setAuthCookies } from './auth';
 
 export type GoogleAuthResult =
-  | { success: true }
+  | { success: true; requiresBirthDate: boolean }
   | { success: false; error: string };
 
 export async function googleAuthHandler(idToken: string): Promise<GoogleAuthResult> {
@@ -29,33 +29,11 @@ export async function googleAuthHandler(idToken: string): Promise<GoogleAuthResu
     return { success: false, error: 'Google sign-in failed. Please try again.' };
   }
 
-  const cookieStore = await cookies();
-
-  cookieStore.set('accessToken', data.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 15,
-    path: '/',
+  await setAuthCookies({
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+    username: typeof data.username === 'string' ? data.username : undefined,
   });
 
-  cookieStore.set('refreshToken', data.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: REFRESH_TOKEN_MAX_AGE,
-    path: '/',
-  });
-
-  if (typeof data.username === 'string' && data.username) {
-    cookieStore.set('username', data.username, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    });
-  }
-
-  return { success: true };
+  return { success: true, requiresBirthDate: !!data.requiresBirthDate };
 }

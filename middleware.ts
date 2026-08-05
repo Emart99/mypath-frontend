@@ -42,6 +42,14 @@ function getRole(token: string): string | null {
   return typeof role === 'string' ? role : null;
 }
 
+// Mirrors JwtService's requiresBirthDate claim (true when the account has no
+// birthDate yet - new Google sign-ups, or pre-gate accounts). Redirect-only
+// signal, same trust level as getRole above - the backend re-checks on every
+// request via BirthDateGateFilter regardless of what this decode says.
+function needsBirthDate(token: string): boolean {
+  return decodeJwtPayload(token)?.requiresBirthDate === true;
+}
+
 async function refreshAccessToken(
   refreshToken: string,
 ): Promise<{ accessToken: string; refreshToken: string } | null> {
@@ -64,7 +72,8 @@ async function refreshAccessToken(
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const isProtected = path.startsWith('/editor') || path.startsWith('/projects') || path.startsWith('/profile') || path.startsWith('/admin') || path.startsWith('/settings');
+  const isOnboarding = path.startsWith('/onboarding/birth-date');
+  const isProtected = path.startsWith('/editor') || path.startsWith('/projects') || path.startsWith('/profile') || path.startsWith('/admin') || path.startsWith('/settings') || isOnboarding;
 
   let accessToken = request.cookies.get('accessToken')?.value ?? null;
   const refreshToken = request.cookies.get('refreshToken')?.value ?? null;
@@ -94,7 +103,18 @@ export async function middleware(request: NextRequest) {
 
   const isLoggedIn = !!(accessToken || refreshToken);
 
+  const pendingBirthDate = !!accessToken && needsBirthDate(accessToken);
+
+  // Bounce any other protected route to onboarding until birthDate is set, and
+  // bounce away from onboarding once it's already satisfied (nothing to do there).
+  if (isProtected && !isServerAction && !isOnboarding && pendingBirthDate) {
+    return NextResponse.redirect(new URL('/onboarding/birth-date', request.url));
+  }
   const admin = !!accessToken && getRole(accessToken) === 'ADMIN';
+
+  if (isOnboarding && !isServerAction && (accessValid || refreshed) && !pendingBirthDate) {
+    return NextResponse.redirect(new URL(admin ? '/explore' : '/projects', request.url));
+  }
 
   if (path.startsWith('/projects') && admin) {
     return NextResponse.redirect(new URL('/explore', request.url));
@@ -157,6 +177,7 @@ export const config = {
     '/profile/:path*',
     '/admin/:path*',
     '/settings/:path*',
+    '/onboarding/:path*',
     '/login',
     '/signup',
     '/p/:path*',

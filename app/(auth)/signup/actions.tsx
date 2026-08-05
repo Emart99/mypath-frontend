@@ -1,5 +1,6 @@
 'use server';
 import { redirect } from 'next/navigation';
+import { API_BASE_URL } from '@/lib/config';
 
 const PASSWORD_COMPLEXITY_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/;
 
@@ -8,6 +9,7 @@ export type RegisterErrors = {
   email?: string;
   password?: string;
   confirmPassword?: string;
+  birthDate?: string;
   general?: string;
 };
 
@@ -24,6 +26,7 @@ export async function registerHandler(
   const password = formData.get('password');
   const confirmPassword = formData.get('confirm-password');
   const captchaToken = formData.get('captchaToken');
+  const birthDate = formData.get('birthDate');
 
   if (typeof captchaToken !== 'string' || !captchaToken) {
     return { errors: { general: 'Captcha verification failed. Please try again.' } };
@@ -41,12 +44,12 @@ export async function registerHandler(
     return { errors: { confirmPassword: 'Passwords do not match' } };
   }
 
-  const response = await fetch('http://localhost:8080/api/auth/register', {
+  const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ username, email, password, captchaToken }),
+    body: JSON.stringify({ username, email, password, captchaToken, birthDate }),
   });
 
   if (!response.ok) {
