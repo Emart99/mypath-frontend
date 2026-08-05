@@ -4,8 +4,10 @@ import "./editor/Editor.css";
 
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { robotoFlex, roboto, robotoMono } from "@/lib/fonts";
+import { SITE_URL } from "@/lib/config";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "Tramo", template: "%s | Tramo" },
   description:
     "Collect ideas, connect them into trails, and retrace your thinking — build knowledge maps and share them on Tramo.",

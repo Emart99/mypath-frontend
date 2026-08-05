@@ -41,6 +41,7 @@ export interface PublicProject {
   description: string | null;
   ownerUsername: string;
   modifiedDate: string;
+  thumbnailImageUrl: string | null;
   trails: PublicTrail[];
   voteCount: number;
   votedByRequester: boolean;
@@ -83,6 +84,7 @@ interface PublicProjectDTO {
   description: string | null;
   ownerUsername: string;
   modifiedDate: string;
+  thumbnailImageUrl: string | null;
   trails: PublicTrailDTO[];
   voteCount: number;
   votedByRequester: boolean;
@@ -162,6 +164,7 @@ export async function getPublicProject(projectId: string): Promise<PublicProject
     description: data.description,
     ownerUsername: data.ownerUsername,
     modifiedDate: data.modifiedDate,
+    thumbnailImageUrl: data.thumbnailImageUrl,
     voteCount: data.voteCount,
     votedByRequester: data.votedByRequester,
     bookmarkedByRequester: data.bookmarkedByRequester,
