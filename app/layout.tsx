@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   title: { default: "Tramo", template: "%s | Tramo" },
   description:
     "Collect ideas, connect them into trails, and retrace your thinking — build knowledge maps and share them on Tramo.",
+  alternates: { canonical: "/" },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

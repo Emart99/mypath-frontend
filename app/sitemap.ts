@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next"
 import { API_BASE_URL, SITE_URL } from "@/lib/config"
 
+// Regenerated hourly rather than on every crawl - the project/user lists don't
+// need to be second-fresh, and this keeps a backend hiccup from ever blocking
+// a build (see the try/catch below) or a crawler request.
+export const revalidate = 3600
+
 interface SitemapProject {
   id: string
   modifiedDate: string
@@ -12,15 +17,23 @@ interface SitemapUser {
 }
 
 async function getSitemapProjects(): Promise<SitemapProject[]> {
-  const response = await fetch(`${API_BASE_URL}/api/public/sitemap/projects`)
-  if (!response.ok) return []
-  return response.json()
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/public/sitemap/projects`)
+    if (!response.ok) return []
+    return await response.json()
+  } catch {
+    return []
+  }
 }
 
 async function getSitemapUsers(): Promise<SitemapUser[]> {
-  const response = await fetch(`${API_BASE_URL}/api/public/sitemap/users`)
-  if (!response.ok) return []
-  return response.json()
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/public/sitemap/users`)
+    if (!response.ok) return []
+    return await response.json()
+  } catch {
+    return []
+  }
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

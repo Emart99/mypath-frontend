@@ -26,10 +26,14 @@ export async function generateMetadata({
   const { username } = await params
   const profile = await fetchProfile(username)
   if (!profile) return { title: "User not found" }
+  const description = profile.bio ?? `See ${profile.username}'s projects on Tramo.`
+  const images = profile.imageUrl ? [profile.imageUrl] : undefined
   return {
     title: profile.username,
-    description: profile.bio ?? `See ${profile.username}'s projects on Tramo.`,
-    openGraph: profile.imageUrl ? { images: [profile.imageUrl] } : undefined,
+    description,
+    alternates: { canonical: `/u/${encodeURIComponent(profile.username)}` },
+    openGraph: images ? { images } : undefined,
+    twitter: { card: "summary_large_image", title: profile.username, description, images },
   }
 }
 

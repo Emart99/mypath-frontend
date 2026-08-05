@@ -17,6 +17,7 @@ import { getSubscriptionStatus } from "@/lib/subscription"
 export const metadata: Metadata = {
   title: "Explore",
   description: "Discover trails and projects published by the Tramo community.",
+  alternates: { canonical: "/explore" },
 }
 
 function formatCardDate(timestamp: string) {
