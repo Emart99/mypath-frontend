@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { ProjectThumbnail } from "@/components/project/project-thumbnail"
+import { ForkBadge } from "@/components/project/fork-badge"
 import { PlanUsageChip } from "@/components/profile/plan-usage-chip"
 import { formatBytes } from "@/lib/format-bytes"
 import {
@@ -214,15 +215,22 @@ export default function ProjectsPage() {
                           onBlur={() => submitRename(project.id)}
                         />
                       ) : (
-                        <CardTitle
-                          className="truncate text-sm font-medium"
-                          onDoubleClick={(e) => {
-                            e.stopPropagation()
-                            startRename(project)
-                          }}
-                        >
-                          {project.title}
-                        </CardTitle>
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <CardTitle
+                            className="truncate text-sm font-medium"
+                            onDoubleClick={(e) => {
+                              e.stopPropagation()
+                              startRename(project)
+                            }}
+                          >
+                            {project.title}
+                          </CardTitle>
+                          {project.forkedFromOwnerUsername && (
+                            <span onClick={(e) => e.stopPropagation()}>
+                              <ForkBadge forkedFromOwnerUsername={project.forkedFromOwnerUsername} iconOnly />
+                            </span>
+                          )}
+                        </span>
                       )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -299,15 +307,22 @@ export default function ProjectsPage() {
                         onBlur={() => submitRename(project.id)}
                       />
                     ) : (
-                      <p
-                        className="truncate text-sm font-medium"
-                        onDoubleClick={(e) => {
-                          e.stopPropagation()
-                          startRename(project)
-                        }}
-                      >
-                        {project.title}
-                      </p>
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <p
+                          className="truncate text-sm font-medium"
+                          onDoubleClick={(e) => {
+                            e.stopPropagation()
+                            startRename(project)
+                          }}
+                        >
+                          {project.title}
+                        </p>
+                        {project.forkedFromOwnerUsername && (
+                          <span onClick={(e) => e.stopPropagation()}>
+                            <ForkBadge forkedFromOwnerUsername={project.forkedFromOwnerUsername} iconOnly />
+                          </span>
+                        )}
+                      </span>
                     )}
                   </div>
                   <div className="w-28 shrink-0 text-sm capitalize text-muted-foreground">

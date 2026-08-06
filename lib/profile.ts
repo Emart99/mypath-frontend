@@ -8,17 +8,9 @@ import { toFeedItem, type ProjectFeedItem, type ProjectFeedItemDTO } from "./fee
 
 export type { ProjectFeedItem } from "./feed";
 
-interface ForkFeedItemDTO extends ProjectFeedItemDTO {
-  forkedFromProjectId: number | null;
-  forkedFromTitle: string | null;
-  forkedFromOwnerUsername: string | null;
-}
+type ForkFeedItemDTO = ProjectFeedItemDTO;
 
-export interface ForkFeedItem extends ProjectFeedItem {
-  forkedFromProjectId: string | null;
-  forkedFromTitle: string | null;
-  forkedFromOwnerUsername: string | null;
-}
+export type ForkFeedItem = ProjectFeedItem;
 
 export interface UserProfile {
   username: string;
@@ -150,12 +142,7 @@ export async function getMyUpvotedPage(page: number, size: number): Promise<Prof
 }
 
 export async function getMyForksPage(page: number, size: number): Promise<ProfilePage<ForkFeedItem>> {
-  return fetchProfilePage<ForkFeedItem, ForkFeedItemDTO>("forks", page, size, (item) => ({
-    ...toFeedItem(item),
-    forkedFromProjectId: item.forkedFromProjectId != null ? String(item.forkedFromProjectId) : null,
-    forkedFromTitle: item.forkedFromTitle,
-    forkedFromOwnerUsername: item.forkedFromOwnerUsername,
-  }));
+  return fetchProfilePage<ForkFeedItem, ForkFeedItemDTO>("forks", page, size, toFeedItem);
 }
 
 export async function getMyActivityPage(page: number, size: number): Promise<ProfilePage<ActivityItem>> {

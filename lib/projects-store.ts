@@ -24,6 +24,9 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   storageBytes: number;
+  forkedFromProjectId: string | null;
+  forkedFromTitle: string | null;
+  forkedFromOwnerUsername: string | null;
 }
 
 
@@ -38,6 +41,9 @@ interface ProjectDTO {
   creationDate: string;
   modifiedDate: string;
   storageBytes: number;
+  forkedFromProjectId: string | null;
+  forkedFromTitle: string | null;
+  forkedFromOwnerUsername: string | null;
 }
 
 interface TrailDTO {
@@ -93,6 +99,9 @@ function toProjectSummary(dto: ProjectDTO): Project {
     createdAt: dto.creationDate,
     updatedAt: dto.modifiedDate,
     storageBytes: dto.storageBytes,
+    forkedFromProjectId: dto.forkedFromProjectId,
+    forkedFromTitle: dto.forkedFromTitle,
+    forkedFromOwnerUsername: dto.forkedFromOwnerUsername,
   };
 }
 
@@ -189,6 +198,9 @@ export async function getProject(id: string): Promise<Project | null> {
     createdAt: projectDto.creationDate,
     updatedAt: projectDto.modifiedDate,
     storageBytes: projectDto.storageBytes,
+    forkedFromProjectId: projectDto.forkedFromProjectId,
+    forkedFromTitle: projectDto.forkedFromTitle,
+    forkedFromOwnerUsername: projectDto.forkedFromOwnerUsername,
   };
 }
 

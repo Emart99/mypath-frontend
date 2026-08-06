@@ -15,6 +15,7 @@ import { BookmarkButton } from "@/components/social/bookmark-button"
 import { AuthPromptActions } from "@/components/auth/auth-prompt-actions"
 import { ReportButton } from "@/components/social/report-button"
 import { ShareToFollowersButton } from "@/components/social/share-to-followers-button"
+import { ProfileHoverCard } from "@/components/social/profile-hover-card"
 import { CommentsSection } from "@/components/project/comments-section"
 import { UserMenu } from "@/components/layout/user-menu"
 import { Button } from "@/components/ui/button"
@@ -118,9 +119,35 @@ export function PublicProjectView({
           <span className="min-w-0 truncate text-[15px] font-medium">{project.title}</span>
           <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
             by{" "}
-            <Link href={`/u/${encodeURIComponent(project.ownerUsername)}`} className="font-medium hover:text-primary">
-              {project.ownerUsername}
-            </Link>
+            <ProfileHoverCard
+              username={project.ownerUsername}
+              avatar={null}
+              isLoggedIn={isLoggedIn}
+              viewerUsername={username}
+            >
+              <Link href={`/u/${encodeURIComponent(project.ownerUsername)}`} className="font-medium hover:text-primary">
+                {project.ownerUsername}
+              </Link>
+            </ProfileHoverCard>
+            {project.forkedFromOwnerUsername && (
+              <>
+                {" "}
+                forked from{" "}
+                <ProfileHoverCard
+                  username={project.forkedFromOwnerUsername}
+                  avatar={null}
+                  isLoggedIn={isLoggedIn}
+                  viewerUsername={username}
+                >
+                  <Link
+                    href={`/u/${encodeURIComponent(project.forkedFromOwnerUsername)}`}
+                    className="font-medium hover:text-primary"
+                  >
+                    @{project.forkedFromOwnerUsername}
+                  </Link>
+                </ProfileHoverCard>
+              </>
+            )}
           </span>
           <span className="hidden shrink-0 items-center gap-1 text-xs text-muted-foreground sm:flex">
             <Eye className="h-3.5 w-3.5" />

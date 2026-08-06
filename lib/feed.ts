@@ -32,6 +32,9 @@ export interface ProjectFeedItem {
   forkCount: number;
   commentCount: number;
   featured: boolean;
+  forkedFromProjectId: string | null;
+  forkedFromTitle: string | null;
+  forkedFromOwnerUsername: string | null;
 }
 
 export interface ProjectFeedItemDTO {
@@ -54,6 +57,9 @@ export interface ProjectFeedItemDTO {
   forkCount: number;
   commentCount: number;
   featured: boolean;
+  forkedFromProjectId: string | null;
+  forkedFromTitle: string | null;
+  forkedFromOwnerUsername: string | null;
 }
 
 export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
@@ -77,5 +83,8 @@ export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
     forkCount: item.forkCount,
     commentCount: item.commentCount,
     featured: item.featured,
+    forkedFromProjectId: item.forkedFromProjectId,
+    forkedFromTitle: item.forkedFromTitle,
+    forkedFromOwnerUsername: item.forkedFromOwnerUsername,
   };
 }

@@ -65,6 +65,9 @@ const MOCK_NEIGHBORS: ProjectFeedItem[] = [
     forkCount: 3,
     commentCount: 5,
     featured: false,
+    forkedFromProjectId: null,
+    forkedFromTitle: null,
+    forkedFromOwnerUsername: null,
   },
   {
     id: "mock-2",
@@ -86,6 +89,9 @@ const MOCK_NEIGHBORS: ProjectFeedItem[] = [
     forkCount: 0,
     commentCount: 1,
     featured: false,
+    forkedFromProjectId: null,
+    forkedFromTitle: null,
+    forkedFromOwnerUsername: null,
   },
 ];
 
@@ -205,6 +211,9 @@ export default function PublishPage() {
     forkCount: 0,
     commentCount: 0,
     featured: false,
+    forkedFromProjectId: project.forkedFromProjectId,
+    forkedFromTitle: project.forkedFromTitle,
+    forkedFromOwnerUsername: project.forkedFromOwnerUsername,
   };
 
   const submitDescription = async () => {

@@ -9,6 +9,7 @@ import { AuthorAvatar } from "@/components/shared/author-avatar"
 import { ProjectThumbnail } from "@/components/project/project-thumbnail"
 import { ProfileHoverCard } from "@/components/social/profile-hover-card"
 import { NameBadge } from "@/components/profile/badges-panel"
+import { ForkBadge } from "@/components/project/fork-badge"
 import type { ProjectFeedItem } from "@/lib/public-project"
 
 function formatCardDate(timestamp: string) {
@@ -63,6 +64,16 @@ export function ExploreCard({
             {project.lastPublishedDate && ` · Updated ${formatCardDate(project.lastPublishedDate)}`}
           </span>
         </div>
+        {project.forkedFromOwnerUsername && (
+          <div className="mb-2">
+            <ForkBadge
+              forkedFromOwnerUsername={project.forkedFromOwnerUsername}
+              isLoggedIn={loggedIn}
+              viewerUsername={username}
+              hoverCard={interactive}
+            />
+          </div>
+        )}
         <div className="mb-2 font-display text-[22px] font-medium leading-[1.25]">
           {project.title}
         </div>
