@@ -48,6 +48,7 @@ export interface PublicProject {
   bookmarkedByRequester: boolean;
   viewCount: number;
   commentCount: number;
+  visibility: string;
 }
 
 interface AssociationDTO {
@@ -91,6 +92,7 @@ interface PublicProjectDTO {
   bookmarkedByRequester: boolean;
   viewCount: number;
   commentCount: number;
+  visibility: string;
 }
 
 export type FeedSort = "recent" | "hot" | "following";
@@ -170,6 +172,7 @@ export async function getPublicProject(projectId: string): Promise<PublicProject
     bookmarkedByRequester: data.bookmarkedByRequester,
     viewCount: data.viewCount,
     commentCount: data.commentCount,
+    visibility: data.visibility,
     trails: data.trails.map((trail) => ({
       id: String(trail.id),
       title: trail.title,

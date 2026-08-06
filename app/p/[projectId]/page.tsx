@@ -25,6 +25,7 @@ export async function generateMetadata({
     alternates: { canonical: `/p/${projectId}` },
     openGraph: { title: project.title, description, type: "article", images },
     twitter: { card: "summary_large_image", title: project.title, description, images },
+    ...(project.visibility !== "published" && { robots: { index: false, follow: false } }),
   }
 }
 
