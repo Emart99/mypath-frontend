@@ -115,6 +115,7 @@ export interface ExploreBundle {
   featured: ProjectFeedItem | null;
   hotTopics: TagCount[];
   activeAuthors: AuthorCount[];
+  trendingProjects: ProjectFeedItem[];
 }
 
 interface ExploreBundleDTO {
@@ -123,6 +124,7 @@ interface ExploreBundleDTO {
   featured: ProjectFeedItemDTO | null;
   hotTopics: TagCount[];
   activeAuthors: AuthorCount[];
+  trendingProjects: ProjectFeedItemDTO[];
 }
 
 export async function getExploreBundle(
@@ -139,7 +141,7 @@ export async function getExploreBundle(
 
   const response = await fetch(url, { cache: "no-store", headers: await authHeaders() });
 
-  if (!response.ok) return { feed: [], hasMore: false, featured: null, hotTopics: [], activeAuthors: [] };
+  if (!response.ok) return { feed: [], hasMore: false, featured: null, hotTopics: [], activeAuthors: [], trendingProjects: [] };
 
   const data: ExploreBundleDTO = await response.json();
   return {
@@ -148,6 +150,7 @@ export async function getExploreBundle(
     featured: data.featured ? toFeedItem(data.featured) : null,
     hotTopics: data.hotTopics,
     activeAuthors: data.activeAuthors,
+    trendingProjects: data.trendingProjects.map(toFeedItem),
   };
 }
 

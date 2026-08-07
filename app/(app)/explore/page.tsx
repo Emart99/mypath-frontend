@@ -39,9 +39,9 @@ export default async function ExplorePage({
     loggedIn ? getSubscriptionStatus().catch(() => null) : Promise.resolve(null),
   ])
 
-  const { featured, hotTopics, activeAuthors } = bundle
+  const { featured, hotTopics, activeAuthors, trendingProjects } = bundle
   const showSupportCard = loggedIn && !subscription?.supporter
-  const hasSidebar = hotTopics.length > 0 || activeAuthors.length > 0 || showSupportCard
+  const hasSidebar = hotTopics.length > 0 || activeAuthors.length > 0 || trendingProjects.length > 0 || showSupportCard
 
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
@@ -218,44 +218,66 @@ export default async function ExplorePage({
         {hasSidebar && (
           <aside className="sticky top-6 hidden flex-col gap-5 self-start lg:flex">
             {showSupportCard && <PatreonSupportCard />}
-            {hotTopics.length > 0 && (
-              <div className="rounded-2xl bg-card p-5">
-                <h3 className="text-[13px] font-medium text-muted-foreground">
-                  Hot topics
+            {trendingProjects.length > 0 && (
+              <div className="overflow-hidden rounded-2xl bg-card p-5">
+                <h3 className="text-xl font-semibold text-foreground">
+                  Trending projects
                 </h3>
                 <div className="mt-2 flex flex-col">
-                  {hotTopics.map(({ tag, count }) => (
+                  {trendingProjects.map((project) => (
+                    <Link
+                      key={project.id}
+                      href={`/p/${project.id}`}
+                      className="-mx-5 flex flex-col gap-1 px-5 py-2.5 transition-colors hover:bg-surface-container-high"
+                    >
+                      <span className="flex items-baseline gap-2">
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">{project.title}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {project.ownerUsername}
+                        </span>
+                      </span>
+                      {project.description && (
+                        <span className="line-clamp-2 text-xs text-muted-foreground">
+                          {project.description}
+                        </span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+            {hotTopics.length > 0 && (
+              <div className="rounded-2xl bg-card p-5">
+                <h3 className="text-xl font-semibold text-foreground">
+                  Popular topics
+                </h3>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {hotTopics.map(({ tag }) => (
                     <Link
                       key={tag}
                       href={`/explore?q=${encodeURIComponent(tag)}`}
-                      className="flex items-center justify-between rounded-full px-3 py-2.5 text-sm transition-colors hover:bg-surface-container-high"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-surface-container-high hover:text-foreground"
                     >
-                      <span>{tag}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {count}
-                      </span>
+                      {tag}
                     </Link>
                   ))}
                 </div>
               </div>
             )}
             {activeAuthors.length > 0 && (
-              <div className="rounded-2xl bg-card p-5">
-                <h3 className="text-[13px] font-medium text-muted-foreground">
-                  Active authors
+              <div className="overflow-hidden rounded-2xl bg-card p-5">
+                <h3 className="text-xl font-semibold text-foreground">
+                  Popular authors
                 </h3>
                 <div className="mt-2 flex flex-col">
-                  {activeAuthors.map(({ username, avatar, count }) => (
+                  {activeAuthors.map(({ username, avatar }) => (
                     <Link
                       key={username}
                       href={`/u/${encodeURIComponent(username)}`}
-                      className="flex items-center gap-2.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-surface-container-high"
+                      className="-mx-5 flex items-center gap-2.5 px-5 py-2 text-sm transition-colors hover:bg-surface-container-high"
                     >
                       <AuthorAvatar username={username} avatar={avatar} size={28} />
                       <span className="min-w-0 flex-1 truncate">{username}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {count}
-                      </span>
                     </Link>
                   ))}
                 </div>
