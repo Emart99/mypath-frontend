@@ -28,17 +28,25 @@ interface CommentDTO {
   canDelete: boolean;
 }
 
-export async function getComments(projectId: string): Promise<Comment[]> {
-  const response = await fetch(`${API_BASE_URL}/api/public/project/${projectId}/comments`, {
+export interface CommentPage {
+  items: Comment[];
+  hasMore: boolean;
+}
+
+export async function getComments(projectId: string, page = 0, size = 20): Promise<CommentPage> {
+  const response = await fetch(`${API_BASE_URL}/api/public/project/${projectId}/comments?page=${page}&size=${size}`, {
     cache: "no-store",
   });
-  if (!response.ok) return [];
-  const data: CommentDTO[] = await response.json();
-  return data.map((c) => ({
-    ...c,
-    id: String(c.id),
-    parentId: c.parentId != null ? String(c.parentId) : null,
-  }));
+  if (!response.ok) return { items: [], hasMore: false };
+  const data: { content: CommentDTO[]; hasMore: boolean } = await response.json();
+  return {
+    items: data.content.map((c) => ({
+      ...c,
+      id: String(c.id),
+      parentId: c.parentId != null ? String(c.parentId) : null,
+    })),
+    hasMore: data.hasMore,
+  };
 }
 
 export async function postComment(projectId: string, content: string, parentId?: string): Promise<void> {

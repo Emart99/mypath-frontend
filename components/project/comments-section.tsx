@@ -32,6 +32,8 @@ function timeAgo(iso: string) {
   return `${days}d ago`
 }
 
+const PAGE_SIZE = 20
+
 export function CommentsSection({
   projectId,
   isLoggedIn,
@@ -44,6 +46,9 @@ export function CommentsSection({
   commentCount: number
 }) {
   const [comments, setComments] = useState<Comment[] | null>(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadedPages, setLoadedPages] = useState(0)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [content, setContent] = useState("")
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState("")
@@ -55,7 +60,21 @@ export function CommentsSection({
   const router = useRouter()
 
   function refresh() {
-    getComments(projectId).then(setComments)
+    getComments(projectId, 0, PAGE_SIZE).then((page) => {
+      setComments(page.items)
+      setHasMore(page.hasMore)
+      setLoadedPages(1)
+    })
+  }
+
+  function loadMore() {
+    setIsLoadingMore(true)
+    getComments(projectId, loadedPages, PAGE_SIZE).then((page) => {
+      setComments((current) => [...(current ?? []), ...page.items])
+      setHasMore(page.hasMore)
+      setLoadedPages((n) => n + 1)
+      setIsLoadingMore(false)
+    })
   }
 
   useEffect(() => {
@@ -217,6 +236,11 @@ export function CommentsSection({
               ))}
             </div>
           ))
+        )}
+        {hasMore && (
+          <Button variant="outline" onClick={loadMore} disabled={isLoadingMore} className="self-center">
+            {isLoadingMore ? "Loading..." : "Load more comments"}
+          </Button>
         )}
       </div>
 

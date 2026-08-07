@@ -61,9 +61,14 @@ function notificationHref(n: AppNotification): string {
   return n.projectId ? `/editor/${n.projectId}` : "/profile"
 }
 
+const PAGE_SIZE = 20
+
 export function NotificationButton({ loggedIn }: { loggedIn: boolean }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifications, setNotifications] = useState<AppNotification[] | null>(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadedPages, setLoadedPages] = useState(0)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -91,10 +96,23 @@ export function NotificationButton({ loggedIn }: { loggedIn: boolean }) {
 
   function handleOpenChange(open: boolean) {
     if (!open || notifications !== null) return
-    getNotifications().then((items) => {
-      setNotifications(items)
+    getNotifications(0, PAGE_SIZE).then((page) => {
+      setNotifications(page.items)
+      setHasMore(page.hasMore)
+      setLoadedPages(1)
       markAllNotificationsRead()
       setUnreadCount(0)
+    })
+  }
+
+  function loadMore(event: React.MouseEvent) {
+    event.preventDefault()
+    setIsLoadingMore(true)
+    getNotifications(loadedPages, PAGE_SIZE).then((page) => {
+      setNotifications((current) => [...(current ?? []), ...page.items])
+      setHasMore(page.hasMore)
+      setLoadedPages((n) => n + 1)
+      setIsLoadingMore(false)
     })
   }
 
@@ -168,6 +186,16 @@ export function NotificationButton({ loggedIn }: { loggedIn: boolean }) {
               </DropdownMenuItem>
             )
           })
+        )}
+        {hasMore && (
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={isLoadingMore}
+            className="w-full rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            {isLoadingMore ? "Loading..." : "Load older"}
+          </button>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

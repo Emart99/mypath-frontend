@@ -38,15 +38,23 @@ export async function getUnreadCount(): Promise<number> {
   return data.unreadCount;
 }
 
-export async function getNotifications(): Promise<AppNotification[]> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/notifications`);
-  if (!response.ok) return [];
-  const data: NotificationDTO[] = await response.json();
-  return data.map((n) => ({
-    ...n,
-    id: String(n.id),
-    projectId: n.projectId != null ? String(n.projectId) : null,
-  }));
+export interface NotificationPage {
+  items: AppNotification[];
+  hasMore: boolean;
+}
+
+export async function getNotifications(page = 0, size = 20): Promise<NotificationPage> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/notifications?page=${page}&size=${size}`);
+  if (!response.ok) return { items: [], hasMore: false };
+  const data: { content: NotificationDTO[]; hasMore: boolean } = await response.json();
+  return {
+    items: data.content.map((n) => ({
+      ...n,
+      id: String(n.id),
+      projectId: n.projectId != null ? String(n.projectId) : null,
+    })),
+    hasMore: data.hasMore,
+  };
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
