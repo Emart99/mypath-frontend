@@ -131,6 +131,7 @@ export function ExploreCard({
                 ownerUsername={project.ownerUsername}
                 isLoggedIn={loggedIn}
                 isOwnPost={project.ownerUsername === username}
+                canFork={project.canFork}
               />
             </div>
           ) : (

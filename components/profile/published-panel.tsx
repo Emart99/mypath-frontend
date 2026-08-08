@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PublishedGrid } from "@/components/project/published-grid"
 import { getMyPublishedPage } from "@/lib/profile"
-import { getPublicUserPublishedPage } from "@/lib/public-profile"
+import { getPublicUserPublishedPage, getPublicUserUpvotedPage } from "@/lib/public-profile"
 import type { ProjectFeedItem } from "@/lib/public-project"
 import { PAGE_SIZE } from "@/lib/config"
 
@@ -12,11 +12,13 @@ export function PublishedPanel({
   initialItems,
   initialHasMore,
   username,
+  kind = "published",
   emptyMessage,
 }: {
   initialItems: ProjectFeedItem[]
   initialHasMore: boolean
   username?: string
+  kind?: "published" | "upvoted"
   emptyMessage: React.ReactNode
 }) {
   const [items, setItems] = useState(initialItems)
@@ -28,9 +30,11 @@ export function PublishedPanel({
     if (isLoading) return
     setIsLoading(true)
     try {
-      const result = username
-        ? await getPublicUserPublishedPage(username, page, PAGE_SIZE)
-        : await getMyPublishedPage(page, PAGE_SIZE)
+      const result = !username
+        ? await getMyPublishedPage(page, PAGE_SIZE)
+        : kind === "upvoted"
+          ? await getPublicUserUpvotedPage(username, page, PAGE_SIZE)
+          : await getPublicUserPublishedPage(username, page, PAGE_SIZE)
       setItems((prev) => [...prev, ...result.items])
       setPage((prev) => prev + 1)
       setHasMore(result.hasMore)

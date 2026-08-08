@@ -11,7 +11,7 @@ import { toggleBlock, getBlockedUsersPage, type BlockedUser } from "@/lib/blocke
 
 const VISIBILITY_OPTIONS = [
   { value: "public", label: "Public", desc: "Anyone can see your profile, published projects, and activity." },
-  { value: "private", label: "Private", desc: "Your profile is hidden. Published projects stay visible on Explore." },
+  { value: "private", label: "Private", desc: "Only people you follow can see your profile. Your published projects stay visible on Explore." },
 ] as const
 
 const COMMENT_OPTIONS = [
@@ -139,7 +139,7 @@ export function PrivacySettings({
           <div className="flex items-center gap-4 border-t border-border py-3.5">
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium">Show upvotes on my profile</div>
-              <div className="mt-0.5 text-[13px] text-muted-foreground">Let others see which projects you&apos;ve upvoted.</div>
+              <div className="mt-0.5 text-[13px] text-muted-foreground">Show an Upvoted section on your public profile.</div>
             </div>
             <Switch checked={showUpvotes} onCheckedChange={handleShowUpvotesChange} />
           </div>
@@ -180,13 +180,6 @@ export function PrivacySettings({
         />
       </section>
 
-      <section>
-        <h2 className="mb-1 text-lg font-medium">Your data</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Download a copy of your projects, comments, and account data.
-        </p>
-        <Button variant="outline">Request data export</Button>
-      </section>
     </>
   )
 }

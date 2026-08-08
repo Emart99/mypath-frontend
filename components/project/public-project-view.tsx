@@ -192,7 +192,7 @@ export function PublicProjectView({
           {isLoggedIn ? (
             <>
               {!isOwnProject && <ReportButton projectId={project.id} isLoggedIn={isLoggedIn} />}
-              {!isOwnProject && <ForkButton projectId={project.id} isLoggedIn={isLoggedIn} />}
+              {!isOwnProject && project.canFork && <ForkButton projectId={project.id} isLoggedIn={isLoggedIn} />}
               <ShareToFollowersButton projectId={project.id} isLoggedIn={isLoggedIn} />
               <BookmarkButton
                 projectId={project.id}
@@ -254,7 +254,7 @@ export function PublicProjectView({
                 </div>
               ) : emptyState}
               <div className="rounded-2xl bg-popover">
-                <CommentsSection projectId={project.id} isLoggedIn={isLoggedIn} username={username} commentCount={project.commentCount} />
+                <CommentsSection projectId={project.id} isLoggedIn={isLoggedIn} username={username} commentCount={project.commentCount} canComment={project.canComment} />
               </div>
             </div>
           )}

@@ -35,6 +35,7 @@ export interface ProjectFeedItem {
   forkedFromProjectId: string | null;
   forkedFromTitle: string | null;
   forkedFromOwnerUsername: string | null;
+  canFork: boolean;
 }
 
 export interface ProjectFeedItemDTO {
@@ -60,6 +61,7 @@ export interface ProjectFeedItemDTO {
   forkedFromProjectId: string | null;
   forkedFromTitle: string | null;
   forkedFromOwnerUsername: string | null;
+  canFork: boolean;
 }
 
 export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
@@ -86,5 +88,6 @@ export function toFeedItem(item: ProjectFeedItemDTO): ProjectFeedItem {
     forkedFromProjectId: item.forkedFromProjectId,
     forkedFromTitle: item.forkedFromTitle,
     forkedFromOwnerUsername: item.forkedFromOwnerUsername,
+    canFork: item.canFork,
   };
 }

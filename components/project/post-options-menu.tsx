@@ -30,12 +30,14 @@ export function PostOptionsMenu({
   ownerUsername,
   isLoggedIn,
   isOwnPost = false,
+  canFork = true,
   className,
 }: {
   projectId: string
   ownerUsername: string
   isLoggedIn: boolean
   isOwnPost?: boolean
+  canFork?: boolean
   className?: string
 }) {
   const router = useRouter()
@@ -149,10 +151,12 @@ export function PostOptionsMenu({
                   </>
                 )}
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={handleFork}>
-                <GitFork className="h-3.5 w-3.5" />
-                Fork this project
-              </DropdownMenuItem>
+              {canFork && (
+                <DropdownMenuItem onSelect={handleFork}>
+                  <GitFork className="h-3.5 w-3.5" />
+                  Fork this project
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onSelect={handleReportSelect}>
                 <Flag className="h-3.5 w-3.5" />
                 Report post

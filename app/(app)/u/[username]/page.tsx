@@ -9,7 +9,7 @@ import { PublishedPanel } from "@/components/profile/published-panel"
 import { FollowButton } from "@/components/social/follow-button"
 import { BlockButton } from "@/components/social/block-button"
 import { isLoggedIn } from "@/lib/auth"
-import { getPublicProfile, getPublicUserPublishedPage } from "@/lib/public-profile"
+import { getPublicProfile, getPublicUserPublishedPage, getPublicUserUpvotedPage } from "@/lib/public-profile"
 import { PAGE_SIZE } from "@/lib/config"
 
 function initial(username: string) {
@@ -56,7 +56,10 @@ export default async function PublicProfilePage({
   }
 
   const { stats, badges } = profile
-  const { items: published, hasMore: publishedHasMore } = await getPublicUserPublishedPage(username, 0, PAGE_SIZE)
+  const [{ items: published, hasMore: publishedHasMore }, upvoted] = await Promise.all([
+    getPublicUserPublishedPage(username, 0, PAGE_SIZE),
+    profile.showUpvotes ? getPublicUserUpvotedPage(username, 0, PAGE_SIZE) : null,
+  ])
 
   const avatar = (
     <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-[32px] sm:text-[46px] font-medium w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] bg-primary text-primary-foreground ring-4 ring-background">
@@ -173,6 +176,21 @@ export default async function PublicProfilePage({
               emptyMessage={`${profile.username} hasn't published anything yet.`}
             />
           </div>
+
+          {upvoted && (
+            <div className="mt-8">
+              <div className="mb-3 text-[13px] font-medium text-muted-foreground">
+                Upvoted
+              </div>
+              <PublishedPanel
+                initialItems={upvoted.items}
+                initialHasMore={upvoted.hasMore}
+                username={username}
+                kind="upvoted"
+                emptyMessage={`${profile.username} hasn't upvoted anything yet.`}
+              />
+            </div>
+          )}
         </div>
     </main>
   )

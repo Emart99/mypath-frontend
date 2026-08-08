@@ -52,6 +52,8 @@ export interface PublicProject {
   forkedFromProjectId: string | null;
   forkedFromTitle: string | null;
   forkedFromOwnerUsername: string | null;
+  canFork: boolean;
+  canComment: boolean;
 }
 
 interface AssociationDTO {
@@ -99,6 +101,8 @@ interface PublicProjectDTO {
   forkedFromProjectId: string | null;
   forkedFromTitle: string | null;
   forkedFromOwnerUsername: string | null;
+  canFork: boolean;
+  canComment: boolean;
 }
 
 export type FeedSort = "recent" | "hot" | "following";
@@ -185,6 +189,8 @@ export async function getPublicProject(projectId: string): Promise<PublicProject
     forkedFromProjectId: data.forkedFromProjectId,
     forkedFromTitle: data.forkedFromTitle,
     forkedFromOwnerUsername: data.forkedFromOwnerUsername,
+    canFork: data.canFork,
+    canComment: data.canComment,
     trails: data.trails.map((trail) => ({
       id: String(trail.id),
       title: trail.title,

@@ -174,6 +174,7 @@ export default async function ExplorePage({
                   ownerUsername={featured.ownerUsername}
                   isLoggedIn={loggedIn}
                   isOwnPost={featured.ownerUsername === username}
+                  canFork={featured.canFork}
                 />
               </div>
             </div>

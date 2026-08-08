@@ -39,12 +39,15 @@ export function CommentsSection({
   isLoggedIn,
   username,
   commentCount,
+  canComment,
 }: {
   projectId: string
   isLoggedIn: boolean
   username: string | null
   commentCount: number
+  canComment: boolean
 }) {
+  const commentingAllowed = !isLoggedIn || canComment
   const [comments, setComments] = useState<Comment[] | null>(null)
   const [hasMore, setHasMore] = useState(false)
   const [loadedPages, setLoadedPages] = useState(0)
@@ -153,22 +156,26 @@ export function CommentsSection({
         <p className="text-sm text-muted-foreground">No comments yet. Be the first to say something.</p>
       ) : null}
 
-      <div className="flex flex-col gap-2">
-        <Textarea
-          placeholder="Add a comment..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={2}
-          className="resize-none"
-        />
-        <Button
-          onClick={handlePost}
-          disabled={!content.trim() || isPending}
-          className="self-end disabled:opacity-100 disabled:bg-primary/40"
-        >
-          {isPending ? "Posting..." : "Post"}
-        </Button>
-      </div>
+      {commentingAllowed ? (
+        <div className="flex flex-col gap-2">
+          <Textarea
+            placeholder="Add a comment..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={2}
+            className="resize-none"
+          />
+          <Button
+            onClick={handlePost}
+            disabled={!content.trim() || isPending}
+            className="self-end disabled:opacity-100 disabled:bg-primary/40"
+          >
+            {isPending ? "Posting..." : "Post"}
+          </Button>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Comments are limited on this project.</p>
+      )}
 
       <div className="flex flex-col gap-4">
         {comments !== null && topLevel.length > 0 && (
@@ -178,6 +185,7 @@ export function CommentsSection({
                 comment={comment}
                 isLoggedIn={isLoggedIn}
                 viewerUsername={username}
+                canReply={commentingAllowed}
                 onReply={() => (requireLogin() ? undefined : setReplyTo(replyTo === comment.id ? null : comment.id))}
                 onDelete={() => setDeleteTarget(comment.id)}
                 onReport={() => (requireLogin() ? undefined : setReportTarget(comment.id))}
@@ -208,6 +216,7 @@ export function CommentsSection({
                     comment={reply}
                     isLoggedIn={isLoggedIn}
                     viewerUsername={username}
+                    canReply={commentingAllowed}
                     onReply={() => (requireLogin() ? undefined : setReplyTo(replyTo === reply.id ? null : reply.id))}
                     onDelete={() => setDeleteTarget(reply.id)}
                     onReport={() => (requireLogin() ? undefined : setReportTarget(reply.id))}
@@ -285,6 +294,7 @@ function CommentItem({
   comment,
   isLoggedIn,
   viewerUsername,
+  canReply,
   onReply,
   onDelete,
   onReport,
@@ -292,6 +302,7 @@ function CommentItem({
   comment: Comment
   isLoggedIn: boolean
   viewerUsername: string | null
+  canReply: boolean
   onReply: () => void
   onDelete: () => void
   onReport: () => void
@@ -324,10 +335,12 @@ function CommentItem({
         </div>
         <p className="text-sm">{comment.content}</p>
         <div className="mt-1 flex items-center gap-3">
-          <button type="button" onClick={onReply} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <Reply className="h-3 w-3" />
-            Reply
-          </button>
+          {canReply && (
+            <button type="button" onClick={onReply} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <Reply className="h-3 w-3" />
+              Reply
+            </button>
+          )}
           {comment.canDelete && (
             <button type="button" onClick={onDelete} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive">
               <Trash2 className="h-3 w-3" />
