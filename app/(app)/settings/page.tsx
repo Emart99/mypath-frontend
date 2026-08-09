@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Calendar, User, CreditCard, Shield } from "lucide-react"
+import { Calendar, User, CreditCard, Shield, Bell } from "lucide-react"
 import { SettingsView } from "@/components/profile/settings-view"
 import { PlanPanel } from "@/components/profile/plan-panel"
 import { PrivacySettings } from "@/components/profile/privacy-settings"
+import { NotificationSettings } from "@/components/profile/notification-settings"
+import { getNotificationPreferences } from "@/lib/notification-prefs"
 import { getMyProfile } from "@/lib/profile"
 import { getSubscriptionStatus } from "@/lib/subscription"
 import { getUsername } from "@/lib/auth"
@@ -16,12 +18,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-type Tab = "account" | "plan" | "privacy"
+type Tab = "account" | "plan" | "notifications" | "privacy"
 
-const TAB_KEYS: Tab[] = ["account", "plan", "privacy"]
+const TAB_KEYS: Tab[] = ["account", "plan", "notifications", "privacy"]
 const TABS: { key: Tab; label: string; icon: typeof User }[] = [
   { key: "account", label: "Account", icon: User },
   { key: "plan", label: "Plan", icon: CreditCard },
+  { key: "notifications", label: "Notifications", icon: Bell },
   { key: "privacy", label: "Privacy", icon: Shield },
 ]
 
@@ -39,6 +42,8 @@ export default async function SettingsPage({
   const [privacy, blockedUsers] = tab === "privacy"
     ? await Promise.all([getPrivacySettings(), getBlockedUsersPage(0, PAGE_SIZE)])
     : [null, null]
+
+  const notificationPrefs = tab === "notifications" ? await getNotificationPreferences() : null
 
   return (
     <main className="mx-auto w-full flex-1 max-w-[1216px]">
@@ -93,11 +98,16 @@ export default async function SettingsPage({
               </>
             )}
             {tab === "plan" && <PlanPanel initialStatus={await getSubscriptionStatus()} />}
+            {tab === "notifications" && notificationPrefs && (
+              <NotificationSettings
+                initialEnabled={notificationPrefs.notificationsEnabled}
+                initialMutedTypes={notificationPrefs.mutedNotificationTypes}
+              />
+            )}
             {tab === "privacy" && privacy && blockedUsers && (
               <PrivacySettings
                 initialVisibility={privacy.profileVisibility}
                 initialShowUpvotes={privacy.showUpvotes}
-                initialShowAge={privacy.showAge}
                 initialAllowForks={privacy.allowForks}
                 initialCommentsPolicy={privacy.commentsPolicy}
                 initialBlockedUsers={blockedUsers.items}
