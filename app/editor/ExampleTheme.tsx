@@ -41,6 +41,7 @@ export default{
     h4: 'editor-heading-h4',
     h5: 'editor-heading-h5',
   },
+  equation: 'editor-equation',
   image: 'editor-image',
   link: 'editor-link',
   list: {

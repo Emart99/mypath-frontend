@@ -15,6 +15,7 @@ import { AutoLinkNode, LinkNode } from "@lexical/link"
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode"
 import ExampleTheme from "@/app/editor/ExampleTheme"
 import { ImageNode } from "@/app/editor/nodes/ImageNode"
+import { EquationNode } from "@/app/editor/nodes/EquationNode"
 import ItemLinkClickPlugin from "@/app/editor/plugins/ItemLinkClickPlugin"
 import "@/app/editor/Editor.css"
 
@@ -30,6 +31,7 @@ const nodes = [
   AutoLinkNode,
   LinkNode,
   ImageNode,
+  EquationNode,
   HorizontalRuleNode,
 ]
 

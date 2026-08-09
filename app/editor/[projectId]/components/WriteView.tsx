@@ -19,6 +19,7 @@ import { EDITOR_TRANSFORMERS } from '../../plugins/markdownTransformers';
 import ToolbarPlugin from '../../plugins/ToolbarPlugin';
 import UpdateContentPlugin from '../../plugins/UpdateContentPlugin';
 import ImagesPlugin from '../../plugins/ImagesPlugin';
+import EquationsPlugin from '../../plugins/EquationsPlugin';
 import PastePlugin from '../../plugins/PastePlugin';
 import CodeHighlightPlugin from '../../plugins/CodeHighlightPlugin';
 import SlashMenuPlugin from '../../plugins/SlashMenuPlugin';
@@ -156,6 +157,7 @@ export function WriteView({
                 }} />
                 <ClickableLinkPlugin newTab />
                 <ImagesPlugin projectId={projectId} />
+                <EquationsPlugin />
                 <PastePlugin />
                 <CodeHighlightPlugin />
                 <TabIndentationPlugin />

@@ -69,6 +69,7 @@ import {
   ChevronUp,
   ChevronDown,
   Search,
+  Sigma,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -80,6 +81,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { insertImageWithUpload } from './ImagesPlugin';
 import { OPEN_LINK_EDITOR_COMMAND } from './FloatingLinkEditorPlugin';
 import { OPEN_FIND_REPLACE_COMMAND } from './FindReplacePlugin';
+import { INSERT_EQUATION_COMMAND } from './EquationsPlugin';
 import { INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRuleNode';
 
 const COLOR_OPTIONS: { value: string; label: string }[] = [
@@ -289,6 +291,14 @@ export default function ToolbarPlugin({
           if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
             event.preventDefault();
             insertLink();
+            return true;
+          }
+          if ((event.key === 'e' || event.key === 'E') && (event.metaKey || event.ctrlKey)) {
+            event.preventDefault();
+            editor.dispatchCommand(INSERT_EQUATION_COMMAND, {
+              equation: '',
+              inline: !event.shiftKey,
+            });
             return true;
           }
           return false;
@@ -661,6 +671,19 @@ export default function ToolbarPlugin({
           </button>
         </TooltipTrigger>
         <TooltipContent>Insert image</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() =>
+              editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })
+            }
+            className="toolbar-item spaced"
+            aria-label="Insert Equation">
+            <Sigma size={18} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Insert equation (⌘⇧E · inline ⌘E)</TooltipContent>
       </Tooltip>
       <input
         ref={fileInputRef}

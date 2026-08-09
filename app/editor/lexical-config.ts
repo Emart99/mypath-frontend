@@ -19,6 +19,7 @@ import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 
 import ExampleTheme from './ExampleTheme';
 import { ImageNode } from './nodes/ImageNode';
+import { EquationNode } from './nodes/EquationNode';
 import { parseAllowedColor, parseAllowedFontSize } from './styleConfig';
 
 export const placeholder = 'Start writing...';
@@ -127,6 +128,7 @@ export const editorConfig = {
     AutoLinkNode,
     LinkNode,
     ImageNode,
+    EquationNode,
     HorizontalRuleNode,
   ],
   onError(error: Error) {

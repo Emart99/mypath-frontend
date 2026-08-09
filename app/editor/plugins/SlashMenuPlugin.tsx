@@ -28,10 +28,13 @@ import {
   ListOrdered,
   Minus,
   Quote,
+  Radical,
+  Sigma,
   SquareCode,
   Type,
 } from 'lucide-react';
 import { insertImageWithUpload } from './ImagesPlugin';
+import { INSERT_EQUATION_COMMAND } from './EquationsPlugin';
 
 class SlashOption extends MenuOption {
   label: string;
@@ -97,6 +100,12 @@ export default function SlashMenuPlugin({ projectId }: { projectId?: string } = 
         e.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined),
       ),
       new SlashOption('Image', ImageIcon, 'image photo picture upload', null),
+      new SlashOption('Equation', Sigma, 'math equation latex formula katex block display', (e) =>
+        e.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false }),
+      ),
+      new SlashOption('Inline equation', Radical, 'math equation latex formula katex inline', (e) =>
+        e.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true }),
+      ),
     ],
     [],
   );
