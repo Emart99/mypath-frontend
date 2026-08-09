@@ -1,18 +1,28 @@
 import { API_BASE_URL } from "@/lib/config";
-import { authenticatedFetch } from "@/lib/api";
+import { getAccessToken, refreshAccessToken } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const backendResponse = await authenticatedFetch(`${API_BASE_URL}/api/notifications/stream`, {
-    headers: { Accept: "text/event-stream" },
+function open(token: string | null, signal: AbortSignal) {
+  return fetch(`${API_BASE_URL}/api/notifications/stream`, {
+    headers: { Accept: "text/event-stream", Authorization: `Bearer ${token}` },
+    cache: "no-store",
+    signal,
   });
+}
 
-  if (!backendResponse.ok || !backendResponse.body) {
-    return new Response(null, { status: backendResponse.status });
+export async function GET(request: Request) {
+  let upstream = await open(await getAccessToken(), request.signal);
+
+  if (upstream.status === 401 && (await refreshAccessToken())) {
+    upstream = await open(await getAccessToken(), request.signal);
   }
 
-  return new Response(backendResponse.body, {
+  if (!upstream.ok || !upstream.body) {
+    return new Response(null, { status: upstream.status });
+  }
+
+  return new Response(upstream.body, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",
