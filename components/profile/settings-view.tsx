@@ -1,65 +1,26 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { SegmentedControl } from "@/components/ui/segmented-control"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { changePassword, deleteAccount } from "@/lib/account"
 import { getPasswordStrength } from "@/lib/password-strength"
-import { setEmailDigestFrequency, type EmailDigestFrequency } from "@/lib/notifications-prefs"
 import { setEditorTourSeen } from "@/lib/editor-tour-prefs"
 
 const PASSWORD_COMPLEXITY_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/
 
-const DIGEST_OPTIONS = [
-  { value: "off", label: "Off" },
-  { value: "daily", label: "Daily" },
-  { value: "weekly", label: "Weekly" },
-] as const
-
-export function SettingsView({ initialDigest }: { initialDigest: EmailDigestFrequency }) {
+export function SettingsView() {
   return (
     <>
-      <EmailDigestSection initialDigest={initialDigest} />
       <TutorialsSection />
       <ChangePasswordSection />
       <DangerZoneSection />
     </>
-  )
-}
-
-function EmailDigestSection({ initialDigest }: { initialDigest: EmailDigestFrequency }) {
-  const [digest, setDigest] = useState<EmailDigestFrequency>(initialDigest)
-  const [error, setError] = useState(false)
-  const [, startTransition] = useTransition()
-
-  function handleChange(value: EmailDigestFrequency) {
-    const prev = digest
-    setDigest(value)
-    setError(false)
-    startTransition(async () => {
-      const result = await setEmailDigestFrequency(value)
-      if (result.error) {
-        setDigest(prev)
-        setError(true)
-      }
-    })
-  }
-
-  return (
-    <section>
-      <h2 className="mb-1 text-lg font-medium">Email digest</h2>
-      <p className="mb-4 text-sm text-muted-foreground">
-        A summary of activity across your projects, bundled into one email.
-      </p>
-      {error && <div className="mb-2 text-sm text-destructive">Couldn&apos;t save that change, try again.</div>}
-      <SegmentedControl options={DIGEST_OPTIONS} value={digest} onChange={handleChange} />
-    </section>
   )
 }
 

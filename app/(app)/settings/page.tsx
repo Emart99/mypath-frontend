@@ -7,7 +7,6 @@ import { PrivacySettings } from "@/components/profile/privacy-settings"
 import { getMyProfile } from "@/lib/profile"
 import { getSubscriptionStatus } from "@/lib/subscription"
 import { getUsername } from "@/lib/auth"
-import { getEmailDigestFrequency } from "@/lib/notifications-prefs"
 import { getPrivacySettings } from "@/lib/privacy"
 import { getBlockedUsersPage } from "@/lib/blocked-users"
 import { PAGE_SIZE } from "@/lib/config"
@@ -90,7 +89,7 @@ export default async function SettingsPage({
                     )}
                   </dl>
                 </section>
-                <SettingsView initialDigest={await getEmailDigestFrequency()} />
+                <SettingsView />
               </>
             )}
             {tab === "plan" && <PlanPanel initialStatus={await getSubscriptionStatus()} />}
