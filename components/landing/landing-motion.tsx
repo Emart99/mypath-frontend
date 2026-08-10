@@ -4,7 +4,6 @@ import { motion, MotionConfig, type Variants } from 'motion/react';
 
 const EASE = [0.21, 0.47, 0.32, 0.98] as const;
 
-/** Scroll-reveal: fade + rise, fires once. */
 export function FadeUp({
   children,
   delay = 0,
@@ -67,7 +66,6 @@ export function StaggerItem({
   );
 }
 
-/** Respects prefers-reduced-motion for everything inside. */
 export function LandingMotionConfig({ children }: { children: React.ReactNode }) {
   return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
 }

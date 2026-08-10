@@ -13,7 +13,6 @@ interface EditorTitleSlotProps {
   saveStatus: SaveStatus;
 }
 
-// Double-click-to-rename project title, plus the save-status indicator.
 export function EditorTitleSlot({ projectTitle, onRenameProject, saveStatus }: EditorTitleSlotProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editingTitleValue, setEditingTitleValue] = useState('');
@@ -90,7 +89,6 @@ interface EditorActionsProps {
   profile: { username: string; imageUrl: string | null } | null;
 }
 
-// Word count, the Trail-view toggle, the link to the share view, and the user menu.
 export function EditorActions({
   showWordCount,
   textStats,

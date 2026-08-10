@@ -31,7 +31,6 @@ export function ShareToFollowersButton({
         setShared(true)
         setTimeout(() => setShared(false), 2000)
       } catch {
-        // silently ignore — not critical enough to surface an error state
       }
     })
   }

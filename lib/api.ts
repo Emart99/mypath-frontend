@@ -2,8 +2,6 @@
 import { redirect } from 'next/navigation';
 import { getAccessToken, refreshAccessToken } from './auth';
 
-// Paths BirthDateGateFilter itself exempts on the backend - never redirect a
-// call to one of these into a loop.
 const BIRTH_DATE_GATE_EXEMPT_PATHS = ['/api/auth/birth-date', '/api/auth/logout'];
 
 export async function authenticatedFetch(

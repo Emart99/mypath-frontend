@@ -76,7 +76,6 @@ export function CropModal({
     return () => URL.revokeObjectURL(objectUrl)
   }, [file, isGif, frameWidth, frameHeight])
 
-  // Cycles gif frames at their own delays, independent of React re-renders.
   useEffect(() => {
     if (!gifFrames || gifFrames.length === 0) return
     let cancelled = false
@@ -95,7 +94,6 @@ export function CropModal({
     }
   }, [gifFrames])
 
-  // Redraws the viewport canvas on every frame tick and on every pan/zoom change.
   useEffect(() => {
     if (!gifFrames || !size || !canvasRef.current) return
     const frame = gifFrames[frameIndex]

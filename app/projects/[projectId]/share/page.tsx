@@ -42,8 +42,6 @@ import type { ProjectFeedItem } from "@/lib/public-project"
 import { uploadImage } from "@/lib/upload-image"
 import { cn } from "@/lib/utils"
 
-// Static context cards around "Your project" in the preview — just set dressing
-// to sell the Explore layout, so no need to fetch real projects for them.
 const MOCK_NEIGHBORS: ProjectFeedItem[] = [
   {
     id: "mock-1",
@@ -126,9 +124,6 @@ export default function PublishPage() {
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string | null>(null);
   const [thumbnailGraph, setThumbnailGraph] = useState<Project["thumbnailGraph"]>(null);
 
-  // Which tab is selected — drives both the highlighted tab and which panel (if any)
-  // is expanded below. Clicking Trail/Project image selects it directly; Upload has
-  // no panel of its own, so it's only selected once a file finishes uploading.
   const [thumbnailTab, setThumbnailTab] = useState<"trail" | "image" | "upload">("trail");
   const [projectImages, setProjectImages] = useState<ProjectImage[] | null>(null);
   const [imagesLoading, setImagesLoading] = useState(false);
@@ -161,8 +156,6 @@ export default function PublishPage() {
       .finally(() => setImagesLoading(false));
   }, [thumbnailTab, projectImages, projectId]);
 
-  // Suggests existing tags for whatever the user is typing after the last comma,
-  // pushing reuse of the shared catalog instead of near-duplicate tags.
   useEffect(() => {
     const fragment = tags.split(",").pop()?.trim() ?? "";
     if (!tagsFocused || !fragment) {
@@ -187,9 +180,6 @@ export default function PublishPage() {
   if (!project) return null;
 
   const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
-  // "publish" = going public for the first time, "update" = already live, re-saving
-  // edits (still calls the publish endpoint to bump the published date), "save" =
-  // staying Private/Unlisted, so the publish endpoint is never touched.
   const confirmLabel =
     visibility !== "published" ? "save" : project.visibility === "published" ? "update" : "publish";
 
@@ -637,7 +627,6 @@ export default function PublishPage() {
   );
 }
 
-// Opens the native file picker directly on click — no intermediate "Choose image" step.
 function UploadThumbnailTab({ disabled, active, onFile }: { disabled: boolean; active: boolean; onFile: (file: File) => void }) {
   return (
     <label

@@ -119,12 +119,6 @@ export const BrowserMockup: React.FC = () => {
         </div>
       </div>
       <div className="relative aspect-[16/9] overflow-hidden [container-type:inline-size]">
-      {/* Below md the middle column (both side panels are `hidden lg:flex` — shown together
-          or not at all, since below lg there isn't enough height in this fixed-aspect card
-          for a full sidebar) still doesn't fit a phone-width card, so instead of reflowing
-          every row we render this at a fixed desktop-ish "design" width and scale the whole
-          thing down to fit — `100cqw` is the outer card's own live width (container query
-          unit), so the scale stays fluid across any phone width, no breakpoint steps. */}
       <div
         className="absolute top-1/2 left-1/2 flex h-[383px] w-[680px] overflow-hidden [transform:translate(-50%,-50%)_scale(calc(100cqw/680px))] md:static md:h-full md:w-full md:[transform:none]"
       >
@@ -310,8 +304,6 @@ export const BrowserMockup: React.FC = () => {
               Open
             </span>
           </div>
-          {/* The real @xyflow/react graph component, fed fake data — not a hand-drawn
-              approximation, so node/edge styling always matches the actual editor. */}
           <div className="relative h-[210px] shrink-0 rounded-xl bg-popover">
             <KnowledgeGraph
               trails={GRAPH_TRAILS}

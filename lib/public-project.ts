@@ -19,10 +19,8 @@ export interface PublicItem {
   type: string | null;
   content: string;
   titleAlign: TitleAlign;
-  // This occurrence's step metadata within its trail — powers the trail view.
   annotation: string | null;
   associationId: string | null;
-  // Outgoing ITEM-target associations, restricted to targets within this project — powers the graph view.
   associations: Association[];
 }
 

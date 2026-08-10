@@ -26,17 +26,6 @@ interface TextSegment {
   end: number;
 }
 
-// Deliberately not using @lexical/text's $rootTextContent + $findTextIntersectionFromCharacters:
-// ElementNode.getTextContent() inserts "\n\n" between sibling blocks, but
-// $findTextIntersectionFromCharacters's character count does NOT account for that separator,
-// so the two disagree on offsets past the first paragraph. Keeping both sides of the math
-// in one self-consistent walk avoids that mismatch entirely.
-//
-// BLOCK_SEPARATOR keeps blocks apart in the flattened text so a match can never span two of
-// them. Without it "cita?" at the end of a paragraph and "item" at the start of the next list
-// item read as one contiguous string, and replacing across that boundary merges the blocks.
-// A newline is safe as the separator because the find input is single-line, so no query can
-// ever contain one and therefore no match can ever straddle it.
 const BLOCK_SEPARATOR = '\n';
 
 function nearestBlockKey(node: TextNode): string | null {
@@ -90,11 +79,6 @@ function collectTextSegments(root: RootNode): { text: string; segments: TextSegm
   return { text, segments };
 }
 
-// An offset sitting exactly on the boundary between two text nodes belongs to both of them, so
-// which one we pick decides whether the resulting selection stays inside one block or straddles
-// two. A match's start must bind forwards (to the beginning of the next node) and its end must
-// bind backwards (to the end of the previous one); binding a start backwards is what used to
-// anchor the selection in the preceding block and make insertText merge the two.
 function resolveStart(segments: TextSegment[], offset: number): { node: TextNode; offset: number } | null {
   for (const seg of segments) {
     if (offset >= seg.start && offset < seg.end) {
@@ -115,8 +99,6 @@ function resolveEnd(segments: TextSegment[], offset: number): { node: TextNode; 
   return first && offset === first.start ? { node: first.node, offset: 0 } : null;
 }
 
-// A TextNode's DOM can be a bare <span> (plain text) or nested outerTag/innerTag
-// elements (bold/italic/etc.), so the actual Text node isn't always .firstChild directly.
 function getDomTextNode(element: HTMLElement | null): Text | null {
   let node: ChildNode | null = element;
   while (node !== null && node.nodeType !== Node.TEXT_NODE) {
@@ -143,10 +125,6 @@ export default function FindReplacePlugin() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
 
-  // Paints the current match via the CSS Custom Highlight API instead of a real Lexical/DOM
-  // Selection. A real selection would steal focus away from the find bar's input the moment
-  // the user types (Lexical syncs its selection onto the contenteditable on every update),
-  // but a Highlight paints an arbitrary Range independent of document.activeElement entirely.
   const highlightMatch = useCallback(
     (match: Match | null) => {
       if (!supportsCustomHighlight) return;
@@ -177,8 +155,6 @@ export default function FindReplacePlugin() {
     [editor],
   );
 
-  // Next's build-time CSS parser doesn't recognize ::highlight()'s functional pseudo-element
-  // syntax yet and fails the whole stylesheet on it, so this styling is injected at runtime instead.
   useEffect(() => {
     if (!supportsCustomHighlight) return;
     const style = document.createElement('style');
@@ -201,9 +177,6 @@ export default function FindReplacePlugin() {
 
   const openBar = useCallback(() => {
     const rootElement = editor.getRootElement();
-    // Anchor to .editor-inner (the area right below the toolbar row), not
-    // .editor-container (the whole card, which starts at the toolbar itself) — top-right,
-    // just below the tools instead of on top of them.
     const referenceElement = rootElement?.closest<HTMLElement>('.editor-inner') ?? rootElement;
     if (referenceElement) {
       const rect = referenceElement.getBoundingClientRect();
@@ -224,11 +197,6 @@ export default function FindReplacePlugin() {
     );
   }, [editor, openBar]);
 
-  // Lexical's KEY_MODIFIER_COMMAND only fires while the contenteditable itself has DOM
-  // focus. If focus is anywhere else on the editor page (the title input, the sidebar,
-  // nothing at all) that keydown never reaches Lexical, so the browser's native find bar
-  // opens instead. A plain window-level listener covers every case uniformly — it's
-  // naturally scoped to this plugin's own mount lifetime (only while an idea is open).
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'f' && (event.metaKey || event.ctrlKey)) {
@@ -277,8 +245,6 @@ export default function FindReplacePlugin() {
     highlightMatch(matches[next]);
   };
 
-  // Replace genuinely needs a real Lexical selection (to call insertText), which does steal
-  // focus from the replace input — refocus afterward, same as before this file's highlight fix.
   const replaceCurrent = () => {
     if (matches.length === 0) return;
     const match = matches[currentIndex];

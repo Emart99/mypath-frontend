@@ -76,10 +76,6 @@ export default function FloatingLinkEditorPlugin() {
             const rect = nativeSelection.getRangeAt(0).getBoundingClientRect();
             setPosition({ top: rect.bottom + 6, left: rect.left });
           }
-          // These setEditing calls must not live inside a setState updater: React runs updaters
-          // during render, i.e. after the synchronous code below, so a setEditing(false) in there
-          // would land last and cancel the setEditing(true) that OPEN_LINK_EDITOR_COMMAND asks
-          // for — which is why ⌘K used to drop the user on the read-only popover.
           const key = linkNode.getKey();
           setLinkUrl(linkNode.getURL());
           if (activeLinkKeyRef.current !== key) setEditing(false);

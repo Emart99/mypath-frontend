@@ -13,11 +13,6 @@ import {
   OUTDENT_CONTENT_COMMAND,
 } from 'lexical';
 
-// TabIndentationPlugin only indents when the caret sits at the very start of a block and inserts
-// a literal tab otherwise, which is fine for paragraphs but surprising inside a list: every other
-// editor nests the item wherever the caret happens to be. Runs at HIGH so it wins over
-// TabIndentationPlugin (registered at COMMAND_PRIORITY_EDITOR) and only claims the event when the
-// selection is actually inside a list item, leaving paragraph tabs untouched.
 export default function ListTabPlugin(): null {
   const [editor] = useLexicalComposerContext();
 

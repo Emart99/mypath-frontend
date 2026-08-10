@@ -13,8 +13,6 @@ import { $createLinkNode } from '@lexical/link';
 import { Item } from '../types';
 import { itemLinkRel } from './itemLink';
 
-// `[[` isn't a single character, so the built-in useBasicTypeaheadTriggerMatch
-// (which only matches a one-char trigger) doesn't apply — match it directly.
 const WIKI_LINK_TRIGGER_REGEX = /(^|\s|\()(\[\[([^[\]]{0,75}))$/;
 
 function checkForWikiLinkTriggerMatch(text: string): MenuTextMatch | null {

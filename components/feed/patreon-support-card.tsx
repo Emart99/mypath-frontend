@@ -28,8 +28,6 @@ export function PatreonSupportCard() {
         size="sm"
         disabled={pending}
         onClick={() => {
-          // Open the tab synchronously (in direct response to the click) so popup blockers
-          // allow it, then point it at the Patreon URL once the server action resolves.
           const tab = window.open("", "_blank")
           if (tab) tab.opener = null
           startTransition(async () => {

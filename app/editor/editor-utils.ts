@@ -2,9 +2,6 @@ export const lastItemStorageKey = (projectId: string) => `tramo:lastItem:${proje
 export const SIDEBAR_OPEN_STORAGE_KEY = 'tramo:editorSidebarOpen';
 export const CONNECTIONS_OPEN_STORAGE_KEY = 'tramo:editorConnectionsOpen';
 
-// An EquationNode keeps its LaTeX under `equation`, not `text`, so a walker that only reads
-// `text` drops every formula on the floor: math-heavy items end up with gaps in their excerpt
-// ("Sea una sucesion de funciones .") and an undercounted word total.
 export function collectPlainText(content: string): string[] {
   const texts: string[] = [];
   const walk = (node: unknown) => {

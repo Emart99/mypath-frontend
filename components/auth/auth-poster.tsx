@@ -1,10 +1,5 @@
 import { cn } from "@/lib/utils"
 
-/**
- * Tramo auth poster — right panel of login/signup.
- * variant "trail" (login): one big forking trail, logo language at mural scale.
- * variant "cards"  (signup): note cards linked by a dotted trail.
- */
 export function AuthPoster({
   variant = "trail",
   title,

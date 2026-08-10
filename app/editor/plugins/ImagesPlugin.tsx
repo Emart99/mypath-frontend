@@ -56,8 +56,6 @@ function getImageFiles(dataTransfer: DataTransfer): File[] {
   return files;
 }
 
-// Inserts a local preview immediately (optimistic UI), then swaps it for the
-// real R2 URL once the background upload finishes - or removes it on failure.
 export async function insertImageWithUpload(
   editor: ReturnType<typeof useLexicalComposerContext>[0],
   file: File,
@@ -96,8 +94,6 @@ export async function insertImageWithUpload(
 
 const IMAGE_UPLOAD_CONCURRENCY = 3;
 
-// Bounds how many resize+upload pipelines run at once so a large paste/drop
-// batch doesn't slam the network (and the presign rate limit) all at once.
 async function insertImageFiles(
   editor: ReturnType<typeof useLexicalComposerContext>[0],
   files: File[],

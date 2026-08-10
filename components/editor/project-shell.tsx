@@ -11,8 +11,6 @@ export function ProjectShell({
   content,
 }: {
   homeHref: string
-  // The editor view moves the brand mark into its sidebar (next to the search
-  // box), so the navbar shouldn't show it twice.
   showLogo?: boolean
   titleSlot: React.ReactNode
   actions?: React.ReactNode

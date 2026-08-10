@@ -3,9 +3,6 @@ import { ImageResponse } from "next/og"
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
-// Satori (the engine behind ImageResponse) can't resolve the app's CSS custom
-// properties (var(--primary) etc. from components/layout/logo.tsx), so the
-// brand colors are hardcoded here instead of importing that component.
 export default function Image() {
   return new ImageResponse(
     (

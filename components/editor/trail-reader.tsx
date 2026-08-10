@@ -13,12 +13,9 @@ interface TrailReaderProps {
   associationById: Map<string, Association>;
   selectedItemId?: string;
   onSelectItem: (item: Item) => void;
-  // Omit for read-only contexts (the public project view): the description
-  // renders as plain text instead of the click-to-edit textarea.
   onSetDescription?: (trailId: string, description: string) => void;
 }
 
-// Optional trail description under the header; click to edit, blur/Esc to close.
 function TrailDescriptionEditor({ trailId, description, onSave }: { trailId: string; description: string; onSave: (trailId: string, description: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(description);
@@ -58,7 +55,6 @@ function TrailDescriptionEditor({ trailId, description, onSave }: { trailId: str
   );
 }
 
-// Pull a short plain-text excerpt out of a Lexical content JSON blob.
 function excerpt(content: string | null): string {
   if (!content) return "";
   try {
@@ -69,9 +65,6 @@ function excerpt(content: string | null): string {
   }
 }
 
-// Read the active trail as a narrated sequence: each step (past the first) is
-// prefaced by a "bridge" — the typed association + the human annotation that
-// connects it to the previous step.
 export function TrailReader({ trail, items, associationById, selectedItemId, onSelectItem, onSetDescription }: TrailReaderProps) {
   return (
     <div className="flex-1 overflow-y-auto rounded-2xl bg-popover">
@@ -99,14 +92,11 @@ export function TrailReader({ trail, items, associationById, selectedItemId, onS
           {trail.steps.map((step, i) => {
             const item = items[step.itemId];
             if (!item) return null;
-            // Explicit associationId wins; else fall back to the item's own tie
-            // instead of showing "deliberate jump".
             const conn = step.associationId
               ? associationById.get(step.associationId) ?? null
               : i > 0 ? bridgeTie(items, trail.steps[i - 1].itemId, step.itemId) : null;
             const meta = conn ? ASSOCIATION_META[conn.type] : null;
             const BridgeIcon = meta?.Icon ?? ArrowDown;
-            // Same colour language as the graph edges when there's a tie.
             const color = conn ? `var(${ASSOCIATION_COLOR_VAR[conn.type]})` : undefined;
             const on = step.itemId === selectedItemId;
 

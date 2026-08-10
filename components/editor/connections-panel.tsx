@@ -38,7 +38,6 @@ export function ConnectionsPanel({
   const [tieType, setTieType] = useState<AssociationType>("RELATED");
   const [tieTarget, setTieTarget] = useState(""); // encoded "ITEM:id" | "TRAIL:id"
 
-  // Associations are directional; the item also wants to know who points AT it.
   const incoming = Object.values(items).flatMap((other) =>
     other.id === item.id
       ? []
@@ -47,7 +46,6 @@ export function ConnectionsPanel({
           .map((a) => ({ source: other, type: a.type }))
   );
 
-  // Targets already tied, so we don't offer duplicates.
   const tiedKeys = new Set(item.associations.map((a) => `${a.targetType}:${a.targetId}`));
   const tieableItems = Object.values(items).filter(
     (other) => other.id !== item.id && !tiedKeys.has(`ITEM:${other.id}`)

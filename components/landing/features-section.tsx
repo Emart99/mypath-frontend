@@ -36,7 +36,6 @@ export const FeaturesSection: React.FC = () => {
       </p>
 
       <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-        {/* FLAGSHIP: editor */}
         <FadeUp className="md:col-span-2">
           <div className="grid grid-cols-1 overflow-hidden rounded-[28px] bg-card md:grid-cols-[minmax(280px,360px)_1fr]">
             <div className="flex flex-col justify-center px-10 py-12">
@@ -56,7 +55,6 @@ export const FeaturesSection: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center py-9 px-9 min-w-0" style={{ background: 'var(--ed-blue)' }}>
-              {/* editor window */}
               <div className="w-full overflow-hidden rounded-[20px] border border-border bg-background shadow-elevation-2">
                 <div className="flex h-[46px] items-center gap-2.5 overflow-hidden border-b border-border bg-card px-[18px]">
                   <span className="whitespace-nowrap text-[13px] font-medium">Why slow down</span>
@@ -145,7 +143,6 @@ export const FeaturesSection: React.FC = () => {
           </div>
         </FadeUp>
 
-        {/* TRAILS */}
         <FadeUp delay={0.1}>
           <div className="flex h-full flex-col overflow-hidden rounded-[28px] bg-card">
             <div className="px-9 pt-9 pb-6">
@@ -213,7 +210,6 @@ export const FeaturesSection: React.FC = () => {
           </div>
         </FadeUp>
 
-        {/* BADGES (order 2 in visual row with Trails) */}
         <FadeUp delay={0.2}>
           <div className="flex h-full flex-col overflow-hidden rounded-[28px] bg-card">
             <div className="px-9 pt-9 pb-6">
@@ -272,7 +268,6 @@ export const FeaturesSection: React.FC = () => {
           </div>
         </FadeUp>
 
-        {/* KNOWLEDGE GRAPH */}
         <FadeUp delay={0.3} className="md:order-2">
           <div className="flex h-full flex-col overflow-hidden rounded-[28px] bg-card">
             <div className="px-9 pt-9 pb-6">
@@ -321,7 +316,6 @@ export const FeaturesSection: React.FC = () => {
           </div>
         </FadeUp>
 
-        {/* PUBLISH & EXPLORE */}
         <FadeUp delay={0.4} className="md:order-1">
           <div className="flex h-full flex-col overflow-hidden rounded-[28px] bg-card">
             <div className="px-9 pt-9 pb-6">

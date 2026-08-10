@@ -28,12 +28,9 @@ interface KnowledgeGraphProps {
   activeTrailId?: string;
   selectedItemId?: string;
   onSelectItem: (item: Item) => void;
-  // 'preview' = fit-to-container miniature (no controls, non-interactive) for the panel.
   variant?: "full" | "preview";
 }
 
-// Association type → the CSS var holding its edge colour. Resolved to a literal
-// hex at runtime (var() doesn't resolve inside SVG marker attributes).
 const TYPE_VAR: Record<AssociationType, string> = {
   REQUIRES: "--ed-blue",
   ELABORATES: "--ed-purple",
@@ -53,7 +50,6 @@ const FALLBACK: Record<string, string> = {
   "--border": "#E4E4E4",
 };
 
-// Twitter-blue selection accent — graph-only (the rest of the app stays mono).
 const ACCENT = "#1D9BF0";
 
 const NODE_W = 132;
@@ -65,7 +61,6 @@ const BOTTOM_Y = 380;
 const BASE_ARC = 46;
 const ARC_STEP = 34;
 
-// ── Custom node: rounded rect with the title inside; spine vs loose distinct ──
 type ItemNodeData = { title: string; selected: boolean; kind: "spine" | "loose" };
 type ItemNode = Node<ItemNodeData, "item">;
 
@@ -94,7 +89,6 @@ const ItemNodeComp = memo(function ItemNodeComp({ data }: NodeProps<ItemNode>) {
 
 const nodeTypes = { item: ItemNodeComp };
 
-// ── Custom edge: arc height scales with jump span; label only on hover/focus ──
 type AssocEdgeData = { label: string; color: string; incident: boolean; span: number };
 
 const AssocEdge = memo(function AssocEdge({
@@ -116,7 +110,6 @@ const AssocEdge = memo(function AssocEdge({
   let labelX: number;
   let labelY: number;
   if (sameRow) {
-    // Arc over the spine; taller for longer jumps so parallel arcs nest.
     const apexY = Math.min(sourceY, targetY) - (BASE_ARC + Math.max(d.span - 1, 0) * ARC_STEP);
     path = `M ${sourceX} ${sourceY} C ${sourceX} ${apexY}, ${targetX} ${apexY}, ${targetX} ${targetY}`;
     labelX = (sourceX + targetX) / 2;
@@ -138,7 +131,6 @@ const AssocEdge = memo(function AssocEdge({
         markerEnd={markerEnd}
         style={{ stroke: d.color, strokeWidth: d.incident || hovered ? 3 : 1.75 }}
       />
-      {/* Wide invisible hit area for hover */}
       <path
         d={path}
         fill="none"
@@ -178,13 +170,10 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // Resolve the CSS custom properties to literal hex (edges/markers).
   const [colors, setColors] = useState<Record<string, string>>(FALLBACK);
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    // Defer a frame: on a theme flip next-themes swaps .dark after our effect,
-    // so an immediate read would resolve the *old* colours.
     const raf = requestAnimationFrame(() => {
       const style = getComputedStyle(el);
       const next: Record<string, string> = {};
@@ -336,7 +325,6 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
     <div ref={containerRef} className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-popover">
       <div className="min-h-0 flex-1">{flow}</div>
 
-      {/* Legend: trail spine + one entry per association type present */}
       <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-t border-border px-6 py-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-2">
           <svg width="30" height="8" className="shrink-0">

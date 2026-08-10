@@ -209,7 +209,6 @@ export function SidebarCustom({
 
         {state !== "collapsed" && (
           <>
-            {/* Trails — the sequence layer: numbered steps. */}
             <Collapsible defaultOpen className="group/trails">
               <SidebarGroup className="py-1">
                 <div className="flex h-8 shrink-0 items-center justify-between rounded-md px-2 text-xs font-medium text-muted-foreground">
@@ -280,7 +279,6 @@ export function SidebarCustom({
                                       <SidebarMenuButton onDoubleClick={() => startEditTrail(trail)} className="font-semibold">
                                         <ChevronRight className="transition-transform group-data-[state=open]/collapsible:rotate-90" />
                                         <span className="flex-1 truncate">{trail.title}</span>
-                                        {/* Item count only while collapsed — expanded, the items themselves are visible. */}
                                         <span className="text-[11px] font-normal text-muted-foreground group-data-[state=open]/collapsible:hidden">
                                           {trailItems.length}
                                         </span>
@@ -397,7 +395,6 @@ export function SidebarCustom({
                                                   : undefined
                                               }
                                             >
-                                              {/* Step number — this is the sequence layer, order matters here. */}
                                               <span className="w-4 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
                                                 {index + 1}
                                               </span>
@@ -499,7 +496,6 @@ export function SidebarCustom({
               </SidebarGroup>
             </Collapsible>
 
-            {/* Items — the item layer: every item, listed once. */}
             <Collapsible defaultOpen className="group/items">
               <SidebarGroup className="py-1">
                 <div className="flex h-8 shrink-0 items-center justify-between rounded-md px-2 text-xs font-medium text-muted-foreground">
@@ -537,7 +533,6 @@ export function SidebarCustom({
                     <SidebarMenu>
                       {visibleItems.map((item) => {
                         const memberTrails = trailsForItem(item.id);
-                        // Chain = real transclusion: the item lives in more than one trail.
                         const isShared = memberTrails.length > 1;
                         const addableTrails = trails.filter((t) => !t.itemIds.includes(item.id));
                         return (

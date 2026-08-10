@@ -6,7 +6,6 @@ import { HardDrive } from "lucide-react"
 import { getSubscriptionStatus, type SubscriptionStatus } from "@/lib/subscription"
 import { formatBytes } from "@/lib/format-bytes"
 
-/** Compact storage/publish usage pill linking to the Plan settings tab. */
 export function PlanUsageChip({ className }: { className?: string }) {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null)
 

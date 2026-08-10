@@ -1,10 +1,6 @@
-// Shared project-feed types and DTO mapping. Plain module (no "use server") so
-// the sync mapper can be exported and reused across server-action files.
 
 import type { Association } from "@/app/editor/types";
 
-// Lightweight graph shape for a GRAPH-type thumbnail — item titles + associations
-// only, no Lexical content, so cards never ship item bodies over the wire.
 export interface GraphPreviewData {
   trailId: string;
   trailTitle: string;

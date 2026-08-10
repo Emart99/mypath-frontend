@@ -25,14 +25,11 @@ export async function getUploadPresign(contentType: string, kind: UploadKind, co
     if (response.ok) {
       return response.json();
     }
-    // Batch image uploads can burst past the per-minute presign limit; back off and retry
-    // using the server's Retry-After instead of failing the upload outright.
     if (response.status === 429 && attempt < MAX_RATE_LIMIT_RETRIES) {
       const retryAfterSeconds = Number(response.headers.get("Retry-After")) || 5;
       await sleep(Math.min(retryAfterSeconds, 65) * 1000);
       continue;
     }
-    // limit errors (storage quota, supporter-only GIF avatar) carry a user-facing message
     const message = await response.json().then((body) => body?.message).catch(() => null);
     throw new Error(message ?? `Request failed with status ${response.status}`);
   }

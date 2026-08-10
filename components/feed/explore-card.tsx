@@ -16,9 +16,6 @@ function formatCardDate(timestamp: string) {
   return new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
-// The single card the real Explore feed renders per project. Also reused (with
-// interactive=false) anywhere a WYSIWYG preview of "how this looks on Explore"
-// is needed, so that preview and the real feed can never visually drift apart.
 export function ExploreCard({
   project,
   loggedIn,

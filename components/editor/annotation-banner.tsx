@@ -8,24 +8,18 @@ import { ASSOCIATION_META, ASSOCIATION_COLOR_VAR } from "@/app/editor/associatio
 
 interface AnnotationBannerProps {
   annotation: string | null;
-  // The association type by which this item was reached; null = deliberate jump.
   associationType: AssociationType | null;
-  // Title of the connected item, when the type comes from a tie (e.g. "example of X").
   connectionTitle?: string | null;
   trailTitle: string;
   onSave: (annotation: string) => void;
 }
 
-// Incoming annotation for a trail step (idx > 0) in Write mode. Annotations are
-// optional: with none, it's just a quiet "+ Add annotation" link; once present
-// (or while editing) it becomes a compact box you can click to edit.
 export function AnnotationBanner({ annotation, associationType, connectionTitle, trailTitle, onSave }: AnnotationBannerProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(annotation ?? "");
 
   const meta = associationType ? ASSOCIATION_META[associationType] : null;
   const Icon = meta?.Icon ?? Waypoints;
-  // Left border in the connection's colour when there's a tie (matches the graph/trail).
   const color = associationType ? `var(${ASSOCIATION_COLOR_VAR[associationType]})` : undefined;
 
   const save = () => {
@@ -36,8 +30,6 @@ export function AnnotationBanner({ annotation, associationType, connectionTitle,
 
   const hasAnnotation = !!annotation?.trim();
 
-  // Fully quiet only when there's neither a connection nor an annotation — just
-  // an add affordance. If there's a connection (tie), always show it.
   if (!editing && !hasAnnotation && !meta) {
     return (
       <button

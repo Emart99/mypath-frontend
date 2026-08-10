@@ -35,7 +35,6 @@ export default async function ExplorePage({
   const [bundle, username, subscription] = await Promise.all([
     getExploreBundle(q, sort),
     getUsername(),
-    // A stale/expired session shouldn't take down Explore — fall back to "unknown" (no card).
     loggedIn ? getSubscriptionStatus().catch(() => null) : Promise.resolve(null),
   ])
 

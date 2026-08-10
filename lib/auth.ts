@@ -67,11 +67,6 @@ export async function getUsername(): Promise<string | null> {
   return cookieStore.get('username')?.value || null;
 }
 
-// ponytail: in-flight refresh dedup keyed by refresh token. Collapses the burst
-// of parallel 401s from getProject (which fires ~10 fetches at once) into one
-// refresh call, so backend refresh-token rotation doesn't invalidate the rest.
-// Edge left uncovered: two tabs of the same user racing may do one extra
-// refresh — no session loss, upgrade to a shared store only if it matters.
 const inflightRefresh = new Map<string, Promise<boolean>>();
 
 export async function refreshAccessToken(): Promise<boolean> {
@@ -82,13 +77,6 @@ export async function refreshAccessToken(): Promise<boolean> {
     return false;
   }
 
-  // The backend rotates (and revokes) the refresh token on every refresh. If we
-  // can't persist the new pair — i.e. we're running inside a Server Component
-  // render where cookies() is read-only — we must NOT hit the endpoint: it would
-  // rotate on the backend, we'd fail to save the new tokens, and the next
-  // request would present a revoked token and get the whole session nuked. Probe
-  // writability first; if it throws we're read-only, so defer to the middleware's
-  // proactive refresh instead of rotating-and-losing.
   try {
     cookieStore.set('__rt_probe', '', { maxAge: 0, path: '/' });
   } catch {
@@ -122,8 +110,6 @@ export async function refreshAccessToken(): Promise<boolean> {
         path: '/',
       });
 
-      // Backend rotates the refresh token on every refresh — persist the new one,
-      // or the next refresh presents a revoked token and logs the user out.
       if (data.refreshToken) {
         cookieStore.set('refreshToken', data.refreshToken, {
           httpOnly: true,

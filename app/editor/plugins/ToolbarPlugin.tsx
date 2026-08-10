@@ -249,9 +249,6 @@ export default function ToolbarPlugin({
 
   const insertLink = useCallback(() => {
     if (!isLink) {
-      // Ask for edit mode first: TOGGLE_LINK_COMMAND is what makes the floating editor notice
-      // the new link, so the flag has to be set before that update fires or it arrives too late
-      // and the user lands on the read-only popover with a pencil to click.
       editor.dispatchCommand(OPEN_LINK_EDITOR_COMMAND, undefined);
       editor.dispatchCommand(TOGGLE_LINK_COMMAND, 'https://');
     } else {

@@ -128,23 +128,18 @@ export function useProjectEditorState(projectId: string) {
 
   const activeTrail = useMemo(() => trails.find((t) => t.id === activeTrailId), [trails, activeTrailId]);
 
-  // Resolve a step's associationId back to the association it used to get here.
   const associationById = useMemo(() => {
     const map = new Map<string, Association>();
     Object.values(items).forEach((it) => it.associations.forEach((a) => map.set(a.id, a)));
     return map;
   }, [items]);
 
-  // The step by which the selected item was reached inside the active trail
-  // (idx > 0). Drives the incoming-annotation banner in Write mode.
   const incomingStep: IncomingStep | null = useMemo(() => {
     if (!activeTrail || !selectedItemId) return null;
     const idx = activeTrail.steps.findIndex((s) => s.itemId === selectedItemId);
     if (idx <= 0) return null;
     const step = activeTrail.steps[idx];
     const prevItemId = activeTrail.steps[idx - 1].itemId;
-    // Prefer the step's explicit associationId; otherwise fall back to the
-    // item's own tie (instead of "deliberate jump").
     const conn = step.associationId
       ? associationById.get(step.associationId) ?? null
       : bridgeTie(items, prevItemId, selectedItemId);

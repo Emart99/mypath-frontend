@@ -65,11 +65,9 @@ interface ItemDTO {
   titleAlign: string | null;
   createdDate: string;
   modifiedDate: string;
-  // Only present on /api/project/{id}/item responses (sticky Unfiled flag).
   unfiled?: boolean;
 }
 
-// A trail step: item fields + per-step metadata (GET /trail/{id}/item).
 interface TrailStepDTO extends ItemDTO {
   annotation: string | null;
   associationId: string | null;
@@ -132,12 +130,10 @@ export async function getProject(id: string): Promise<Project | null> {
     authenticatedFetch(`${API_BASE_URL}/api/project/${id}/item`).then((r) => parseResponse<ItemDTO[]>(r)),
   ]);
 
-  // All items (trail members + loose), keyed by id, for title/titleAlign + associations.
   const itemMap = new Map<number, ItemDTO>();
   trailItemLists.forEach((steps) => steps.forEach((step) => itemMap.set(step.id, step)));
   looseDtos.forEach((it) => { if (!itemMap.has(it.id)) itemMap.set(it.id, it); });
   const uniqueItemIds = Array.from(itemMap.keys());
-  // The project-items endpoint carries the sticky Unfiled flag for every item.
   const unfiledIds = new Set(looseDtos.filter((it) => it.unfiled).map((it) => it.id));
 
   const associationLists = await Promise.all(
@@ -239,7 +235,6 @@ export async function setProjectVisibility(
     body: JSON.stringify({ visibility }),
   });
   if (!response.ok) {
-    // surface backend limit messages (e.g. weekly publish cap) instead of a generic failure
     const message = await response.json().then((body) => body?.message).catch(() => null);
     return { error: message ?? `Request failed with status ${response.status}` };
   }
@@ -372,7 +367,6 @@ export async function createTrail(projectId: string, title: string): Promise<Tra
   };
 }
 
-// "blaze": set a step's annotation and/or the association used to reach it.
 export async function updateStep(
   trailId: string,
   itemId: string,
@@ -424,7 +418,6 @@ export async function createItem(trailId: string, title: string): Promise<Item> 
   return { id: String(dto.id), title: dto.title, titleAlign: (dto.titleAlign as TitleAlign) ?? "center", unfiled: false, content: "", associations: [], linkedItemIds: [] };
 }
 
-// A loose item — belongs to the project and (stickily) to Unfiled.
 export async function createLooseItem(projectId: string, title: string): Promise<Item> {
   const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${projectId}/item`, {
     method: "POST",
@@ -474,7 +467,6 @@ export async function detachItemFromTrail(trailId: string, itemId: string): Prom
   await expectOk(response);
 }
 
-// Create a typed association ("tie") from an item to another item or a whole trail.
 export async function tie(
   itemId: string,
   targetId: string,
@@ -501,7 +493,6 @@ export async function untie(
   await expectOk(response);
 }
 
-// Back-compat helper for the editor's untyped item↔item links (mention/wiki plugins).
 export async function linkItems(itemId: string, otherItemId: string): Promise<void> {
   await tie(itemId, otherItemId, "ITEM", "RELATED");
 }

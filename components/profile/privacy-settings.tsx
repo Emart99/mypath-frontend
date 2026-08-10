@@ -200,7 +200,6 @@ function BlockedUsersPanel({
     try {
       await toggleBlock(username)
     } catch {
-      // best-effort; a stale row disappearing from the list either way is harmless
     }
   }
 

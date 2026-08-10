@@ -41,10 +41,7 @@ export function ProjectThumbnail({
   thumbnailImageUrl: string | null;
   thumbnailGraph: GraphPreviewData | null;
   title: string;
-  // Sizing + background — background only shows behind the placeholder/graph branches
-  // (an <img> with object-cover fills the box), so pass it here regardless.
   className?: string;
-  // Defaults to a letter-initial badge; pass a custom node (e.g. an icon) to override.
   placeholder?: React.ReactNode;
 }) {
   if (thumbnailImageUrl) {

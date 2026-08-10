@@ -60,32 +60,31 @@
 }
 
 :root {
-  /* M3 Monochrome — light */
-  --radius: 1rem;                 /* M3 medium/large shape (16px) */
-  --background: #FFFFFF;          /* surface */
-  --foreground: #111111;          /* on-surface */
-  --card: #FAFAFA;                /* surface-container-low */
+  --radius: 1rem;
+  --background: #FFFFFF;
+  --foreground: #111111;
+  --card: #FAFAFA;
   --card-foreground: #111111;
-  --popover: #FFFFFF;             /* surface-container-lowest */
+  --popover: #FFFFFF;
   --popover-foreground: #111111;
-  --primary: #1A1A1A;             /* near-black */
-  --primary-foreground: #FFFFFF;  /* on-primary */
-  --secondary: #EDEDED;           /* secondary-container (neutral) */
+  --primary: #1A1A1A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EDEDED;
   --secondary-foreground: #1A1A1A;
-  --muted: #F5F5F5;               /* surface-container */
-  --muted-foreground: #5C5C5C;    /* on-surface-variant */
-  --accent: #E8E8E8;              /* primary-container (neutral) */
-  --accent-foreground: #1A1A1A;   /* on-primary-container */
-  --tertiary: #EDEDED;            /* tertiary-container (neutral) */
+  --muted: #F5F5F5;
+  --muted-foreground: #5C5C5C;
+  --accent: #E8E8E8;
+  --accent-foreground: #1A1A1A;
+  --tertiary: #EDEDED;
   --tertiary-foreground: #1A1A1A;
-  --destructive: #BA1A1A;         /* error (kept for validation) */
+  --destructive: #BA1A1A;
   --destructive-foreground: #FFFFFF;
   --success: #146C2E;
   --success-foreground: #146C2E;
   --warning: #B08700;
   --warning-foreground: #7A5D00;
-  --border: #E4E4E4;              /* outline-variant */
-  --input: #C9C9C9;               /* outline */
+  --border: #E4E4E4;
+  --input: #C9C9C9;
   --ring: #1A1A1A;
   --surface-container-high: #EFEFEF;
   --surface-container-highest: #E9E9E9;
@@ -113,14 +112,13 @@
 }
 
 .dark {
-  /* M3 Monochrome — true black */
   --background: #000000;
   --foreground: #F5F5F5;
   --card: #0A0A0A;
   --card-foreground: #F5F5F5;
   --popover: #000000;
   --popover-foreground: #F5F5F5;
-  --primary: #F2F2F2;             /* near-white */
+  --primary: #F2F2F2;
   --primary-foreground: #111111;
   --secondary: #1C1C1C;
   --secondary-foreground: #EDEDED;
@@ -171,16 +169,12 @@
   }
 }
 
-/* M3 outlined text field — floating label, CSS-only (no JS state).
-   Rests centered like a placeholder; floats to the border on focus or
-   once the field has a value. Inputs need a placeholder attribute
-   (even " ") for :placeholder-shown to track "empty" reliably. */
 .field-outlined {
   position: relative;
 }
 .field-outlined > label {
   position: absolute;
-  top: 28px; /* half of the input's fixed h-14 (56px) — not 50% of the field, which also grows to fit description/error text below */
+  top: 28px;
   left: 16px;
   z-index: 1;
   width: fit-content;
@@ -233,7 +227,6 @@
   }
 }
 
-/* driver.js tour: theme its hardcoded light styles with our tokens */
 .driver-popover {
   background-color: var(--popover) !important;
   color: var(--popover-foreground) !important;

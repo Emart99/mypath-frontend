@@ -1,9 +1,6 @@
 import type { MetadataRoute } from "next"
 import { API_BASE_URL, SITE_URL } from "@/lib/config"
 
-// Regenerated hourly rather than on every crawl - the project/user lists don't
-// need to be second-fresh, and this keeps a backend hiccup from ever blocking
-// a build (see the try/catch below) or a crawler request.
 export const revalidate = 3600
 
 interface SitemapProject {

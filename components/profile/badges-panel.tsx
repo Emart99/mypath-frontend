@@ -17,7 +17,6 @@ const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string; styl
   remix_king: Crown,
 }
 
-// Same accent colors used per feature in the landing mockup (components/landing/features-section.tsx).
 const BADGE_COLORS: Record<string, string> = {
   supporter: "var(--ed-red)",
   first_publish: "var(--ed-blue)",

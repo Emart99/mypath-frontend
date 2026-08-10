@@ -8,8 +8,6 @@ import { NameBadge } from "@/components/profile/badges-panel"
 import { FollowButton } from "@/components/social/follow-button"
 import { getPublicProfile, type PublicProfile } from "@/lib/public-profile"
 
-// Shared across every hover-card instance on the page so hovering the same
-// author twice doesn't refetch their profile.
 const profileCache = new Map<string, PublicProfile | null>()
 
 export function ProfileHoverCard({

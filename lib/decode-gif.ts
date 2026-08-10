@@ -11,8 +11,6 @@ export interface DecodedGif {
   frames: DecodedGifFrame[]
 }
 
-// Composites gifuct-js's per-frame patches into full frames, honoring GIF disposal:
-// 2 = clear the patch region after showing it, 3 = restore what was underneath.
 export async function decodeGif(file: File): Promise<DecodedGif> {
   const buffer = await file.arrayBuffer()
   const parsed = parseGIF(buffer)

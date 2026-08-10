@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-// Same env var lib/config.ts reads at runtime — keeps the R2 domain in one
-// place so switching to a custom domain doesn't require code changes here.
 const R2_PUBLIC_BASE_URL =
   process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL ??
   "https://pub-809332af245f4f50954cd6523674cc35.r2.dev";

@@ -3,5 +3,4 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tramo.dev";
 export const EXPLORE_PAGE_SIZE = 10;
 export const PAGE_SIZE = 10;
 export const R2_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL ?? "";
-// Must match the refresh token's server-side lifetime in AuthService.java (backend).
 export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 30;
