@@ -56,10 +56,12 @@ export function ExploreCard({
               </span>
             </span>
           )}
-          <span>
-            Published {formatCardDate(project.publishedDate)}
-            {project.lastPublishedDate && ` · Updated ${formatCardDate(project.lastPublishedDate)}`}
-          </span>
+          {project.publishedDate && (
+            <span>
+              Published {formatCardDate(project.publishedDate)}
+              {project.lastPublishedDate && ` · Updated ${formatCardDate(project.lastPublishedDate)}`}
+            </span>
+          )}
         </div>
         {project.forkedFromOwnerUsername && (
           <div className="mb-2">

@@ -19,7 +19,7 @@ export interface ProjectFeedItem {
   thumbnailGraph: GraphPreviewData | null;
   tags: string[];
   modifiedDate: string;
-  publishedDate: string;
+  publishedDate: string | null;
   lastPublishedDate: string | null;
   voteCount: number;
   votedByRequester: boolean;

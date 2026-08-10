@@ -298,7 +298,7 @@ export function SidebarCustom({
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          className="h-5 w-5 shrink-0 opacity-0 group-hover/trail:opacity-100 data-[state=open]:opacity-100"
+                                          className="h-5 w-5 shrink-0 text-muted-foreground opacity-0 hover:text-foreground group-hover/trail:opacity-100 data-[state=open]:opacity-100"
                                           title="Trail actions"
                                         >
                                           <MoreHorizontal className="h-3 w-3" />
@@ -405,7 +405,7 @@ export function SidebarCustom({
                                                 <Button
                                                   variant="ghost"
                                                   size="icon"
-                                                  className="h-5 w-5 shrink-0 opacity-0 group-hover/item:opacity-100 data-[state=open]:opacity-100"
+                                                  className="h-5 w-5 shrink-0 text-muted-foreground opacity-0 hover:text-foreground group-hover/item:opacity-100 data-[state=open]:opacity-100"
                                                   title="Item actions"
                                                 >
                                                   <MoreHorizontal className="h-3 w-3" />
@@ -588,7 +588,7 @@ export function SidebarCustom({
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-5 w-5 shrink-0 opacity-0 group-hover/loose:opacity-100 data-[state=open]:opacity-100"
+                                    className="h-5 w-5 shrink-0 text-muted-foreground opacity-0 hover:text-foreground group-hover/loose:opacity-100 data-[state=open]:opacity-100"
                                     title="Item actions"
                                   >
                                     <MoreHorizontal className="h-3 w-3" />

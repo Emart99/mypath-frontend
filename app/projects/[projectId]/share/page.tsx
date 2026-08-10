@@ -56,12 +56,12 @@ const MOCK_NEIGHBORS: ProjectFeedItem[] = [
     modifiedDate: new Date().toISOString(),
     publishedDate: new Date().toISOString(),
     lastPublishedDate: null,
-    voteCount: 24,
+    voteCount: 0,
     votedByRequester: false,
     bookmarkedByRequester: false,
-    viewCount: 812,
-    forkCount: 3,
-    commentCount: 5,
+    viewCount: 0,
+    forkCount: 0,
+    commentCount: 0,
     featured: false,
     forkedFromProjectId: null,
     forkedFromTitle: null,
@@ -81,12 +81,12 @@ const MOCK_NEIGHBORS: ProjectFeedItem[] = [
     modifiedDate: new Date().toISOString(),
     publishedDate: new Date().toISOString(),
     lastPublishedDate: null,
-    voteCount: 9,
+    voteCount: 0,
     votedByRequester: false,
     bookmarkedByRequester: false,
-    viewCount: 203,
+    viewCount: 0,
     forkCount: 0,
-    commentCount: 1,
+    commentCount: 0,
     featured: false,
     forkedFromProjectId: null,
     forkedFromTitle: null,
@@ -194,7 +194,7 @@ export default function PublishPage() {
     thumbnailGraph,
     tags: tagList,
     modifiedDate: project.updatedAt,
-    publishedDate: project.updatedAt,
+    publishedDate: visibility === "private" ? null : project.updatedAt,
     lastPublishedDate: null,
     voteCount: 0,
     votedByRequester: false,
@@ -287,6 +287,7 @@ export default function PublishPage() {
           return;
         }
       }
+      setProject({ ...project, visibility, description: description.trim() });
       setShareUrl(visibility === "private" ? null : `${window.location.origin}/p/${projectId}`);
       setJustPublished(true);
       setTimeout(() => setJustPublished(false), 2000);

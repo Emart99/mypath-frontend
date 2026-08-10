@@ -117,10 +117,12 @@ export default async function ExplorePage({
                   </span>
                 </span>
               </ProfileHoverCard>
-              <span>
-                Published {formatCardDate(featured.publishedDate)}
-                {featured.lastPublishedDate && ` · Updated ${formatCardDate(featured.lastPublishedDate)}`}
-              </span>
+              {featured.publishedDate && (
+                <span>
+                  Published {formatCardDate(featured.publishedDate)}
+                  {featured.lastPublishedDate && ` · Updated ${formatCardDate(featured.lastPublishedDate)}`}
+                </span>
+              )}
             </div>
             <h2 className="font-display text-[34px] font-normal leading-[1.2] mb-2.5">
               {featured.title}

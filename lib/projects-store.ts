@@ -83,6 +83,32 @@ interface AssociationDTO {
 
 const jsonHeaders = { "Content-Type": "application/json" };
 
+type ApiInit = Omit<RequestInit, "body"> & { json?: unknown };
+
+function api(path: string, init: ApiInit = {}): Promise<Response> {
+  const { json, headers: extraHeaders, ...rest } = init;
+  return authenticatedFetch(`${API_BASE_URL}${path}`, {
+    ...rest,
+    ...(json !== undefined && { body: JSON.stringify(json) }),
+    headers: { ...(json !== undefined ? jsonHeaders : undefined), ...extraHeaders },
+  });
+}
+
+async function apiJson<T>(path: string, init?: ApiInit): Promise<T> {
+  return parseResponse<T>(await api(path, init));
+}
+
+async function apiVoid(path: string, init?: ApiInit): Promise<void> {
+  await expectOk(await api(path, init));
+}
+
+async function apiResult(path: string, init?: ApiInit): Promise<{ error: string | null }> {
+  const response = await api(path, init);
+  if (response.ok) return { error: null };
+  const message = await response.json().then((body) => body?.message).catch(() => null);
+  return { error: message ?? `Request failed with status ${response.status}` };
+}
+
 function toProjectSummary(dto: ProjectDTO): Project {
   return {
     id: String(dto.id),
@@ -103,31 +129,37 @@ function toProjectSummary(dto: ProjectDTO): Project {
   };
 }
 
+function toItem(dto: ItemDTO, unfiled: boolean, associations: Association[] = []): Item {
+  return {
+    id: String(dto.id),
+    title: dto.title,
+    titleAlign: (dto.titleAlign as TitleAlign) ?? "center",
+    unfiled,
+    content: "",
+    associations,
+    linkedItemIds: associations.filter((a) => a.targetType === "ITEM").map((a) => a.targetId),
+  };
+}
+
 export async function listProjects(): Promise<Project[]> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project`);
-  const projects = await parseResponse<ProjectDTO[]>(response);
+  const projects = await apiJson<ProjectDTO[]>(`/api/project`);
   return projects
     .map(toProjectSummary)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 export async function getProject(id: string): Promise<Project | null> {
-  const projectResponse = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`);
+  const projectResponse = await api(`/api/project/${id}`);
   if (projectResponse.status === 404) return null;
   const projectDto = await parseResponse<ProjectDTO>(projectResponse);
 
-  const trailsResponse = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/trail`);
-  const trailDtos = await parseResponse<TrailDTO[]>(trailsResponse);
+  const trailDtos = await apiJson<TrailDTO[]>(`/api/project/${id}/trail`);
 
   const [trailItemLists, looseDtos] = await Promise.all([
     Promise.all(
-      trailDtos.map((trail) =>
-        authenticatedFetch(`${API_BASE_URL}/api/trail/${trail.id}/item`).then((r) =>
-          parseResponse<TrailStepDTO[]>(r)
-        )
-      )
+      trailDtos.map((trail) => apiJson<TrailStepDTO[]>(`/api/trail/${trail.id}/item`))
     ),
-    authenticatedFetch(`${API_BASE_URL}/api/project/${id}/item`).then((r) => parseResponse<ItemDTO[]>(r)),
+    apiJson<ItemDTO[]>(`/api/project/${id}/item`),
   ]);
 
   const itemMap = new Map<number, ItemDTO>();
@@ -137,11 +169,7 @@ export async function getProject(id: string): Promise<Project | null> {
   const unfiledIds = new Set(looseDtos.filter((it) => it.unfiled).map((it) => it.id));
 
   const associationLists = await Promise.all(
-    uniqueItemIds.map((itemId) =>
-      authenticatedFetch(`${API_BASE_URL}/api/item/${itemId}/association`).then((r) =>
-        parseResponse<AssociationDTO[]>(r)
-      )
-    )
+    uniqueItemIds.map((itemId) => apiJson<AssociationDTO[]>(`/api/item/${itemId}/association`))
   );
 
   const items: Record<string, Item> = {};
@@ -155,15 +183,8 @@ export async function getProject(id: string): Promise<Project | null> {
       targetTitle: a.targetTitle,
     }));
     items[String(itemId)] = {
-      id: String(itemId),
-      title: dto.title,
-      titleAlign: (dto.titleAlign as TitleAlign) ?? "center",
-      unfiled: unfiledIds.has(itemId),
+      ...toItem(dto, unfiledIds.has(itemId), associations),
       content: null,
-      associations,
-      linkedItemIds: associations
-        .filter((a) => a.targetType === "ITEM")
-        .map((a) => a.targetId),
     };
   });
 
@@ -181,75 +202,30 @@ export async function getProject(id: string): Promise<Project | null> {
     forkedFrom: trail.forkedFromId != null ? String(trail.forkedFromId) : null,
   }));
 
-  return {
-    id: String(projectDto.id),
-    title: projectDto.title,
-    description: projectDto.description ?? "",
-    trails,
-    items,
-    visibility: projectDto.visibility ?? "private",
-    thumbnailImageUrl: projectDto.thumbnailImageUrl,
-    thumbnailGraph: projectDto.thumbnailGraph,
-    tags: projectDto.tags?.join(", ") ?? "",
-    createdAt: projectDto.creationDate,
-    updatedAt: projectDto.modifiedDate,
-    storageBytes: projectDto.storageBytes,
-    forkedFromProjectId: projectDto.forkedFromProjectId,
-    forkedFromTitle: projectDto.forkedFromTitle,
-    forkedFromOwnerUsername: projectDto.forkedFromOwnerUsername,
-  };
+  return { ...toProjectSummary(projectDto), trails, items };
 }
 
 export async function createProject(title: string): Promise<Project> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project`, {
-    method: "POST",
-    headers: jsonHeaders,
-    body: JSON.stringify({ title }),
-  });
-  return toProjectSummary(await parseResponse<ProjectDTO>(response));
+  return toProjectSummary(await apiJson<ProjectDTO>(`/api/project`, { method: "POST", json: { title } }));
 }
 
 export async function renameProject(id: string, title: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ title }),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/project/${id}`, { method: "PUT", json: { title } });
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
-    method: "DELETE",
-  });
-  await expectOk(response);
+  await apiVoid(`/api/project/${id}`, { method: "DELETE" });
 }
 
 export async function setProjectVisibility(
   id: string,
   visibility: ProjectVisibility,
 ): Promise<{ error: string | null }> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ visibility }),
-  });
-  if (!response.ok) {
-    const message = await response.json().then((body) => body?.message).catch(() => null);
-    return { error: message ?? `Request failed with status ${response.status}` };
-  }
-  return { error: null };
+  return apiResult(`/api/project/${id}`, { method: "PUT", json: { visibility } });
 }
 
 export async function publishProject(id: string): Promise<{ error: string | null }> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/publish`, {
-    method: "POST",
-  });
-  if (!response.ok) {
-    const message = await response.json().then((body) => body?.message).catch(() => null);
-    return { error: message ?? `Request failed with status ${response.status}` };
-  }
-  return { error: null };
+  return apiResult(`/api/project/${id}/publish`, { method: "POST" });
 }
 
 export type ThumbnailChoice =
@@ -258,12 +234,7 @@ export type ThumbnailChoice =
   | { type: "PROJECT_IMAGE" | "DEDICATED"; imageUrl: string };
 
 export async function setProjectThumbnail(id: string, choice: ThumbnailChoice): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/thumbnail`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify(choice),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/project/${id}/thumbnail`, { method: "PUT", json: choice });
 }
 
 export interface ProjectImage {
@@ -279,27 +250,16 @@ interface ProjectImageDTO {
 }
 
 export async function getProjectImages(id: string): Promise<ProjectImage[]> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/images`);
-  return parseResponse<ProjectImageDTO[]>(response);
+  return apiJson<ProjectImageDTO[]>(`/api/project/${id}/images`);
 }
 
 export async function setProjectDescription(id: string, description: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ description }),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/project/${id}`, { method: "PUT", json: { description } });
 }
 
 export async function setProjectTags(id: string, tags: string): Promise<void> {
   const tagNames = tags.split(",").map((tag) => tag.trim()).filter(Boolean);
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ tags: tagNames }),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/project/${id}`, { method: "PUT", json: { tags: tagNames } });
 }
 
 export interface VoteResult {
@@ -314,28 +274,21 @@ interface VoteResponseDTO {
 
 export async function toggleProjectVote(id: string): Promise<VoteResult> {
   const clientIp = (await headers()).get("x-forwarded-for");
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/vote`, {
+  return apiJson<VoteResponseDTO>(`/api/project/${id}/vote`, {
     method: "POST",
     headers: {
       ...(clientIp ? { "X-Forwarded-For": clientIp } : undefined),
       ...(await anonIdHeader()),
     },
   });
-  return parseResponse<VoteResponseDTO>(response);
 }
 
 export async function shareProjectToFollowers(id: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/share`, {
-    method: "POST",
-  });
-  await expectOk(response);
+  await apiVoid(`/api/project/${id}/share`, { method: "POST" });
 }
 
 export async function forkProject(id: string): Promise<Project> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/fork`, {
-    method: "POST",
-  });
-  return toProjectSummary(await parseResponse<ProjectDTO>(response));
+  return toProjectSummary(await apiJson<ProjectDTO>(`/api/project/${id}/fork`, { method: "POST" }));
 }
 
 interface BookmarkResponseDTO {
@@ -343,19 +296,12 @@ interface BookmarkResponseDTO {
 }
 
 export async function toggleProjectBookmark(id: string): Promise<boolean> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${id}/bookmark`, {
-    method: "POST",
-  });
-  return (await parseResponse<BookmarkResponseDTO>(response)).bookmarked;
+  const result = await apiJson<BookmarkResponseDTO>(`/api/project/${id}/bookmark`, { method: "POST" });
+  return result.bookmarked;
 }
 
 export async function createTrail(projectId: string, title: string): Promise<Trail> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${projectId}/trail`, {
-    method: "POST",
-    headers: jsonHeaders,
-    body: JSON.stringify({ title }),
-  });
-  const dto = await parseResponse<TrailDTO>(response);
+  const dto = await apiJson<TrailDTO>(`/api/project/${projectId}/trail`, { method: "POST", json: { title } });
   return {
     id: String(dto.id),
     title: dto.title,
@@ -372,99 +318,55 @@ export async function updateStep(
   itemId: string,
   fields: { annotation?: string | null; associationId?: string | null },
 ): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/trail/${trailId}/item/${itemId}`, {
+  await apiVoid(`/api/trail/${trailId}/item/${itemId}`, {
     method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({
+    json: {
       annotation: fields.annotation ?? null,
       associationId: fields.associationId != null ? Number(fields.associationId) : null,
-    }),
+    },
   });
-  await expectOk(response);
 }
 
 export async function renameTrail(trailId: string, title: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/trail/${trailId}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ title }),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/trail/${trailId}`, { method: "PUT", json: { title } });
 }
 
 export async function setTrailDescription(trailId: string, description: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/trail/${trailId}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ description }),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/trail/${trailId}`, { method: "PUT", json: { description } });
 }
 
 export async function deleteTrail(trailId: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/trail/${trailId}`, {
-    method: "DELETE",
-  });
-  await expectOk(response);
+  await apiVoid(`/api/trail/${trailId}`, { method: "DELETE" });
 }
 
 export async function createItem(trailId: string, title: string): Promise<Item> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/trail/${trailId}/item`, {
-    method: "POST",
-    headers: jsonHeaders,
-    body: JSON.stringify({ title }),
-  });
-  const dto = await parseResponse<ItemDTO>(response);
-  return { id: String(dto.id), title: dto.title, titleAlign: (dto.titleAlign as TitleAlign) ?? "center", unfiled: false, content: "", associations: [], linkedItemIds: [] };
+  const dto = await apiJson<ItemDTO>(`/api/trail/${trailId}/item`, { method: "POST", json: { title } });
+  return toItem(dto, false);
 }
 
 export async function createLooseItem(projectId: string, title: string): Promise<Item> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/project/${projectId}/item`, {
-    method: "POST",
-    headers: jsonHeaders,
-    body: JSON.stringify({ title }),
-  });
-  const dto = await parseResponse<ItemDTO>(response);
-  return { id: String(dto.id), title: dto.title, titleAlign: (dto.titleAlign as TitleAlign) ?? "center", unfiled: true, content: "", associations: [], linkedItemIds: [] };
+  const dto = await apiJson<ItemDTO>(`/api/project/${projectId}/item`, { method: "POST", json: { title } });
+  return toItem(dto, true);
 }
 
 export async function deleteItem(itemId: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/item/${itemId}`, {
-    method: "DELETE",
-  });
-  await expectOk(response);
+  await apiVoid(`/api/item/${itemId}`, { method: "DELETE" });
 }
 
 export async function renameItem(itemId: string, title: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/item/${itemId}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ title }),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/item/${itemId}`, { method: "PUT", json: { title } });
 }
 
 export async function setItemTitleAlign(itemId: string, titleAlign: TitleAlign): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/item/${itemId}`, {
-    method: "PUT",
-    headers: jsonHeaders,
-    body: JSON.stringify({ titleAlign }),
-  });
-  await expectOk(response);
+  await apiVoid(`/api/item/${itemId}`, { method: "PUT", json: { titleAlign } });
 }
 
 export async function attachItemToTrail(trailId: string, itemId: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/trail/${trailId}/item/${itemId}`, {
-    method: "POST",
-  });
-  await expectOk(response);
+  await apiVoid(`/api/trail/${trailId}/item/${itemId}`, { method: "POST" });
 }
 
 export async function detachItemFromTrail(trailId: string, itemId: string): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/trail/${trailId}/item/${itemId}`, {
-    method: "DELETE",
-  });
-  await expectOk(response);
+  await apiVoid(`/api/trail/${trailId}/item/${itemId}`, { method: "DELETE" });
 }
 
 export async function tie(
@@ -473,12 +375,10 @@ export async function tie(
   targetType: AssociationTargetType = "ITEM",
   type: AssociationType = "RELATED",
 ): Promise<void> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/item/${itemId}/tie`, {
+  await apiVoid(`/api/item/${itemId}/tie`, {
     method: "POST",
-    headers: jsonHeaders,
-    body: JSON.stringify({ type, targetType, targetId: Number(targetId) }),
+    json: { type, targetType, targetId: Number(targetId) },
   });
-  await expectOk(response);
 }
 
 export async function untie(
@@ -486,11 +386,9 @@ export async function untie(
   targetId: string,
   targetType: AssociationTargetType = "ITEM",
 ): Promise<void> {
-  const response = await authenticatedFetch(
-    `${API_BASE_URL}/api/item/${itemId}/tie?targetType=${targetType}&targetId=${targetId}`,
-    { method: "DELETE" }
-  );
-  await expectOk(response);
+  await apiVoid(`/api/item/${itemId}/tie?targetType=${targetType}&targetId=${targetId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function linkItems(itemId: string, otherItemId: string): Promise<void> {

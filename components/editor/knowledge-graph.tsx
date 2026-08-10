@@ -277,9 +277,14 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spineEdges, assocs, pos, col, colors, selectedItemId]);
 
+  const previewKey = useMemo(
+    () => [activeTrailId ?? "none", ...nodes.map((n) => n.id), ...edges.map((e) => e.id)].join("|"),
+    [activeTrailId, nodes, edges],
+  );
+
   const flow = (
     <ReactFlow
-      key={activeTrailId ?? "none"}
+      key={preview ? previewKey : activeTrailId ?? "none"}
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}

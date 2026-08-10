@@ -639,6 +639,7 @@ div.editor-equation {
 
 .editor-paragraph {
   margin: 0;
+  margin-bottom: 12px;
   position: relative;
 }
 

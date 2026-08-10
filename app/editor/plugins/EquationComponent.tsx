@@ -239,8 +239,11 @@ export default function EquationComponent({
   );
 
   const cancel = useCallback(() => {
-    setDraft(equation);
     if (equation === '') {
+      if (draft.trim() !== '') {
+        commit();
+        return;
+      }
       editor.update(() => {
         const node = $getNodeByKey(nodeKey);
         if ($isEquationNode(node)) node.remove();
@@ -248,9 +251,10 @@ export default function EquationComponent({
       setIsEditing(false);
       return;
     }
+    setDraft(equation);
     exitEdgeRef.current = 'after';
     setIsEditing(false);
-  }, [editor, equation, nodeKey]);
+  }, [commit, draft, editor, equation, nodeKey]);
 
   const startEditing = useCallback(
     (from: Edge | null = null) => {
