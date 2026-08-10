@@ -40,6 +40,70 @@ interface SidebarCustomProps {
   onDeleteItem: (itemId: string) => void;
 }
 
+function InlineInput({
+  value,
+  onChange,
+  onSubmit,
+  onCancel,
+  placeholder,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  return (
+    <Input
+      autoFocus
+      value={value}
+      placeholder={placeholder}
+      className={className}
+      onChange={(e) => onChange(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") onSubmit();
+        if (e.key === "Escape") onCancel();
+      }}
+      onBlur={onSubmit}
+    />
+  );
+}
+
+function AddToTrailSelect({
+  trails,
+  onPick,
+  onCancel,
+}: {
+  trails: Trail[];
+  onPick: (trailId: string) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 px-2 py-1">
+      <select
+        autoFocus
+        className="h-7 flex-1 rounded-md border border-input bg-background px-1 text-xs"
+        defaultValue=""
+        onChange={(e) => {
+          const trailId = e.target.value;
+          if (trailId) onPick(trailId);
+          onCancel();
+        }}
+      >
+        <option value="" disabled>Add to trail...</option>
+        {trails.map((t) => (
+          <option key={t.id} value={t.id}>{t.title}</option>
+        ))}
+      </select>
+      <Button variant="ghost" size="sm" className="h-7 px-2" onClick={onCancel}>
+        Cancel
+      </Button>
+    </div>
+  );
+}
+
 export function SidebarCustom({
   homeHref,
   trails,
@@ -122,10 +186,6 @@ export function SidebarCustom({
     onLinkItemToTrail(trailId, linkSelection);
     setLinkingTrailId(null);
     setLinkSelection("");
-  };
-
-  const startAddToTrail = (itemId: string) => {
-    setAddToTrailItemId(itemId);
   };
 
   const startEditTrail = (trail: Trail) => {
@@ -228,19 +288,15 @@ export function SidebarCustom({
                 <CollapsibleContent className="pl-2">
                   {isCreating && (
                     <div className="px-2 pb-2">
-                      <Input
-                        autoFocus
+                      <InlineInput
                         value={newTitle}
                         placeholder="Trail title..."
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") submitNewTrail();
-                          if (e.key === "Escape") {
-                            setNewTitle("");
-                            setIsCreating(false);
-                          }
+                        onChange={setNewTitle}
+                        onSubmit={submitNewTrail}
+                        onCancel={() => {
+                          setNewTitle("");
+                          setIsCreating(false);
                         }}
-                        onBlur={submitNewTrail}
                       />
                     </div>
                   )}
@@ -259,19 +315,15 @@ export function SidebarCustom({
                             <SidebarMenuItem>
                               <div className="group/trail flex items-center">
                                 {editingTrailId === trail.id ? (
-                                  <Input
-                                    autoFocus
+                                  <InlineInput
                                     value={editingTrailTitle}
                                     className="h-7"
-                                    onChange={(e) => setEditingTrailTitle(e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") submitEditTrail(trail.id);
-                                      if (e.key === "Escape") {
-                                        setEditingTrailId(null);
-                                        setEditingTrailTitle("");
-                                      }
+                                    onChange={setEditingTrailTitle}
+                                    onSubmit={() => submitEditTrail(trail.id)}
+                                    onCancel={() => {
+                                      setEditingTrailId(null);
+                                      setEditingTrailTitle("");
                                     }}
-                                    onBlur={() => submitEditTrail(trail.id)}
                                   />
                                 ) : (
                                   <>
@@ -369,19 +421,15 @@ export function SidebarCustom({
                                     return (
                                       <SidebarMenuSubItem key={item.id} className="group/item">
                                         {editingItemId === item.id ? (
-                                          <Input
-                                            autoFocus
+                                          <InlineInput
                                             value={editingItemTitle}
                                             className="h-7"
-                                            onChange={(e) => setEditingItemTitle(e.target.value)}
-                                            onKeyDown={(e) => {
-                                              if (e.key === "Enter") submitEditItem(item.id);
-                                              if (e.key === "Escape") {
-                                                setEditingItemId(null);
-                                                setEditingItemTitle("");
-                                              }
+                                            onChange={setEditingItemTitle}
+                                            onSubmit={() => submitEditItem(item.id)}
+                                            onCancel={() => {
+                                              setEditingItemId(null);
+                                              setEditingItemTitle("");
                                             }}
-                                            onBlur={() => submitEditItem(item.id)}
                                           />
                                         ) : (
                                           <div className="flex items-center">
@@ -413,7 +461,7 @@ export function SidebarCustom({
                                               </DropdownMenuTrigger>
                                               <DropdownMenuContent align="start">
                                                 {addableTrails.length > 0 && (
-                                                  <DropdownMenuItem onSelect={() => startAddToTrail(item.id)}>
+                                                  <DropdownMenuItem onSelect={() => setAddToTrailItemId(item.id)}>
                                                     <ListPlus className="h-3.5 w-3.5" />
                                                     Add to another trail
                                                   </DropdownMenuItem>
@@ -427,55 +475,27 @@ export function SidebarCustom({
                                           </div>
                                         )}
                                         {addToTrailItemId === item.id && (
-                                          <div className="flex items-center gap-1 px-2 py-1">
-                                            <select
-                                              autoFocus
-                                              className="h-7 flex-1 rounded-md border border-input bg-background px-1 text-xs"
-                                              defaultValue=""
-                                              onChange={(e) => {
-                                                const trailId = e.target.value;
-                                                if (trailId) onLinkItemToTrail(trailId, item.id);
-                                                setAddToTrailItemId(null);
-                                              }}
-                                            >
-                                              <option value="" disabled>
-                                                Add to trail...
-                                              </option>
-                                              {addableTrails.map((t) => (
-                                                <option key={t.id} value={t.id}>
-                                                  {t.title}
-                                                </option>
-                                              ))}
-                                            </select>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-7 px-2"
-                                              onClick={() => setAddToTrailItemId(null)}
-                                            >
-                                              Cancel
-                                            </Button>
-                                          </div>
+                                          <AddToTrailSelect
+                                            trails={addableTrails}
+                                            onPick={(trailId) => onLinkItemToTrail(trailId, item.id)}
+                                            onCancel={() => setAddToTrailItemId(null)}
+                                          />
                                         )}
                                       </SidebarMenuSubItem>
                                     );
                                   })}
                                   {creatingItemTrailId === trail.id && (
                                     <SidebarMenuSubItem>
-                                      <Input
-                                        autoFocus
+                                      <InlineInput
                                         value={newItemTitle}
                                         placeholder="Item title..."
                                         className="h-7"
-                                        onChange={(e) => setNewItemTitle(e.target.value)}
-                                        onKeyDown={(e) => {
-                                          if (e.key === "Enter") submitNewItem(trail.id);
-                                          if (e.key === "Escape") {
-                                            setNewItemTitle("");
-                                            setCreatingItemTrailId(null);
-                                          }
+                                        onChange={setNewItemTitle}
+                                        onSubmit={() => submitNewItem(trail.id)}
+                                        onCancel={() => {
+                                          setNewItemTitle("");
+                                          setCreatingItemTrailId(null);
                                         }}
-                                        onBlur={() => submitNewItem(trail.id)}
                                       />
                                     </SidebarMenuSubItem>
                                   )}
@@ -515,17 +535,13 @@ export function SidebarCustom({
                 <CollapsibleContent className="pl-2">
                   {isCreatingLoose && (
                     <div className="px-2 pb-2">
-                      <Input
-                        autoFocus
+                      <InlineInput
                         value={newLooseTitle}
                         placeholder="Item title..."
                         className="h-7"
-                        onChange={(e) => setNewLooseTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") submitNewLooseItem();
-                          if (e.key === "Escape") { setNewLooseTitle(""); setIsCreatingLoose(false); }
-                        }}
-                        onBlur={submitNewLooseItem}
+                        onChange={setNewLooseTitle}
+                        onSubmit={submitNewLooseItem}
+                        onCancel={() => { setNewLooseTitle(""); setIsCreatingLoose(false); }}
                       />
                     </div>
                   )}
@@ -538,16 +554,12 @@ export function SidebarCustom({
                         return (
                         <SidebarMenuItem key={item.id} className="group/loose">
                           {editingItemId === item.id ? (
-                            <Input
-                              autoFocus
+                            <InlineInput
                               value={editingItemTitle}
                               className="h-7"
-                              onChange={(e) => setEditingItemTitle(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") submitEditItem(item.id);
-                                if (e.key === "Escape") { setEditingItemId(null); setEditingItemTitle(""); }
-                              }}
-                              onBlur={() => submitEditItem(item.id)}
+                              onChange={setEditingItemTitle}
+                              onSubmit={() => submitEditItem(item.id)}
+                              onCancel={() => { setEditingItemId(null); setEditingItemTitle(""); }}
                             />
                           ) : (
                             <div className="flex items-center">
@@ -596,7 +608,7 @@ export function SidebarCustom({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start">
                                   {addableTrails.length > 0 && (
-                                    <DropdownMenuItem onSelect={() => startAddToTrail(item.id)}>
+                                    <DropdownMenuItem onSelect={() => setAddToTrailItemId(item.id)}>
                                       <ListPlus className="h-3.5 w-3.5" />
                                       Add to a trail
                                     </DropdownMenuItem>
@@ -610,26 +622,11 @@ export function SidebarCustom({
                             </div>
                           )}
                           {addToTrailItemId === item.id && (
-                            <div className="flex items-center gap-1 px-2 py-1">
-                              <select
-                                autoFocus
-                                className="h-7 flex-1 rounded-md border border-input bg-background px-1 text-xs"
-                                defaultValue=""
-                                onChange={(e) => {
-                                  const trailId = e.target.value;
-                                  if (trailId) onLinkItemToTrail(trailId, item.id);
-                                  setAddToTrailItemId(null);
-                                }}
-                              >
-                                <option value="" disabled>Add to trail...</option>
-                                {addableTrails.map((t) => (
-                                  <option key={t.id} value={t.id}>{t.title}</option>
-                                ))}
-                              </select>
-                              <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setAddToTrailItemId(null)}>
-                                Cancel
-                              </Button>
-                            </div>
+                            <AddToTrailSelect
+                              trails={addableTrails}
+                              onPick={(trailId) => onLinkItemToTrail(trailId, item.id)}
+                              onCancel={() => setAddToTrailItemId(null)}
+                            />
                           )}
                         </SidebarMenuItem>
                         );
