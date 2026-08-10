@@ -19,6 +19,7 @@ export function useAutoSave({
 }: UseAutoSaveParams) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const pendingContentRef = useRef<{ itemId: string; content: string } | null>(null);
+  const inFlightRef = useRef(0);
   const saveContentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadedItemContentRef = useRef<string | null>(null);
 
@@ -35,9 +36,10 @@ export function useAutoSave({
     if (!pending) return;
     pendingContentRef.current = null;
     setSaveStatus('saving');
+    inFlightRef.current += 1;
     saveItemContent(pending.itemId, pending.content)
       .then(() => {
-        setSaveStatus('saved');
+        if (!pendingContentRef.current) setSaveStatus('saved');
       })
       .catch((err) => {
         console.error(err);
@@ -46,6 +48,9 @@ export function useAutoSave({
           pendingContentRef.current = pending;
         }
         if (isAuthError(err)) redirectToLogin();
+      })
+      .finally(() => {
+        inFlightRef.current -= 1;
       });
   }, [redirectToLogin]);
 
@@ -55,7 +60,7 @@ export function useAutoSave({
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!pendingContentRef.current) return;
+      if (!pendingContentRef.current && inFlightRef.current === 0) return;
       flushPendingContent();
       event.preventDefault();
       event.returnValue = '';

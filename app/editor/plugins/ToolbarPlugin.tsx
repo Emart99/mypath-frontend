@@ -70,6 +70,7 @@ import {
   ChevronDown,
   Search,
   Sigma,
+  Radical,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -678,6 +679,20 @@ export default function ToolbarPlugin({
         </TooltipTrigger>
         <TooltipContent>Insert image</TooltipContent>
       </Tooltip>
+      <Divider />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() =>
+              editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true })
+            }
+            className="toolbar-item spaced"
+            aria-label="Insert Inline Equation">
+            <Radical size={18} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Inline equation (⌘E)</TooltipContent>
+      </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -689,7 +704,7 @@ export default function ToolbarPlugin({
             <Sigma size={18} />
           </button>
         </TooltipTrigger>
-        <TooltipContent>Insert equation (⌘⇧E · inline ⌘E)</TooltipContent>
+        <TooltipContent>Insert equation (⌘⇧E)</TooltipContent>
       </Tooltip>
       <input
         ref={fileInputRef}

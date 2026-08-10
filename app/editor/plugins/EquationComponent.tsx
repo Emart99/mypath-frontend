@@ -10,13 +10,19 @@ import {
   $createTextNode,
   $getNodeByKey,
   $getSelection,
+  $isElementNode,
   $isNodeSelection,
+  $isRangeSelection,
   $isTextNode,
   CLICK_COMMAND,
   COMMAND_PRIORITY_LOW,
+  KEY_ARROW_LEFT_COMMAND,
+  KEY_ARROW_RIGHT_COMMAND,
   KEY_BACKSPACE_COMMAND,
   KEY_DELETE_COMMAND,
+  KEY_ENTER_COMMAND,
   LexicalEditor,
+  LexicalNode,
   NodeKey,
 } from 'lexical';
 import katex from 'katex';
@@ -28,6 +34,21 @@ interface EquationComponentProps {
   inline: boolean;
   nodeKey: NodeKey;
 }
+
+type Edge = 'before' | 'after';
+
+const TEMPLATES: { label: string; title: string; latex: string; at: number; len: number }[] = [
+  { label: 'a/b', title: 'Fracción', latex: '\\frac{}{}', at: 6, len: 0 },
+  { label: '√', title: 'Raíz', latex: '\\sqrt{}', at: 6, len: 0 },
+  { label: 'x²', title: 'Potencia', latex: '^{}', at: 2, len: 0 },
+  { label: 'xᵢ', title: 'Subíndice', latex: '_{}', at: 2, len: 0 },
+  { label: 'Σ', title: 'Sumatoria', latex: '\\sum_{i=1}^{n} ', at: 15, len: 0 },
+  { label: '∫', title: 'Integral', latex: '\\int_{a}^{b} ', at: 13, len: 0 },
+  { label: 'lim', title: 'Límite', latex: '\\lim_{x \\to 0} ', at: 15, len: 0 },
+  { label: '(⋯)', title: 'Matriz', latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', at: 16, len: 1 },
+  { label: '{', title: 'Función partida', latex: '\\begin{cases}  \\\\  \\end{cases}', at: 14, len: 0 },
+  { label: 'π', title: 'Letra griega', latex: '\\pi ', at: 1, len: 2 },
+];
 
 function renderKatex(target: HTMLElement, equation: string, inline: boolean): string | null {
   try {
@@ -51,32 +72,64 @@ function renderKatex(target: HTMLElement, equation: string, inline: boolean): st
   }
 }
 
-function returnFocusAfter(editor: LexicalEditor, nodeKey: NodeKey) {
+function $caretTouches(node: LexicalNode, edge: Edge): boolean {
+  const selection = $getSelection();
+  if (!$isRangeSelection(selection) || !selection.isCollapsed()) return false;
+  const point = selection.anchor;
+  const anchorNode = point.getNode();
+  const sibling = edge === 'after' ? 'getPreviousSibling' : 'getNextSibling';
+
+  if (point.type === 'text') {
+    const atEdge = edge === 'after' ? point.offset === 0 : point.offset === anchorNode.getTextContentSize();
+    if (!atEdge) return false;
+    if (anchorNode[sibling]() === node) return true;
+    const block = anchorNode.getTopLevelElement();
+    return anchorNode[sibling]() === null && block !== null && block[sibling]() === node;
+  }
+
+  if (!$isElementNode(anchorNode)) return false;
+  const neighbour = edge === 'after'
+    ? anchorNode.getChildAtIndex(point.offset - 1)
+    : anchorNode.getChildAtIndex(point.offset);
+  if (neighbour === node) return true;
+  const empty = anchorNode.getChildrenSize() === 0;
+  return empty && anchorNode[sibling]() === node;
+}
+
+function $placeCaret(node: LexicalNode, edge: Edge) {
+  if (!$isEquationNode(node)) return;
+  if (node.isInline()) {
+    const neighbour = edge === 'after' ? node.getNextSibling() : node.getPreviousSibling();
+    if ($isTextNode(neighbour)) {
+      if (edge === 'after') neighbour.select(0, 0);
+      else neighbour.select(neighbour.getTextContentSize(), neighbour.getTextContentSize());
+      return;
+    }
+    const caret = $createTextNode('');
+    if (edge === 'after') node.insertAfter(caret);
+    else node.insertBefore(caret);
+    caret.select();
+    return;
+  }
+  const block = node.getTopLevelElement() ?? node;
+  let neighbour = edge === 'after' ? block.getNextSibling() : block.getPreviousSibling();
+  if (neighbour === null) {
+    neighbour = $createParagraphNode();
+    if (edge === 'after') block.insertAfter(neighbour);
+    else block.insertBefore(neighbour);
+  }
+  if (!$isElementNode(neighbour)) return;
+  if (edge === 'after') neighbour.selectStart();
+  else neighbour.selectEnd();
+}
+
+function returnFocusTo(editor: LexicalEditor, nodeKey: NodeKey, edge: Edge) {
   requestAnimationFrame(() => {
     editor.getRootElement()?.focus({ preventScroll: true });
     editor.update(() => {
       const node = $getNodeByKey(nodeKey);
-      if (!$isEquationNode(node)) return;
-      if (node.isInline()) {
-        const after = node.getNextSibling();
-        if ($isTextNode(after)) {
-          after.select(0, 0);
-        } else {
-          const caret = $createTextNode('');
-          node.insertAfter(caret);
-          caret.select();
-        }
-        return;
-      }
-      const block = node.getTopLevelElement() ?? node;
-      let next = block.getNextSibling();
-      if (next === null) {
-        next = $createParagraphNode();
-        block.insertAfter(next);
-      }
-      next.selectStart();
+      if (node !== null) $placeCaret(node, edge);
     });
-    editor.focus(undefined, { defaultSelection: 'rootEnd' });
   });
 }
 
@@ -94,6 +147,8 @@ export default function EquationComponent({
   const katexRef = useRef<HTMLSpanElement | null>(null);
   const previewRef = useRef<HTMLSpanElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const entryEdgeRef = useRef<Edge | null>(null);
+  const exitEdgeRef = useRef<Edge | null>(null);
 
   const discardedOnMount = useRef(false);
   useEffect(() => {
@@ -120,8 +175,31 @@ export default function EquationComponent({
     const textarea = textareaRef.current;
     if (!isEditing || textarea === null) return;
     textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    const at = entryEdgeRef.current === 'before' ? 0 : textarea.value.length;
+    entryEdgeRef.current = null;
+    textarea.setSelectionRange(at, at);
   }, [isEditing]);
+
+  const pendingSelection = useRef<[number, number] | null>(null);
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea === null || pendingSelection.current === null) return;
+    const [from, to] = pendingSelection.current;
+    pendingSelection.current = null;
+    textarea.setSelectionRange(from, to);
+  }, [draft]);
+
+  const insertTemplate = useCallback(
+    (latex: string, at: number, len: number) => {
+      const textarea = textareaRef.current;
+      if (textarea === null) return;
+      const from = textarea.selectionStart;
+      const to = textarea.selectionEnd;
+      setDraft(draft.slice(0, from) + latex + draft.slice(to));
+      pendingSelection.current = [from + at, from + at + len];
+    },
+    [draft],
+  );
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -130,33 +208,35 @@ export default function EquationComponent({
     textarea.style.height = `${textarea.scrollHeight}px`;
   }, [draft, isEditing]);
 
-  const pendingFocus = useRef(false);
-
   useEffect(() => {
-    if (isEditing || !pendingFocus.current) return;
-    pendingFocus.current = false;
-    returnFocusAfter(editor, nodeKey);
+    if (isEditing || exitEdgeRef.current === null) return;
+    const edge = exitEdgeRef.current;
+    exitEdgeRef.current = null;
+    returnFocusTo(editor, nodeKey, edge);
   }, [editor, isEditing, nodeKey]);
 
-  const commit = useCallback(() => {
-    const next = draft.trim();
-    if (next === '') {
-      editor.update(() => {
-        const node = $getNodeByKey(nodeKey);
-        if ($isEquationNode(node)) node.remove();
-      });
+  const commit = useCallback(
+    (exitTo: Edge | null = 'after') => {
+      const next = draft.trim();
+      if (next === '') {
+        editor.update(() => {
+          const node = $getNodeByKey(nodeKey);
+          if ($isEquationNode(node)) node.remove();
+        });
+        setIsEditing(false);
+        return;
+      }
+      if (next !== equation) {
+        editor.update(() => {
+          const node = $getNodeByKey(nodeKey);
+          if ($isEquationNode(node)) node.setEquation(next);
+        });
+      }
+      exitEdgeRef.current = exitTo;
       setIsEditing(false);
-      return;
-    }
-    if (next !== equation) {
-      editor.update(() => {
-        const node = $getNodeByKey(nodeKey);
-        if ($isEquationNode(node)) node.setEquation(next);
-      });
-    }
-    pendingFocus.current = true;
-    setIsEditing(false);
-  }, [draft, editor, equation, nodeKey]);
+    },
+    [draft, editor, equation, nodeKey],
+  );
 
   const cancel = useCallback(() => {
     setDraft(equation);
@@ -168,15 +248,19 @@ export default function EquationComponent({
       setIsEditing(false);
       return;
     }
-    pendingFocus.current = true;
+    exitEdgeRef.current = 'after';
     setIsEditing(false);
   }, [editor, equation, nodeKey]);
 
-  const startEditing = useCallback(() => {
-    if (!isEditable) return;
-    setDraft(equation);
-    setIsEditing(true);
-  }, [equation, isEditable]);
+  const startEditing = useCallback(
+    (from: Edge | null = null) => {
+      if (!isEditable) return;
+      entryEdgeRef.current = from;
+      setDraft(equation);
+      setIsEditing(true);
+    },
+    [equation, isEditable],
+  );
 
   const onDelete = useCallback(
     (event: KeyboardEvent) => {
@@ -190,6 +274,17 @@ export default function EquationComponent({
       return false;
     },
     [isSelected, nodeKey],
+  );
+
+  const enterFrom = useCallback(
+    (edge: Edge) => (event: KeyboardEvent) => {
+      const node = $getNodeByKey(nodeKey);
+      if (!$isEquationNode(node) || !$caretTouches(node, edge)) return false;
+      event.preventDefault();
+      startEditing(edge);
+      return true;
+    },
+    [nodeKey, startEditing],
   );
 
   useEffect(() => {
@@ -214,8 +309,20 @@ export default function EquationComponent({
       ),
       editor.registerCommand(KEY_DELETE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
       editor.registerCommand(KEY_BACKSPACE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
+      editor.registerCommand(KEY_ARROW_LEFT_COMMAND, enterFrom('after'), COMMAND_PRIORITY_LOW),
+      editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, enterFrom('before'), COMMAND_PRIORITY_LOW),
+      editor.registerCommand(
+        KEY_ENTER_COMMAND,
+        (event) => {
+          if (!isSelected || !$isNodeSelection($getSelection())) return false;
+          event?.preventDefault();
+          startEditing();
+          return true;
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
     );
-  }, [clearSelected, editor, inline, isEditable, isEditing, onDelete, setSelected, startEditing]);
+  }, [clearSelected, editor, enterFrom, inline, isEditable, isEditing, isSelected, onDelete, setSelected, startEditing]);
 
   if (isEditing && isEditable) {
     return (
@@ -230,19 +337,47 @@ export default function EquationComponent({
           rows={1}
           spellCheck={false}
           onChange={(event) => setDraft(event.target.value)}
-          onBlur={commit}
+          onBlur={() => commit()}
           onKeyDown={(event) => {
+            event.stopPropagation();
+            const textarea = event.currentTarget;
+            const collapsed = textarea.selectionStart === textarea.selectionEnd;
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault();
               commit();
             } else if (event.key === 'Escape') {
               event.preventDefault();
               cancel();
+            } else if (event.key === 'ArrowLeft' && collapsed && textarea.selectionStart === 0) {
+              event.preventDefault();
+              commit('before');
+            } else if (
+              event.key === 'ArrowRight' &&
+              collapsed &&
+              textarea.selectionEnd === textarea.value.length
+            ) {
+              event.preventDefault();
+              commit('after');
             }
           }}
           placeholder={inline ? 'a + b' : '\\frac{a}{b}'}
           aria-label="LaTeX equation"
         />
+        <span className="editor-equation-palette">
+          {TEMPLATES.map(({ label, title, latex, at, len }) => (
+            <button
+              key={title}
+              type="button"
+              title={title}
+              aria-label={title}
+              className="editor-equation-template"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => insertTemplate(latex, at, len)}
+            >
+              {label}
+            </button>
+          ))}
+        </span>
         <span className="editor-equation-preview" ref={previewRef} aria-hidden />
         {error !== null && <span className="editor-equation-error">{error}</span>}
       </span>
@@ -254,7 +389,7 @@ export default function EquationComponent({
       key="rendered"
       ref={katexRef}
       className={isSelected ? 'editor-equation-rendered selected' : 'editor-equation-rendered'}
-      onDoubleClick={startEditing}
+      onDoubleClick={() => startEditing()}
     />
   );
 }
