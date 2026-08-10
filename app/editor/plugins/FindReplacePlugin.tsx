@@ -30,10 +30,28 @@ interface TextSegment {
 // ElementNode.getTextContent() inserts "\n\n" between sibling blocks, but
 // $findTextIntersectionFromCharacters's character count does NOT account for that separator,
 // so the two disagree on offsets past the first paragraph. Keeping both sides of the math
-// in one self-consistent walk (zero separator throughout) avoids that mismatch entirely.
+// in one self-consistent walk avoids that mismatch entirely.
+//
+// BLOCK_SEPARATOR keeps blocks apart in the flattened text so a match can never span two of
+// them. Without it "cita?" at the end of a paragraph and "item" at the start of the next list
+// item read as one contiguous string, and replacing across that boundary merges the blocks.
+// A newline is safe as the separator because the find input is single-line, so no query can
+// ever contain one and therefore no match can ever straddle it.
+const BLOCK_SEPARATOR = '\n';
+
+function nearestBlockKey(node: TextNode): string | null {
+  let parent = node.getParent();
+  while (parent !== null) {
+    if ($isElementNode(parent) && !parent.isInline()) return parent.getKey();
+    parent = parent.getParent();
+  }
+  return null;
+}
+
 function collectTextSegments(root: RootNode): { text: string; segments: TextSegment[] } {
   let text = '';
   const segments: TextSegment[] = [];
+  let lastBlockKey: string | null = null;
   let node = root.getFirstChild();
   mainLoop: while (node !== null) {
     if ($isElementNode(node)) {
@@ -43,6 +61,11 @@ function collectTextSegments(root: RootNode): { text: string; segments: TextSegm
         continue;
       }
     } else if ($isTextNode(node)) {
+      const blockKey = nearestBlockKey(node);
+      if (lastBlockKey !== null && blockKey !== lastBlockKey) {
+        text += BLOCK_SEPARATOR;
+      }
+      lastBlockKey = blockKey;
       const start = text.length;
       const content = node.getTextContent();
       text += content;
@@ -67,13 +90,29 @@ function collectTextSegments(root: RootNode): { text: string; segments: TextSegm
   return { text, segments };
 }
 
-function resolveOffset(segments: TextSegment[], offset: number): { node: TextNode; offset: number } | null {
+// An offset sitting exactly on the boundary between two text nodes belongs to both of them, so
+// which one we pick decides whether the resulting selection stays inside one block or straddles
+// two. A match's start must bind forwards (to the beginning of the next node) and its end must
+// bind backwards (to the end of the previous one); binding a start backwards is what used to
+// anchor the selection in the preceding block and make insertText merge the two.
+function resolveStart(segments: TextSegment[], offset: number): { node: TextNode; offset: number } | null {
   for (const seg of segments) {
-    if (offset >= seg.start && offset <= seg.end) {
+    if (offset >= seg.start && offset < seg.end) {
       return { node: seg.node, offset: offset - seg.start };
     }
   }
-  return null;
+  const last = segments[segments.length - 1];
+  return last && offset === last.end ? { node: last.node, offset: last.end - last.start } : null;
+}
+
+function resolveEnd(segments: TextSegment[], offset: number): { node: TextNode; offset: number } | null {
+  for (const seg of segments) {
+    if (offset > seg.start && offset <= seg.end) {
+      return { node: seg.node, offset: offset - seg.start };
+    }
+  }
+  const first = segments[0];
+  return first && offset === first.start ? { node: first.node, offset: 0 } : null;
 }
 
 // A TextNode's DOM can be a bare <span> (plain text) or nested outerTag/innerTag
@@ -117,8 +156,8 @@ export default function FindReplacePlugin() {
       }
       const range = editor.getEditorState().read((): Range | null => {
         const { segments } = collectTextSegments($getRoot());
-        const start = resolveOffset(segments, match.start);
-        const end = resolveOffset(segments, match.end);
+        const start = resolveStart(segments, match.start);
+        const end = resolveEnd(segments, match.end);
         if (!start || !end) return null;
         const startDom = getDomTextNode(editor.getElementByKey(start.node.getKey()));
         const endDom = getDomTextNode(editor.getElementByKey(end.node.getKey()));
@@ -245,8 +284,8 @@ export default function FindReplacePlugin() {
     const match = matches[currentIndex];
     editor.update(() => {
       const { segments } = collectTextSegments($getRoot());
-      const start = resolveOffset(segments, match.start);
-      const end = resolveOffset(segments, match.end);
+      const start = resolveStart(segments, match.start);
+      const end = resolveEnd(segments, match.end);
       if (!start || !end) return;
       const selection = $createRangeSelection();
       selection.anchor.set(start.node.getKey(), start.offset, 'text');
@@ -268,8 +307,8 @@ export default function FindReplacePlugin() {
     editor.update(() => {
       for (const match of inReverseOrder) {
         const { segments } = collectTextSegments($getRoot());
-        const start = resolveOffset(segments, match.start);
-        const end = resolveOffset(segments, match.end);
+        const start = resolveStart(segments, match.start);
+        const end = resolveEnd(segments, match.end);
         if (!start || !end) continue;
         const selection = $createRangeSelection();
         selection.anchor.set(start.node.getKey(), start.offset, 'text');

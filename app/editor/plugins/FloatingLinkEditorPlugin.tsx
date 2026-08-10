@@ -33,9 +33,11 @@ export default function FloatingLinkEditorPlugin() {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const [draftUrl, setDraftUrl] = useState('');
   const wantEditRef = useRef(false);
+  const activeLinkKeyRef = useRef<string | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const closePopover = useCallback(() => {
+    activeLinkKeyRef.current = null;
     setActiveLinkKey(null);
     setEditing(false);
     setPosition(null);
@@ -74,11 +76,15 @@ export default function FloatingLinkEditorPlugin() {
             const rect = nativeSelection.getRangeAt(0).getBoundingClientRect();
             setPosition({ top: rect.bottom + 6, left: rect.left });
           }
+          // These setEditing calls must not live inside a setState updater: React runs updaters
+          // during render, i.e. after the synchronous code below, so a setEditing(false) in there
+          // would land last and cancel the setEditing(true) that OPEN_LINK_EDITOR_COMMAND asks
+          // for — which is why ⌘K used to drop the user on the read-only popover.
+          const key = linkNode.getKey();
           setLinkUrl(linkNode.getURL());
-          setActiveLinkKey((prev) => {
-            if (prev !== linkNode.getKey()) setEditing(false);
-            return linkNode.getKey();
-          });
+          if (activeLinkKeyRef.current !== key) setEditing(false);
+          activeLinkKeyRef.current = key;
+          setActiveLinkKey(key);
           if (wantEditRef.current) {
             wantEditRef.current = false;
             const url = linkNode.getURL();
@@ -86,14 +92,14 @@ export default function FloatingLinkEditorPlugin() {
             setEditing(true);
           }
         } else {
-          setActiveLinkKey((prev) => {
-            if (prev !== null) {
-              cleanupPlaceholder(prev);
-              setEditing(false);
-              setPosition(null);
-            }
-            return null;
-          });
+          const prev = activeLinkKeyRef.current;
+          if (prev !== null) {
+            activeLinkKeyRef.current = null;
+            cleanupPlaceholder(prev);
+            setEditing(false);
+            setPosition(null);
+            setActiveLinkKey(null);
+          }
         }
       });
     });

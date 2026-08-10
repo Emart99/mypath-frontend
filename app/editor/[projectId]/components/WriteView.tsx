@@ -20,6 +20,7 @@ import ToolbarPlugin from '../../plugins/ToolbarPlugin';
 import UpdateContentPlugin from '../../plugins/UpdateContentPlugin';
 import ImagesPlugin from '../../plugins/ImagesPlugin';
 import EquationsPlugin from '../../plugins/EquationsPlugin';
+import ListTabPlugin from '../../plugins/ListTabPlugin';
 import PastePlugin from '../../plugins/PastePlugin';
 import CodeHighlightPlugin from '../../plugins/CodeHighlightPlugin';
 import SlashMenuPlugin from '../../plugins/SlashMenuPlugin';
@@ -160,6 +161,7 @@ export function WriteView({
                 <EquationsPlugin />
                 <PastePlugin />
                 <CodeHighlightPlugin />
+                <ListTabPlugin />
                 <TabIndentationPlugin />
                 <HorizontalRulePlugin />
                 <SlashMenuPlugin projectId={projectId} />

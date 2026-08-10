@@ -5,6 +5,7 @@ import { ArrowDown, Plus } from "lucide-react"
 
 import { Association, Item, Trail } from "@/app/editor/types"
 import { ASSOCIATION_META, ASSOCIATION_COLOR_VAR, bridgeTie } from "@/app/editor/associations"
+import { collectPlainText } from "@/app/editor/editor-utils"
 
 interface TrailReaderProps {
   trail: Trail;
@@ -61,15 +62,7 @@ function TrailDescriptionEditor({ trailId, description, onSave }: { trailId: str
 function excerpt(content: string | null): string {
   if (!content) return "";
   try {
-    const texts: string[] = [];
-    const walk = (node: unknown) => {
-      if (!node || typeof node !== "object") return;
-      const record = node as { text?: unknown; children?: unknown };
-      if (typeof record.text === "string") texts.push(record.text);
-      if (Array.isArray(record.children)) record.children.forEach(walk);
-    };
-    walk((JSON.parse(content) as { root?: unknown }).root);
-    const joined = texts.join(" ").trim();
+    const joined = collectPlainText(content).join(" ").trim();
     return joined.length > 180 ? `${joined.slice(0, 179)}…` : joined;
   } catch {
     return "";

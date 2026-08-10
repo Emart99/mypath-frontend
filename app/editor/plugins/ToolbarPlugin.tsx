@@ -103,13 +103,14 @@ const ALIGN_OPTIONS: { value: ElementFormat; label: string; Icon: typeof AlignLe
   { value: 'justify', label: 'Justify', Icon: AlignJustify },
 ];
 
-type HeadingOption = 'paragraph' | 'h1' | 'h2' | 'h3' | 'code';
+type HeadingOption = 'paragraph' | 'h1' | 'h2' | 'h3' | 'quote' | 'code';
 
 const HEADING_OPTIONS: { value: HeadingOption; label: string; Icon: typeof Type }[] = [
   { value: 'paragraph', label: 'Normal', Icon: Type },
   { value: 'h1', label: 'Heading 1', Icon: Heading1 },
   { value: 'h2', label: 'Heading 2', Icon: Heading2 },
   { value: 'h3', label: 'Heading 3', Icon: Heading3 },
+  { value: 'quote', label: 'Quote', Icon: Quote },
   { value: 'code', label: 'Code Block', Icon: SquareCode },
 ];
 
@@ -247,8 +248,11 @@ export default function ToolbarPlugin({
 
   const insertLink = useCallback(() => {
     if (!isLink) {
-      editor.dispatchCommand(TOGGLE_LINK_COMMAND, 'https://');
+      // Ask for edit mode first: TOGGLE_LINK_COMMAND is what makes the floating editor notice
+      // the new link, so the flag has to be set before that update fires or it arrives too late
+      // and the user lands on the read-only popover with a pencil to click.
       editor.dispatchCommand(OPEN_LINK_EDITOR_COMMAND, undefined);
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, 'https://');
     } else {
       editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
     }
@@ -510,9 +514,11 @@ export default function ToolbarPlugin({
               onSelect={() =>
                 value === 'paragraph'
                   ? formatParagraph()
-                  : value === 'code'
-                    ? formatCode()
-                    : formatHeading(value)
+                  : value === 'quote'
+                    ? formatQuote()
+                    : value === 'code'
+                      ? formatCode()
+                      : formatHeading(value)
               }
             >
               <Icon className="h-4 w-4" />

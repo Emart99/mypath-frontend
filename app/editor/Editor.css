@@ -592,8 +592,11 @@ div.editor-equation {
   min-width: 25px;
 }
 
+/* Lexical only sets data-highlight-language for languages Prism actually knows. Anything else
+   the user typed after ``` still becomes the block's language and silently disappears from the
+   code, so fall back to showing it raw — otherwise it reads as the editor eating a word. */
 .editor-code:after {
-  content: attr(data-highlight-language);
+  content: attr(data-language);
   top: 0;
   right: 3px;
   padding: 3px;
@@ -601,6 +604,10 @@ div.editor-equation {
   text-transform: uppercase;
   position: absolute;
   color: var(--muted-foreground);
+}
+
+.editor-code[data-highlight-language]:after {
+  content: attr(data-highlight-language);
 }
 
 .editor-tokenComment {
