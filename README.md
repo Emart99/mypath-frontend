@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# tramo-frontend
 
-## Getting Started
+Frontend for **Tramo**, a tool for capturing ideas as an associative graph and then carving
+ordered, shareable paths through them — a modern take on Vannevar Bush's Memex.
 
-First, run the development server:
+The backend lives in [`tramo-api`](../tramo-api) and serves the API on `http://localhost:8080`.
+
+## Getting started
+
+Requires Node 20+ and the API running locally.
+
+Create `.env.local`:
+
+| Variable | Purpose |
+| --- | --- |
+| `API_BASE_URL` | Base URL of the backend (defaults to `http://localhost:8080`) |
+| `NEXT_PUBLIC_R2_PUBLIC_BASE_URL` | Public base URL for images served from R2 |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth client ID, must match the backend's |
+| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA site key used on sign-up |
+| `NEXT_PUBLIC_SITE_URL` | Public URL of this app, used for metadata and the sitemap |
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build
+npm run lint
+npm run knip     # unused files, exports and dependencies
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 16** (App Router, Turbopack), **React 19**, **TypeScript**
+- **Tailwind v4** alongside plain CSS (`app/globals.css`, `app/editor/Editor.css`)
+- **Lexical** for the editor, **KaTeX** for math rendering
+- **radix-ui** / shadcn (new-york) primitives, **lucide-react** icons, **motion** for animation
+- **@xyflow/react** for the knowledge graph, **driver.js** for the editor tour
+- **@react-oauth/google** for Google sign-in
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Styling follows a Material 3 feel with a largely monochromatic palette, driven by CSS variables
+with light and dark themes (`next-themes`).
 
-## Learn More
+## Layout
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+├── (app)/ (auth)/   route groups for the signed-in app and the auth pages
+├── api/             route handlers that proxy to the backend
+├── editor/          the editor
+├── p/               public read-only view of a published project
+└── projects/        project list, sharing and publishing
+components/          UI by domain (editor, project, feed, layout, profile, ui, …)
+lib/                 API clients, auth helpers, shared utilities
+hooks/  types/
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Auth tokens live in httpOnly cookies, so every call to the API goes through a server action or
+a route handler under `app/api/`, which attaches the bearer token server-side.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The editor (`app/editor/`) is the largest part of the app. It is built on Lexical, with custom
+nodes in `nodes/`, one file per feature in `plugins/`, and item content persisted as Lexical
+editor-state JSON. Published projects reuse the same nodes in a read-only instance
+(`components/project/lexical-read-only.tsx`).
