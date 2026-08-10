@@ -15,6 +15,8 @@ import {
   SELECTION_CHANGE_COMMAND,
   UNDO_COMMAND,
   $createParagraphNode,
+  ElementNode,
+  LexicalCommand,
 } from 'lexical';
 import {
   $createHeadingNode,
@@ -124,11 +126,87 @@ const FONT_FAMILY_OPTIONS: Array<[string, string]> = [
   ['Verdana', 'Verdana'],
 ];
 
+const TEXT_FORMATS = [
+  { format: 'bold', label: 'Format Bold', tooltip: 'Bold', Icon: Bold },
+  { format: 'italic', label: 'Format Italics', tooltip: 'Italic', Icon: Italic },
+  { format: 'underline', label: 'Format Underline', tooltip: 'Underline', Icon: Underline },
+  { format: 'strikethrough', label: 'Format Strikethrough', tooltip: 'Strikethrough', Icon: Strikethrough },
+  { format: 'code', label: 'Format Code', tooltip: 'Inline code', Icon: Code },
+] as const;
+
+const LIST_OPTIONS = [
+  { type: 'bullet', label: 'Bullet List', tooltip: 'Bulleted list', Icon: ListIcon, command: INSERT_UNORDERED_LIST_COMMAND },
+  { type: 'number', label: 'Numbered List', tooltip: 'Numbered list', Icon: ListOrdered, command: INSERT_ORDERED_LIST_COMMAND },
+  { type: 'check', label: 'Check List', tooltip: 'Check list', Icon: CheckSquare, command: INSERT_CHECK_LIST_COMMAND },
+] as const;
+
 const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 72;
 
 function Divider() {
   return <div className="divider" />;
+}
+
+function ToolbarButton({
+  label,
+  tooltip,
+  Icon,
+  onClick,
+  active,
+  disabled,
+  spaced = true,
+  size = 18,
+}: {
+  label: string;
+  tooltip: string;
+  Icon: typeof Bold;
+  onClick: () => void;
+  active?: boolean;
+  disabled?: boolean;
+  spaced?: boolean;
+  size?: number;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={onClick}
+          disabled={disabled}
+          className={`toolbar-item${spaced ? ' spaced' : ''}${active ? ' active' : ''}`}
+          aria-pressed={active}
+          aria-label={label}>
+          <Icon size={size} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function ToolbarMenuButton({
+  label,
+  tooltip,
+  className,
+  children,
+}: {
+  label: string;
+  tooltip: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <DropdownMenuTrigger asChild>
+          <button className={className} aria-label={label}>
+            {children}
+          </button>
+        </DropdownMenuTrigger>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
+  );
 }
 
 export default function ToolbarPlugin({
@@ -150,11 +228,7 @@ export default function ToolbarPlugin({
   const [blockType, setBlockType] = useState('paragraph');
   const [isLink, setIsLink] = useState(false);
 
-  const [isBold, setIsBold] = useState(false);
-  const [isItalic, setIsItalic] = useState(false);
-  const [isUnderline, setIsUnderline] = useState(false);
-  const [isStrikethrough, setIsStrikethrough] = useState(false);
-  const [isCode, setIsCode] = useState(false);
+  const [formats, setFormats] = useState<Set<string>>(new Set());
   const [fontFamily, setFontFamily] = useState('Arial');
   const [fontSize, setFontSize] = useState('15');
   const [textColor, setTextColor] = useState('');
@@ -187,11 +261,9 @@ export default function ToolbarPlugin({
         }
       }
 
-      setIsBold(selection.hasFormat('bold'));
-      setIsItalic(selection.hasFormat('italic'));
-      setIsUnderline(selection.hasFormat('underline'));
-      setIsStrikethrough(selection.hasFormat('strikethrough'));
-      setIsCode(selection.hasFormat('code'));
+      setFormats(
+        new Set(TEXT_FORMATS.filter(({ format }) => selection.hasFormat(format)).map(({ format }) => format)),
+      );
 
       const node = selection.anchor.getNode();
       const parent = node.getParent();
@@ -310,78 +382,38 @@ export default function ToolbarPlugin({
     );
   }, [editor, updateToolbar, insertLink]);
 
-  const formatParagraph = () => {
-    if (blockType !== 'paragraph') {
-      editor.update(() => {
-        const selection = $getSelection();
-
-        if ($isRangeSelection(selection)) {
-          $setBlocksType(selection, () => $createParagraphNode());
-        }
-      });
-    }
-  };
-
-  const formatHeading = (headingSize: HeadingTagType) => {
+  const setBlock = (create: () => ElementNode) => {
     editor.update(() => {
       const selection = $getSelection();
 
       if ($isRangeSelection(selection)) {
-        if (blockType === headingSize) {
-          $setBlocksType(selection, () => $createParagraphNode());
-        } else {
-          $setBlocksType(selection, () => $createHeadingNode(headingSize));
-        }
+        $setBlocksType(selection, create);
       }
     });
   };
 
-  const formatBulletList = () => {
-    if (blockType !== 'bullet') {
-      editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
-    } else {
-      formatParagraph();
-    }
+  const formatParagraph = () => {
+    if (blockType !== 'paragraph') setBlock($createParagraphNode);
   };
 
-  const formatNumberedList = () => {
-    if (blockType !== 'number') {
-      editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-    } else {
-      formatParagraph();
-    }
+  const formatHeading = (headingSize: HeadingTagType) => {
+    setBlock(blockType === headingSize ? $createParagraphNode : () => $createHeadingNode(headingSize));
   };
 
-  const formatCheckList = () => {
-    if (blockType !== 'check') {
-      editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
+  const toggleList = (type: string, command: LexicalCommand<void>) => {
+    if (blockType !== type) {
+      editor.dispatchCommand(command, undefined);
     } else {
       formatParagraph();
     }
   };
 
   const formatQuote = () => {
-    if (blockType !== 'quote') {
-      editor.update(() => {
-        const selection = $getSelection();
-
-        if ($isRangeSelection(selection)) {
-          $setBlocksType(selection, () => $createQuoteNode());
-        }
-      });
-    }
+    if (blockType !== 'quote') setBlock($createQuoteNode);
   };
 
   const formatCode = () => {
-    if (blockType !== 'code') {
-      editor.update(() => {
-        const selection = $getSelection();
-
-        if ($isRangeSelection(selection)) {
-          $setBlocksType(selection, () => $createCodeNode());
-        }
-      });
-    }
+    if (blockType !== 'code') setBlock($createCodeNode);
   };
 
   const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -391,47 +423,34 @@ export default function ToolbarPlugin({
     insertImageWithUpload(editor, file, projectId);
   };
 
+
+  const activeAlign = titleFocused ? titleAlign ?? 'left' : elementFormat;
+  const ActiveHeadingIcon = HEADING_OPTIONS.find((option) => option.value === blockType)?.Icon ?? Type;
+  const ActiveAlignIcon = ALIGN_OPTIONS.find((option) => option.value === activeAlign)?.Icon ?? AlignLeft;
+
   return (
     <div className="toolbar" ref={toolbarRef}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            disabled={!canUndo}
-            onClick={() => {
-              editor.dispatchCommand(UNDO_COMMAND, undefined);
-            }}
-            className="toolbar-item spaced"
-            aria-label="Undo">
-            <Undo size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Undo</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            disabled={!canRedo}
-            onClick={() => {
-              editor.dispatchCommand(REDO_COMMAND, undefined);
-            }}
-            className="toolbar-item"
-            aria-label="Redo">
-            <Redo size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Redo</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => editor.dispatchCommand(OPEN_FIND_REPLACE_COMMAND, undefined)}
-            className="toolbar-item spaced"
-            aria-label="Find and replace">
-            <Search size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Find and replace</TooltipContent>
-      </Tooltip>
+      <ToolbarButton
+        label="Undo"
+        tooltip="Undo"
+        Icon={Undo}
+        disabled={!canUndo}
+        onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
+      />
+      <ToolbarButton
+        label="Redo"
+        tooltip="Redo"
+        Icon={Redo}
+        spaced={false}
+        disabled={!canRedo}
+        onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
+      />
+      <ToolbarButton
+        label="Find and replace"
+        tooltip="Find and replace"
+        Icon={Search}
+        onClick={() => editor.dispatchCommand(OPEN_FIND_REPLACE_COMMAND, undefined)}
+      />
       <Divider />
       <select
         className="toolbar-item font-family-select"
@@ -448,17 +467,14 @@ export default function ToolbarPlugin({
       </select>
       <Divider />
       <div className="font-size-control">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => updateFontSizeByStep(-1)}
-              className="toolbar-item"
-              aria-label="Decrease font size">
-              <ChevronDown size={14} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Decrease font size</TooltipContent>
-        </Tooltip>
+        <ToolbarButton
+          label="Decrease font size"
+          tooltip="Decrease font size"
+          Icon={ChevronDown}
+          size={14}
+          spaced={false}
+          onClick={() => updateFontSizeByStep(-1)}
+        />
         <input
           type="number"
           className="font-size-input"
@@ -475,36 +491,22 @@ export default function ToolbarPlugin({
           }}
           aria-label="Font Size"
         />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => updateFontSizeByStep(1)}
-              className="toolbar-item"
-              aria-label="Increase font size">
-              <ChevronUp size={14} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Increase font size</TooltipContent>
-        </Tooltip>
+        <ToolbarButton
+          label="Increase font size"
+          tooltip="Increase font size"
+          Icon={ChevronUp}
+          size={14}
+          spaced={false}
+          onClick={() => updateFontSizeByStep(1)}
+        />
       </div>
 
       <Divider />
       <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <button className="toolbar-item align-dropdown-trigger spaced" aria-label="Text style">
-                {(() => {
-                  const Active =
-                    HEADING_OPTIONS.find((option) => option.value === blockType)?.Icon ?? Type;
-                  return <Active size={18} />;
-                })()}
-                <ChevronDown size={12} />
-              </button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Text style</TooltipContent>
-        </Tooltip>
+        <ToolbarMenuButton label="Text style" tooltip="Text style" className="toolbar-item align-dropdown-trigger spaced">
+          <ActiveHeadingIcon size={18} />
+          <ChevronDown size={12} />
+        </ToolbarMenuButton>
         <DropdownMenuContent align="start">
           {HEADING_OPTIONS.map(({ value, label, Icon }) => (
             <DropdownMenuItem
@@ -527,21 +529,10 @@ export default function ToolbarPlugin({
       </DropdownMenu>
 
       <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <button className="toolbar-item align-dropdown-trigger spaced" aria-label="Align text">
-                {(() => {
-                  const activeValue = titleFocused ? titleAlign ?? 'left' : elementFormat;
-                  const Active = ALIGN_OPTIONS.find((option) => option.value === activeValue)?.Icon ?? AlignLeft;
-                  return <Active size={18} />;
-                })()}
-                <ChevronDown size={12} />
-              </button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Align text</TooltipContent>
-        </Tooltip>
+        <ToolbarMenuButton label="Align text" tooltip="Align text" className="toolbar-item align-dropdown-trigger spaced">
+          <ActiveAlignIcon size={18} />
+          <ChevronDown size={12} />
+        </ToolbarMenuButton>
         <DropdownMenuContent align="start">
           {(titleFocused ? ALIGN_OPTIONS.filter((option) => option.value !== 'justify') : ALIGN_OPTIONS).map(({ value, label, Icon }) => (
             <DropdownMenuItem
@@ -560,87 +551,20 @@ export default function ToolbarPlugin({
       </DropdownMenu>
 
       <Divider />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-            }}
-            className={'toolbar-item spaced ' + (isBold ? 'active' : '')}
-            aria-pressed={isBold}
-            aria-label="Format Bold">
-            <Bold size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Bold</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
-            }}
-            className={'toolbar-item spaced ' + (isItalic ? 'active' : '')}
-            aria-pressed={isItalic}
-            aria-label="Format Italics">
-            <Italic size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Italic</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
-            }}
-            className={'toolbar-item spaced ' + (isUnderline ? 'active' : '')}
-            aria-pressed={isUnderline}
-            aria-label="Format Underline">
-            <Underline size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Underline</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
-            }}
-            className={'toolbar-item spaced ' + (isStrikethrough ? 'active' : '')}
-            aria-pressed={isStrikethrough}
-            aria-label="Format Strikethrough">
-            <Strikethrough size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Strikethrough</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => {
-              editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
-            }}
-            className={'toolbar-item spaced ' + (isCode ? 'active' : '')}
-            aria-pressed={isCode}
-            aria-label="Format Code">
-            <Code size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Inline code</TooltipContent>
-      </Tooltip>
+      {TEXT_FORMATS.map(({ format, label, tooltip, Icon }) => (
+        <ToolbarButton
+          key={format}
+          label={label}
+          tooltip={tooltip}
+          Icon={Icon}
+          active={formats.has(format)}
+          onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, format)}
+        />
+      ))}
       <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <button className="toolbar-item spaced" aria-label="Text color">
-                <Baseline size={18} style={textColor ? { color: textColor } : undefined} />
-              </button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Text color</TooltipContent>
-        </Tooltip>
+        <ToolbarMenuButton label="Text color" tooltip="Text color" className="toolbar-item spaced">
+          <Baseline size={18} style={textColor ? { color: textColor } : undefined} />
+        </ToolbarMenuButton>
         <DropdownMenuContent align="start">
           {COLOR_OPTIONS.map(({ value, label }) => (
             <DropdownMenuItem key={label} onSelect={() => applyStyleText({ color: value || null })}>
@@ -653,56 +577,32 @@ export default function ToolbarPlugin({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={insertLink}
-            className={'toolbar-item spaced ' + (isLink ? 'active' : '')}
-            aria-pressed={isLink}
-            aria-label="Insert Link">
-            <LinkIcon size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Link</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="toolbar-item spaced"
-            aria-label="Insert Image">
-            <ImageIcon size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Insert image</TooltipContent>
-      </Tooltip>
+      <ToolbarButton
+        label="Insert Link"
+        tooltip="Link"
+        Icon={LinkIcon}
+        active={isLink}
+        onClick={insertLink}
+      />
+      <ToolbarButton
+        label="Insert Image"
+        tooltip="Insert image"
+        Icon={ImageIcon}
+        onClick={() => fileInputRef.current?.click()}
+      />
       <Divider />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() =>
-              editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true })
-            }
-            className="toolbar-item spaced"
-            aria-label="Insert Inline Equation">
-            <Radical size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Inline equation (⌘E)</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() =>
-              editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })
-            }
-            className="toolbar-item spaced"
-            aria-label="Insert Equation">
-            <Sigma size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Insert equation (⌘⇧E)</TooltipContent>
-      </Tooltip>
+      <ToolbarButton
+        label="Insert Inline Equation"
+        tooltip="Inline equation (⌘E)"
+        Icon={Radical}
+        onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true })}
+      />
+      <ToolbarButton
+        label="Insert Equation"
+        tooltip="Insert equation (⌘⇧E)"
+        Icon={Sigma}
+        onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })}
+      />
       <input
         ref={fileInputRef}
         type="file"
@@ -712,66 +612,29 @@ export default function ToolbarPlugin({
       />
 
       <Divider />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={formatBulletList}
-            className={'toolbar-item spaced ' + (blockType === 'bullet' ? 'active' : '')}
-            aria-pressed={blockType === 'bullet'}
-            aria-label="Bullet List">
-            <ListIcon size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Bulleted list</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={formatNumberedList}
-            className={'toolbar-item spaced ' + (blockType === 'number' ? 'active' : '')}
-            aria-pressed={blockType === 'number'}
-            aria-label="Numbered List">
-            <ListOrdered size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Numbered list</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={formatCheckList}
-            className={'toolbar-item spaced ' + (blockType === 'check' ? 'active' : '')}
-            aria-pressed={blockType === 'check'}
-            aria-label="Check List">
-            <CheckSquare size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Check list</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={formatQuote}
-            className={'toolbar-item spaced ' + (blockType === 'quote' ? 'active' : '')}
-            aria-pressed={blockType === 'quote'}
-            aria-label="Quote">
-            <Quote size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Quote</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}
-            className="toolbar-item spaced"
-            aria-label="Insert Divider">
-            <Minus size={18} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Divider</TooltipContent>
-      </Tooltip>
+      {LIST_OPTIONS.map(({ type, label, tooltip, Icon, command }) => (
+        <ToolbarButton
+          key={type}
+          label={label}
+          tooltip={tooltip}
+          Icon={Icon}
+          active={blockType === type}
+          onClick={() => toggleList(type, command)}
+        />
+      ))}
+      <ToolbarButton
+        label="Quote"
+        tooltip="Quote"
+        Icon={Quote}
+        active={blockType === 'quote'}
+        onClick={formatQuote}
+      />
+      <ToolbarButton
+        label="Insert Divider"
+        tooltip="Divider"
+        Icon={Minus}
+        onClick={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}
+      />
     </div>
   );
 }
-
