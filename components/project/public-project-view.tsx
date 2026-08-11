@@ -163,7 +163,7 @@ export function PublicProjectView({
           {view === 'content' && (
             <a
               href="#comments"
-              title="Jump to comments"
+              title="Jump to project comments"
               className="relative z-10 flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
             >
               <MessageCircle className="h-4 w-4" />
@@ -257,8 +257,8 @@ export function PublicProjectView({
                   </div>
                 </div>
               ) : emptyState}
-              <div className="rounded-2xl bg-popover">
-                <CommentsSection projectId={project.id} isLoggedIn={isLoggedIn} username={username} commentCount={commentCount} onCommentCountChange={setCommentCount} canComment={project.canComment} />
+              <div className="mt-8 border-t border-border">
+                <CommentsSection projectId={project.id} projectTitle={project.title} isLoggedIn={isLoggedIn} username={username} commentCount={commentCount} onCommentCountChange={setCommentCount} canComment={project.canComment} />
               </div>
             </div>
           )}

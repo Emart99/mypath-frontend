@@ -36,6 +36,7 @@ const PAGE_SIZE = 20
 
 export function CommentsSection({
   projectId,
+  projectTitle,
   isLoggedIn,
   username,
   commentCount,
@@ -43,6 +44,7 @@ export function CommentsSection({
   canComment,
 }: {
   projectId: string
+  projectTitle: string
   isLoggedIn: boolean
   username: string | null
   commentCount: number
@@ -150,10 +152,13 @@ export function CommentsSection({
 
   return (
     <div id="comments" className="mx-auto flex w-full max-w-[820px] flex-col gap-4 px-6 py-8">
-      <h2 className="flex items-center gap-2 text-lg font-medium">
-        <MessageCircle className="h-5 w-5" />
-        Comments {commentCount > 0 && <span className="text-muted-foreground">({commentCount})</span>}
-      </h2>
+      <div className="flex flex-col gap-1">
+        <h2 className="flex items-center gap-2 text-lg font-medium">
+          <MessageCircle className="h-5 w-5" />
+          Comments {commentCount > 0 && <span className="text-muted-foreground">({commentCount})</span>}
+        </h2>
+        <p className="text-sm text-muted-foreground">On the project «{projectTitle}»</p>
+      </div>
 
       {comments === null ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
