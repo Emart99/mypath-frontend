@@ -19,17 +19,19 @@ export default function UpdateContentPlugin({
         if (content === null) return;
         lastItemId.current = itemId;
 
-        editor.update(() => {
-            if (content) {
-                const initialEditorState = editor.parseEditorState(content);
-                editor.setEditorState(initialEditorState);
-            } else {
-                editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
-            }
-        });
-        editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+        queueMicrotask(() => {
+            editor.update(() => {
+                if (content) {
+                    const initialEditorState = editor.parseEditorState(content);
+                    editor.setEditorState(initialEditorState);
+                } else {
+                    editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
+                }
+            });
+            editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
 
-        if (itemId) onContentApplied?.(itemId);
+            if (itemId) onContentApplied?.(itemId);
+        });
     }, [editor, itemId, content, onContentApplied]);
 
     return null;
