@@ -6,6 +6,12 @@ export async function getItemContent(itemId: string): Promise<string> {
   return data.content ?? "";
 }
 
+export async function getTrailContents(trailId: string): Promise<Record<string, string>> {
+  const response = await fetch(`/api/trail/${trailId}/content`);
+  const rows = await parseResponse<{ id: number; content: string }[]>(response);
+  return Object.fromEntries(rows.map((row) => [String(row.id), row.content]));
+}
+
 export async function saveItemContent(itemId: string, content: string): Promise<void> {
   const response = await fetch(`/api/item/${itemId}/content`, {
     method: "PUT",
