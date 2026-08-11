@@ -7,11 +7,11 @@ const r2Hostname = new URL(R2_PUBLIC_BASE_URL).hostname;
 
 const csp = [
   "default-src 'self'",
-  `img-src 'self' data: ${R2_PUBLIC_BASE_URL}`,
+  `img-src 'self' data: blob: ${R2_PUBLIC_BASE_URL}`,
   "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://accounts.google.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
-  "connect-src 'self' https://accounts.google.com",
+  "connect-src 'self' https://accounts.google.com https://*.r2.cloudflarestorage.com",
   "frame-src https://accounts.google.com https://www.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
