@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowDown, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 
 import { Association, Item, Trail } from "@/app/editor/types"
-import { ASSOCIATION_META, ASSOCIATION_COLOR_VAR, bridgeTie } from "@/app/editor/associations"
+import { bridgeTie } from "@/app/editor/associations"
 import { collectPlainText } from "@/app/editor/editor-utils"
+import { TrailConnector } from "@/components/editor/trail-connector"
 
 interface TrailReaderProps {
   trail: Trail;
@@ -95,38 +96,11 @@ export function TrailReader({ trail, items, associationById, selectedItemId, onS
             const conn = step.associationId
               ? associationById.get(step.associationId) ?? null
               : i > 0 ? bridgeTie(items, trail.steps[i - 1].itemId, step.itemId) : null;
-            const meta = conn ? ASSOCIATION_META[conn.type] : null;
-            const BridgeIcon = meta?.Icon ?? ArrowDown;
-            const color = conn ? `var(${ASSOCIATION_COLOR_VAR[conn.type]})` : undefined;
             const on = step.itemId === selectedItemId;
 
             return (
               <div key={step.itemId}>
-                {i > 0 && (
-                  <div className="flex gap-3 py-4 pl-1">
-                    <div className="flex flex-col items-center">
-                      <span className="h-3 w-px bg-border" style={{ backgroundColor: color }} />
-                      <span
-                        className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-border text-foreground"
-                        style={{ borderColor: color, color }}
-                      >
-                        <BridgeIcon className="h-3.5 w-3.5" />
-                      </span>
-                      <span className="mt-1 h-3 w-px bg-border" style={{ backgroundColor: color }} />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-1">
-                      <p
-                        className={`text-[11px] font-medium uppercase tracking-[0.1em] ${conn ? "text-foreground" : "text-muted-foreground"}`}
-                        style={{ color }}
-                      >
-                        {meta ? `${meta.label} ${conn?.targetTitle ?? ""}`.trim() : "deliberate jump"}
-                      </p>
-                      {step.annotation?.trim() && (
-                        <p className="mt-1 text-[15px] italic leading-relaxed text-foreground/90">{step.annotation}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
+                {i > 0 && <TrailConnector conn={conn} annotation={step.annotation} />}
                 <button
                   type="button"
                   onClick={() => onSelectItem(item)}
