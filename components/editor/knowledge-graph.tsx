@@ -190,7 +190,9 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
 
   const layout = useMemo(() => {
     const activeTrail = trails.find((t) => t.id === activeTrailId) ?? trails[0];
-    const spineIds = (activeTrail?.itemIds ?? Object.keys(items)).filter((id) => items[id]);
+    const trailIds = (activeTrail?.itemIds ?? []).filter((id) => items[id]);
+    const hasTrailOrder = trailIds.length > 0;
+    const spineIds = hasTrailOrder ? trailIds : Object.keys(items);
     const spineSet = new Set(spineIds);
     const col = new Map<string, number>(); // column index (for arc span)
     spineIds.forEach((id, i) => col.set(id, i));
@@ -204,25 +206,36 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
 
     const assocs: Assoc[] = [];
     let offCount = 0;
-    for (const id of spineIds) {
+    const addLoose = (id: string) => {
+      if (spineSet.has(id) || pos.has(id)) return;
+      pos.set(id, { x: MARGIN_X + NODE_W / 2 + offCount * X_GAP, y: BOTTOM_Y });
+      kind.set(id, "loose");
+      col.set(id, offCount);
+      offCount++;
+    };
+
+    const outgoingFrom = [...spineIds];
+    if (selectedItemId && items[selectedItemId] && !spineSet.has(selectedItemId)) {
+      addLoose(selectedItemId);
+      outgoingFrom.push(selectedItemId);
+    }
+
+    for (const id of outgoingFrom) {
       for (const a of items[id].associations) {
         if (a.targetType !== "ITEM" || !items[a.targetId]) continue;
         assocs.push({ from: id, to: a.targetId, type: a.type });
-        if (!spineSet.has(a.targetId) && !pos.has(a.targetId)) {
-          pos.set(a.targetId, { x: MARGIN_X + NODE_W / 2 + offCount * X_GAP, y: BOTTOM_Y });
-          kind.set(a.targetId, "loose");
-          col.set(a.targetId, offCount);
-          offCount++;
-        }
+        addLoose(a.targetId);
       }
     }
 
-    const spineEdges = spineIds.slice(0, -1).map((from, i) => ({ from, to: spineIds[i + 1] }));
+    const spineEdges = hasTrailOrder
+      ? spineIds.slice(0, -1).map((from, i) => ({ from, to: spineIds[i + 1] }))
+      : [];
     const typesPresent = (Object.keys(TYPE_VAR) as AssociationType[]).filter((t) =>
       assocs.some((a) => a.type === t)
     );
     return { pos, kind, col, assocs, spineEdges, typesPresent, rootPos: pos.get(spineIds[0]) };
-  }, [trails, items, activeTrailId]);
+  }, [trails, items, activeTrailId, selectedItemId]);
 
   const { pos, kind, col, assocs, spineEdges, typesPresent, rootPos } = layout;
 
