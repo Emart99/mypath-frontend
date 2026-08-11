@@ -582,6 +582,7 @@ export default function ToolbarPlugin({
         tooltip="Link"
         Icon={LinkIcon}
         active={isLink}
+        disabled={blockType === 'code'}
         onClick={insertLink}
       />
       <ToolbarButton
@@ -636,6 +637,7 @@ export default function ToolbarPlugin({
         label="Insert Divider"
         tooltip="Divider"
         Icon={Minus}
+        disabled={blockType === 'code'}
         onClick={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}
       />
     </div>
