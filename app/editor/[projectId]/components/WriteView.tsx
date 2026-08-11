@@ -163,22 +163,27 @@ export function WriteView({
                           if ((e.target as HTMLElement).closest('a')) return;
                           activateItem(stepItem);
                         }}
-                        className={stacked && !isActive ? 'cursor-pointer' : undefined}
+                        className={stacked && !isActive ? 'group cursor-pointer' : undefined}
                       >
                         {stacked && (
                           <div
                             className={`flex items-center gap-2 pl-7 pt-6 text-[11px] font-medium uppercase tracking-[0.1em] ${
-                              isActive ? 'text-foreground' : 'text-muted-foreground'
+                              isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
                             }`}
                           >
                             <span
                               className={
                                 isActive
                                   ? 'h-[7px] w-[7px] shrink-0 rounded-full bg-primary'
-                                  : 'h-[7px] w-[7px] shrink-0 rounded-full border-[1.5px] border-muted-foreground box-border'
+                                  : 'h-[7px] w-[7px] shrink-0 rounded-full border-[1.5px] border-muted-foreground box-border group-hover:border-primary'
                               }
                             />
                             Step {i + 1}
+                            {!isActive && (
+                              <span className="ml-1 font-normal normal-case tracking-normal text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                                — click to edit
+                              </span>
+                            )}
                           </div>
                         )}
                       <div className={stacked ? 'pl-7 pt-1' : 'pt-9 pl-7'}>
