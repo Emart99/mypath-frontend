@@ -13,6 +13,7 @@ import {
   LexicalCommand,
 } from 'lexical';
 import { $createEquationNode, EquationNode } from '../nodes/EquationNode';
+import { $isSelectionInCode } from './codeBlockGuard';
 
 export type InsertEquationPayload = Readonly<{
   equation: string;
@@ -35,6 +36,7 @@ export default function EquationsPlugin(): null {
     return editor.registerCommand<InsertEquationPayload>(
       INSERT_EQUATION_COMMAND,
       ({ equation, inline }) => {
+        if ($isSelectionInCode()) return true;
         const node = $createEquationNode({ equation, inline });
         freshlyInserted.add(node.getKey());
         $insertNodes([node]);

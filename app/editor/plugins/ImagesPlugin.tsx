@@ -19,6 +19,7 @@ import {
 import { $createImageNode, $isImageNode, ImageNode, ImagePayload } from '../nodes/ImageNode';
 import { resizeImageToBlob } from '@/lib/image-resize';
 import { uploadImage } from '@/lib/upload-image';
+import { $isSelectionInCode } from './codeBlockGuard';
 
 export type InsertImagePayload = Readonly<ImagePayload>;
 
@@ -58,6 +59,8 @@ export async function insertImageWithUpload(
   file: File,
   projectId?: string,
 ): Promise<void> {
+  if (editor.getEditorState().read($isSelectionInCode)) return;
+
   const previewUrl = URL.createObjectURL(file);
   let key: NodeKey | null = null;
 
@@ -122,6 +125,7 @@ export default function ImagesPlugin({ projectId }: { projectId?: string }): nul
       editor.registerCommand<InsertImagePayload>(
         INSERT_IMAGE_COMMAND,
         (payload) => {
+          if ($isSelectionInCode()) return true;
           const imageNode = $createImageNode(payload);
           $insertNodes([imageNode]);
           $placeCaretBelowImage(imageNode);

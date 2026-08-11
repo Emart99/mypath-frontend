@@ -588,6 +588,7 @@ export default function ToolbarPlugin({
         label="Insert Image"
         tooltip="Insert image"
         Icon={ImageIcon}
+        disabled={blockType === 'code'}
         onClick={() => fileInputRef.current?.click()}
       />
       <Divider />
@@ -595,12 +596,14 @@ export default function ToolbarPlugin({
         label="Insert Inline Equation"
         tooltip="Inline equation (⌘E)"
         Icon={Radical}
+        disabled={blockType === 'code'}
         onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true })}
       />
       <ToolbarButton
         label="Insert Equation"
         tooltip="Insert equation (⌘⇧E)"
         Icon={Sigma}
+        disabled={blockType === 'code'}
         onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })}
       />
       <input
