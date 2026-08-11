@@ -41,6 +41,7 @@ export interface PublicProject {
   modifiedDate: string;
   thumbnailImageUrl: string | null;
   trails: PublicTrail[];
+  looseItems: PublicItem[];
   voteCount: number;
   votedByRequester: boolean;
   bookmarkedByRequester: boolean;
@@ -90,6 +91,7 @@ interface PublicProjectDTO {
   modifiedDate: string;
   thumbnailImageUrl: string | null;
   trails: PublicTrailDTO[];
+  looseItems: PublicItemDTO[] | null;
   voteCount: number;
   votedByRequester: boolean;
   bookmarkedByRequester: boolean;
@@ -195,22 +197,27 @@ export async function getPublicProject(projectId: string): Promise<PublicProject
       description: trail.description ?? "",
       version: trail.version,
       forkedFromId: trail.forkedFromId,
-      items: trail.items.map((item) => ({
-        id: String(item.id),
-        title: item.title,
-        type: item.type,
-        content: item.content,
-        titleAlign: item.titleAlign ?? "center",
-        annotation: item.annotation,
-        associationId: item.associationId,
-        associations: item.associations.map((a) => ({
-          id: a.id,
-          type: a.type as Association["type"],
-          targetType: a.targetType as Association["targetType"],
-          targetId: a.targetId,
-          targetTitle: a.targetTitle,
-        })),
-      })),
+      items: trail.items.map(toPublicItem),
+    })),
+    looseItems: (data.looseItems ?? []).map(toPublicItem),
+  };
+}
+
+function toPublicItem(item: PublicItemDTO): PublicItem {
+  return {
+    id: String(item.id),
+    title: item.title,
+    type: item.type,
+    content: item.content,
+    titleAlign: item.titleAlign ?? "center",
+    annotation: item.annotation,
+    associationId: item.associationId,
+    associations: item.associations.map((a) => ({
+      id: a.id,
+      type: a.type as Association["type"],
+      targetType: a.targetType as Association["targetType"],
+      targetId: a.targetId,
+      targetTitle: a.targetTitle,
     })),
   };
 }

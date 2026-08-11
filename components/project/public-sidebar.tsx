@@ -26,11 +26,12 @@ import type { PublicItem, PublicTrail } from "@/lib/public-project"
 interface PublicSidebarProps {
   homeHref: string;
   trails: PublicTrail[];
+  looseItems: PublicItem[];
   selectedItemId?: string;
   onSelectItem: (item: PublicItem) => void;
 }
 
-export function PublicSidebar({ homeHref, trails, selectedItemId, onSelectItem }: PublicSidebarProps) {
+export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, onSelectItem }: PublicSidebarProps) {
   const { state } = useSidebar();
   const [query, setQuery] = useState("");
 
@@ -42,6 +43,9 @@ export function PublicSidebar({ homeHref, trails, selectedItemId, onSelectItem }
           t.items.some((item) => item.title.toLowerCase().includes(q))
       )
     : trails;
+  const visibleLooseItems = q
+    ? looseItems.filter((item) => item.title.toLowerCase().includes(q))
+    : looseItems;
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r">
@@ -106,6 +110,36 @@ export function PublicSidebar({ homeHref, trails, selectedItemId, onSelectItem }
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {visibleLooseItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>
+              <span className="text-xs font-medium text-muted-foreground">
+                Items
+              </span>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleLooseItems.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      isActive={selectedItemId === item.id}
+                      onClick={() => onSelectItem(item)}
+                    >
+                      <span
+                        className={
+                          selectedItemId === item.id
+                            ? "h-[7px] w-[7px] shrink-0 rounded-full bg-primary"
+                            : "h-[7px] w-[7px] shrink-0 rounded-full border-[1.5px] border-muted-foreground box-border"
+                        }
+                      />
+                      <span className="truncate">{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   )

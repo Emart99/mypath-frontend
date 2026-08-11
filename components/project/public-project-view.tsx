@@ -24,18 +24,20 @@ import type { Association, Item, Trail } from "@/app/editor/types"
 
 function toEditorShape(project: PublicProject): { trails: Trail[]; items: Record<string, Item> } {
   const items: Record<string, Item> = {};
+  const addItem = (item: PublicItem, unfiled: boolean) => {
+    items[item.id] = {
+      id: item.id,
+      title: item.title,
+      titleAlign: item.titleAlign,
+      unfiled,
+      content: item.content,
+      associations: item.associations,
+      linkedItemIds: item.associations.filter((a) => a.targetType === "ITEM").map((a) => a.targetId),
+    };
+  };
+  project.looseItems.forEach((item) => addItem(item, true));
   const trails: Trail[] = project.trails.map((trail) => {
-    trail.items.forEach((item) => {
-      items[item.id] = {
-        id: item.id,
-        title: item.title,
-        titleAlign: item.titleAlign,
-        unfiled: false,
-        content: item.content,
-        associations: item.associations,
-        linkedItemIds: item.associations.filter((a) => a.targetType === "ITEM").map((a) => a.targetId),
-      };
-    });
+    trail.items.forEach((item) => addItem(item, false));
     return {
       id: trail.id,
       title: trail.title,
@@ -68,7 +70,7 @@ export function PublicProjectView({
   username: string | null
   imageUrl: string | null
 }) {
-  const allItems = project.trails.flatMap((trail) => trail.items)
+  const allItems = [...project.trails.flatMap((trail) => trail.items), ...project.looseItems]
   const [selectedItem, setSelectedItem] = useState<PublicItem | undefined>(allItems[0])
   const [activeTrailId, setActiveTrailId] = useState<string | undefined>(project.trails[0]?.id)
   const [view, setView] = useState<'content' | 'trail' | 'graph'>('content')
@@ -216,6 +218,7 @@ export function PublicProjectView({
         <PublicSidebar
           homeHref={homeHref}
           trails={project.trails}
+          looseItems={project.looseItems}
           selectedItemId={selectedItem?.id}
           onSelectItem={handleSelectItem}
         />
