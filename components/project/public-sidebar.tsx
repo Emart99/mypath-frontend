@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { ChevronRight, Search } from "lucide-react"
 
@@ -22,6 +22,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Input } from "@/components/ui/input"
 import type { PublicItem, PublicTrail } from "@/lib/public-project"
+import { MIN_SEARCH_LENGTH, searchableText } from "@/app/editor/editor-utils"
 
 interface PublicSidebarProps {
   homeHref: string;
@@ -35,17 +36,26 @@ export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, on
   const { state } = useSidebar();
   const [query, setQuery] = useState("");
 
+  const bodies = useMemo(
+    () =>
+      new Map(
+        [...looseItems, ...trails.flatMap((t) => t.items)].map((item) => [
+          item.id,
+          searchableText(item.content),
+        ])
+      ),
+    [trails, looseItems]
+  );
+
   const q = query.trim().toLowerCase();
+  const matches = (item: PublicItem) =>
+    item.title.toLowerCase().includes(q) ||
+    (q.length >= MIN_SEARCH_LENGTH && (bodies.get(item.id)?.includes(q) ?? false));
+
   const visibleTrails = q
-    ? trails.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.items.some((item) => item.title.toLowerCase().includes(q))
-      )
+    ? trails.filter((t) => t.title.toLowerCase().includes(q) || t.items.some(matches))
     : trails;
-  const visibleLooseItems = q
-    ? looseItems.filter((item) => item.title.toLowerCase().includes(q))
-    : looseItems;
+  const visibleLooseItems = q ? looseItems.filter(matches) : looseItems;
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r">

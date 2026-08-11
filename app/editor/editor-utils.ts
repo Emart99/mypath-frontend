@@ -15,6 +15,16 @@ export function collectPlainText(content: string): string[] {
   return texts;
 }
 
+export const MIN_SEARCH_LENGTH = 3;
+
+export function searchableText(content: string): string {
+  try {
+    return collectPlainText(content).join('').toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
 export function countTextStats(content: string): { words: number; characters: number } {
   if (!content) return { words: 0, characters: 0 };
   try {
