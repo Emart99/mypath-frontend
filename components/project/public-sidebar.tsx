@@ -52,10 +52,10 @@ export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, on
     item.title.toLowerCase().includes(q) ||
     (q.length >= MIN_SEARCH_LENGTH && (bodies.get(item.id)?.includes(q) ?? false));
 
-  const visibleTrails = q
-    ? trails.filter((t) => t.title.toLowerCase().includes(q) || t.items.some(matches))
-    : trails;
-  const visibleLooseItems = q ? looseItems.filter(matches) : looseItems;
+  const resultTrails = q ? trails.filter((t) => t.title.toLowerCase().includes(q)) : [];
+  const resultItems = q
+    ? [...looseItems, ...trails.flatMap((t) => t.items)].filter(matches)
+    : [];
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r">
@@ -76,6 +76,53 @@ export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, on
             </div>
           </div>
         )}
+        {state !== "collapsed" && q && (
+          <SidebarGroup>
+            <SidebarGroupLabel>
+              <span className="text-xs font-medium text-muted-foreground">Results</span>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {resultTrails.length > 0 && (
+                  <p className="px-2 pt-1 text-[11px] uppercase tracking-wide text-muted-foreground">Trails</p>
+                )}
+                {resultTrails.map((trail) => (
+                  <SidebarMenuItem key={`result-trail-${trail.id}`}>
+                    <SidebarMenuButton className="font-semibold" onClick={() => setQuery("")}>
+                      <ChevronRight />
+                      <span className="truncate">{trail.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {resultItems.length > 0 && (
+                  <p className="px-2 pt-1 text-[11px] uppercase tracking-wide text-muted-foreground">Items</p>
+                )}
+                {resultItems.map((item) => (
+                  <SidebarMenuItem key={`result-item-${item.id}`}>
+                    <SidebarMenuButton
+                      isActive={selectedItemId === item.id}
+                      onClick={() => onSelectItem(item)}
+                    >
+                      <span
+                        className={
+                          selectedItemId === item.id
+                            ? "h-[7px] w-[7px] shrink-0 rounded-full bg-primary"
+                            : "h-[7px] w-[7px] shrink-0 rounded-full border-[1.5px] border-muted-foreground box-border"
+                        }
+                      />
+                      <span className="truncate">{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {resultTrails.length === 0 && resultItems.length === 0 && (
+                  <p className="px-2 py-1 text-xs italic text-muted-foreground">No matches</p>
+                )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        <div className={q ? "hidden" : "contents"}>
         <SidebarGroup>
           <SidebarGroupLabel>
             <span className="text-xs font-medium text-muted-foreground">
@@ -84,7 +131,7 @@ export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, on
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {visibleTrails.map((trail) => (
+              {trails.map((trail) => (
                 <Collapsible key={trail.id} defaultOpen className="group/collapsible">
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
@@ -120,7 +167,7 @@ export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, on
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        {visibleLooseItems.length > 0 && (
+        {looseItems.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel>
               <span className="text-xs font-medium text-muted-foreground">
@@ -129,7 +176,7 @@ export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, on
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {visibleLooseItems.map((item) => (
+                {looseItems.map((item) => (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
                       isActive={selectedItemId === item.id}
@@ -150,6 +197,7 @@ export function PublicSidebar({ homeHref, trails, looseItems, selectedItemId, on
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+        </div>
       </SidebarContent>
     </Sidebar>
   )

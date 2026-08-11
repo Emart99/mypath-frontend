@@ -174,10 +174,8 @@ export function SidebarCustom({
   const matchesItem = (id: string) =>
     items[id]?.title.toLowerCase().includes(q) || bodyMatchIds.has(id);
 
-  const visibleItems = q ? allItems.filter((i) => matchesItem(i.id)) : allItems;
-  const visibleTrails = q
-    ? trails.filter((t) => t.title.toLowerCase().includes(q) || t.itemIds.some(matchesItem))
-    : trails;
+  const resultTrails = q ? trails.filter((t) => t.title.toLowerCase().includes(q)) : [];
+  const resultItems = q ? allItems.filter((i) => matchesItem(i.id)) : [];
 
   const submitNewTrail = () => {
     if (!isCreating) return;
@@ -290,8 +288,55 @@ export function SidebarCustom({
           </div>
         )}
 
+        {state !== "collapsed" && q && (
+          <SidebarGroup className="py-1">
+            <div className="flex h-8 shrink-0 items-center px-2 text-xs font-medium text-muted-foreground">
+              Results
+            </div>
+            <SidebarGroupContent className="pl-2">
+              <SidebarMenu>
+                {resultTrails.length > 0 && (
+                  <p className="px-2 pt-1 text-[11px] uppercase tracking-wide text-muted-foreground">Trails</p>
+                )}
+                {resultTrails.map((trail) => (
+                  <SidebarMenuItem key={`result-trail-${trail.id}`}>
+                    <SidebarMenuButton onClick={() => setQuery("")}>
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{trail.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {resultItems.length > 0 && (
+                  <p className="px-2 pt-1 text-[11px] uppercase tracking-wide text-muted-foreground">Items</p>
+                )}
+                {resultItems.map((item) => (
+                  <SidebarMenuItem key={`result-item-${item.id}`}>
+                    <SidebarMenuButton
+                      isActive={selectedItemId === item.id}
+                      onClick={() => onSelectItem(item)}
+                      className={selectedItemId === item.id ? "bg-secondary text-secondary-foreground" : undefined}
+                    >
+                      <span
+                        className={
+                          selectedItemId === item.id
+                            ? "h-[7px] w-[7px] shrink-0 rounded-full bg-primary"
+                            : "h-[7px] w-[7px] shrink-0 rounded-full border-[1.5px] border-muted-foreground box-border"
+                        }
+                      />
+                      <span className="truncate">{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {resultTrails.length === 0 && resultItems.length === 0 && (
+                  <p className="px-2 py-1 text-xs italic text-muted-foreground">No matches</p>
+                )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         {state !== "collapsed" && (
-          <>
+          <div className={q ? "hidden" : "contents"}>
             <Collapsible defaultOpen className="group/trails">
               <SidebarGroup className="py-1">
                 <div className="flex h-8 shrink-0 items-center justify-between rounded-md px-2 text-xs font-medium text-muted-foreground">
@@ -302,7 +347,7 @@ export function SidebarCustom({
                     </button>
                   </CollapsibleTrigger>
                   <span className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-normal group-data-[state=open]/trails:hidden">{visibleTrails.length}</span>
+                    <span className="text-[11px] font-normal group-data-[state=open]/trails:hidden">{trails.length}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5" title="New trail" onClick={() => setIsCreating(true)}>
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -325,7 +370,7 @@ export function SidebarCustom({
                   )}
                   <SidebarGroupContent>
                     <SidebarMenu>
-                      {visibleTrails.map((trail) => {
+                      {trails.map((trail) => {
                         const trailItems = trail.itemIds
                           .map((itemId) => items[itemId])
                           .filter((item): item is Item => Boolean(item));
@@ -528,9 +573,9 @@ export function SidebarCustom({
                           </Collapsible>
                         );
                       })}
-                      {visibleTrails.length === 0 && !isCreating && (
+                      {trails.length === 0 && !isCreating && (
                         <p className="px-2 py-1 text-xs italic text-muted-foreground">
-                          {q ? "No matches" : "No trails yet"}
+                          No trails yet
                         </p>
                       )}
                     </SidebarMenu>
@@ -549,7 +594,7 @@ export function SidebarCustom({
                     </button>
                   </CollapsibleTrigger>
                   <span className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-normal group-data-[state=open]/items:hidden">{visibleItems.length}</span>
+                    <span className="text-[11px] font-normal group-data-[state=open]/items:hidden">{allItems.length}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5" title="New item" onClick={() => setIsCreatingLoose(true)}>
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -570,7 +615,7 @@ export function SidebarCustom({
                   )}
                   <SidebarGroupContent>
                     <SidebarMenu>
-                      {visibleItems.map((item) => {
+                      {allItems.map((item) => {
                         const memberTrails = trailsForItem(item.id);
                         const isShared = memberTrails.length > 1;
                         const addableTrails = trails.filter((t) => !t.itemIds.includes(item.id));
@@ -654,9 +699,9 @@ export function SidebarCustom({
                         </SidebarMenuItem>
                         );
                       })}
-                      {visibleItems.length === 0 && !isCreatingLoose && (
+                      {allItems.length === 0 && !isCreatingLoose && (
                         <p className="px-2 py-1 text-xs italic text-muted-foreground">
-                          {q ? "No matches" : "No items yet"}
+                          No items yet
                         </p>
                       )}
                     </SidebarMenu>
@@ -664,7 +709,7 @@ export function SidebarCustom({
                 </CollapsibleContent>
               </SidebarGroup>
             </Collapsible>
-          </>
+          </div>
         )}
       </SidebarContent>
       <ConfirmDialog
