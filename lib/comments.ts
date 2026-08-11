@@ -34,7 +34,7 @@ export interface CommentPage {
 }
 
 export async function getComments(projectId: string, page = 0, size = 20): Promise<CommentPage> {
-  const response = await fetch(`${API_BASE_URL}/api/public/project/${projectId}/comments?page=${page}&size=${size}`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/public/project/${projectId}/comments?page=${page}&size=${size}`, {
     cache: "no-store",
   });
   if (!response.ok) return { items: [], hasMore: false };
