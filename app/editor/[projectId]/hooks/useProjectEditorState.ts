@@ -22,7 +22,7 @@ import {
   untie,
   type ProjectVisibility,
 } from '@/lib/projects-store';
-import { getItemContent } from '@/lib/item-content-client';
+import { getItemContent, getTrailContents } from '@/lib/item-content-client';
 import { getMyProfile } from '@/lib/profile';
 import type { GraphPreviewData } from '@/lib/feed';
 
@@ -178,6 +178,30 @@ export function useProjectEditorState(projectId: string) {
   };
 
   const selectItemRequestRef = useRef(0);
+  const trailContentRequestRef = useRef(0);
+  const [loadedContentTrailId, setLoadedContentTrailId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!activeTrailId) return;
+    const requestId = ++trailContentRequestRef.current;
+    getTrailContents(activeTrailId)
+      .then((byId) => {
+        if (trailContentRequestRef.current !== requestId) return;
+        setItems((prevItems) => {
+          let changed = false;
+          const next = { ...prevItems };
+          for (const [itemId, content] of Object.entries(byId)) {
+            const existing = next[itemId];
+            if (!existing || existing.content != null) continue;
+            next[itemId] = { ...existing, content };
+            changed = true;
+          }
+          return changed ? next : prevItems;
+        });
+        setLoadedContentTrailId(activeTrailId);
+      })
+      .catch((err) => console.error(err));
+  }, [activeTrailId]);
 
   const handleSelectItem = async (item: Item) => {
     setView('write');
@@ -186,6 +210,7 @@ export function useProjectEditorState(projectId: string) {
       if (current?.itemIds.includes(item.id)) return prev;
       return trails.find((t) => t.itemIds.includes(item.id))?.id ?? prev;
     });
+    if (items[item.id]?.content != null) setSelectedItemId(item.id);
     const requestId = ++selectItemRequestRef.current;
     try {
       const content = await getItemContent(item.id);
@@ -412,6 +437,7 @@ export function useProjectEditorState(projectId: string) {
     setView,
     associationById,
     incomingStep,
+    loadedContentTrailId,
     redirectToLogin,
     handleUpdateAnnotation,
     commitItemTitle,
