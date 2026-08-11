@@ -390,7 +390,3 @@ export async function untie(
     method: "DELETE",
   });
 }
-
-export async function linkItems(itemId: string, otherItemId: string): Promise<void> {
-  await tie(itemId, otherItemId, "ITEM", "RELATED");
-}

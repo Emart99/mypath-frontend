@@ -20,7 +20,6 @@ import {
   updateStep,
   tie,
   untie,
-  linkItems as linkItemsRequest,
   type ProjectVisibility,
 } from '@/lib/projects-store';
 import { getItemContent } from '@/lib/item-content-client';
@@ -324,24 +323,6 @@ export function useProjectEditorState(projectId: string) {
     }
   };
 
-  const handleLinkItems = async (itemId: string, otherItemId: string) => {
-    if (itemId === otherItemId) return;
-    await linkItemsRequest(itemId, otherItemId);
-    setItems(prevItems => {
-      const a = prevItems[itemId];
-      const b = prevItems[otherItemId];
-      if (!a || !b) return prevItems;
-      const next = { ...prevItems };
-      if (!a.linkedItemIds.includes(otherItemId)) {
-        next[itemId] = { ...a, linkedItemIds: [...a.linkedItemIds, otherItemId] };
-      }
-      if (!b.linkedItemIds.includes(itemId)) {
-        next[otherItemId] = { ...b, linkedItemIds: [...b.linkedItemIds, itemId] };
-      }
-      return next;
-    });
-  };
-
   const handleTie = async (itemId: string, targetId: string, targetType: AssociationTargetType, type: AssociationType) => {
     await tie(itemId, targetId, targetType, type);
     const targetTitle = targetType === 'ITEM'
@@ -350,11 +331,24 @@ export function useProjectEditorState(projectId: string) {
     setItems((prev) => {
       const it = prev[itemId];
       if (!it) return prev;
-      const association: Association = { id: `tmp:${targetType}:${targetId}`, type, targetType, targetId, targetTitle };
+      if (it.associations.some((a) => a.targetType === targetType && a.targetId === targetId)) {
+        return prev;
+      }
+      const association: Association = { id: `tmp:${type}:${targetType}:${targetId}`, type, targetType, targetId, targetTitle };
       const linkedItemIds = targetType === 'ITEM' && !it.linkedItemIds.includes(targetId)
         ? [...it.linkedItemIds, targetId]
         : it.linkedItemIds;
       return { ...prev, [itemId]: { ...it, associations: [...it.associations, association], linkedItemIds } };
+    });
+  };
+
+  const handleLinkItems = async (itemId: string, otherItemId: string) => {
+    if (itemId === otherItemId) return;
+    await handleTie(itemId, otherItemId, 'ITEM', 'RELATED');
+    setItems((prev) => {
+      const other = prev[otherItemId];
+      if (!other || other.linkedItemIds.includes(itemId)) return prev;
+      return { ...prev, [otherItemId]: { ...other, linkedItemIds: [...other.linkedItemIds, itemId] } };
     });
   };
 

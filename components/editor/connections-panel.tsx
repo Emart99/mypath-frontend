@@ -107,7 +107,7 @@ export function ConnectionsPanel({
             const targetItem = !isTrail ? items[a.targetId] : undefined;
             return (
               <div
-                key={`${a.targetType}:${a.targetId}`}
+                key={`${a.type}:${a.targetType}:${a.targetId}`}
                 className="group/tie flex flex-col gap-1.5 rounded-sm border border-border bg-popover py-2 px-2.5 transition-colors hover:border-primary"
               >
                 <div className="flex items-center gap-1.5 text-[9.5px] font-medium uppercase tracking-[0.08em] text-foreground">
