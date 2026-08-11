@@ -81,6 +81,11 @@ export default function TrailingParagraphPlugin(): null {
         CLICK_COMMAND,
         (event: MouseEvent) => {
           if (event.target !== editor.getRootElement()) return false;
+          const last = $getRoot().getLastChild();
+          const lastElement = last === null ? null : editor.getElementByKey(last.getKey());
+          if (lastElement !== null && event.clientY <= lastElement.getBoundingClientRect().bottom) {
+            return false;
+          }
           return $appendTrailingParagraph();
         },
         COMMAND_PRIORITY_LOW,
