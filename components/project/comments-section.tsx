@@ -39,12 +39,14 @@ export function CommentsSection({
   isLoggedIn,
   username,
   commentCount,
+  onCommentCountChange,
   canComment,
 }: {
   projectId: string
   isLoggedIn: boolean
   username: string | null
   commentCount: number
+  onCommentCountChange: (updater: (current: number) => number) => void
   canComment: boolean
 }) {
   const commentingAllowed = !isLoggedIn || canComment
@@ -99,6 +101,7 @@ export function CommentsSection({
     startTransition(async () => {
       await postComment(projectId, content.trim())
       setContent("")
+      onCommentCountChange((current) => current + 1)
       refresh()
     })
   }
@@ -110,6 +113,7 @@ export function CommentsSection({
       await postComment(projectId, replyContent.trim(), parentId)
       setReplyContent("")
       setReplyTo(null)
+      onCommentCountChange((current) => current + 1)
       refresh()
     })
   }
@@ -120,6 +124,7 @@ export function CommentsSection({
     setDeleteTarget(null)
     startTransition(async () => {
       await deleteComment(id)
+      onCommentCountChange((current) => Math.max(0, current - 1))
       refresh()
     })
   }

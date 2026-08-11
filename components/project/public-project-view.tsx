@@ -74,6 +74,7 @@ export function PublicProjectView({
   const [selectedItem, setSelectedItem] = useState<PublicItem | undefined>(allItems[0])
   const [activeTrailId, setActiveTrailId] = useState<string | undefined>(project.trails[0]?.id)
   const [view, setView] = useState<'content' | 'trail' | 'graph'>('content')
+  const [commentCount, setCommentCount] = useState(project.commentCount)
 
   const { trails, items } = useMemo(() => toEditorShape(project), [project])
 
@@ -166,7 +167,7 @@ export function PublicProjectView({
               className="relative z-10 flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
             >
               <MessageCircle className="h-4 w-4" />
-              {project.commentCount}
+              {commentCount}
             </a>
           )}
           {allItems.length > 0 && (
@@ -257,7 +258,7 @@ export function PublicProjectView({
                 </div>
               ) : emptyState}
               <div className="rounded-2xl bg-popover">
-                <CommentsSection projectId={project.id} isLoggedIn={isLoggedIn} username={username} commentCount={project.commentCount} canComment={project.canComment} />
+                <CommentsSection projectId={project.id} isLoggedIn={isLoggedIn} username={username} commentCount={commentCount} onCommentCountChange={setCommentCount} canComment={project.canComment} />
               </div>
             </div>
           )}
