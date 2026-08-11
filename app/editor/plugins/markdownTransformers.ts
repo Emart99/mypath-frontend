@@ -3,7 +3,14 @@ import {
   $isHorizontalRuleNode,
   HorizontalRuleNode,
 } from '@lexical/react/LexicalHorizontalRuleNode';
-import { ElementTransformer, TextMatchTransformer, TRANSFORMERS } from '@lexical/markdown';
+import {
+  CODE,
+  ElementTransformer,
+  MultilineElementTransformer,
+  TextMatchTransformer,
+  TRANSFORMERS,
+} from '@lexical/markdown';
+import { getCodeLanguages } from '@lexical/code';
 import { $createParagraphNode, LexicalNode, TextNode } from 'lexical';
 import {
   $createEquationNode,
@@ -61,4 +68,21 @@ function equationTransformer(inline: boolean): TextMatchTransformer {
 export const BLOCK_EQUATION = equationTransformer(false);
 export const INLINE_EQUATION = equationTransformer(true);
 
-export const EDITOR_TRANSFORMERS = [HR, BLOCK_EQUATION, INLINE_EQUATION, ...TRANSFORMERS];
+export const CODE_WITH_KNOWN_LANGUAGE: MultilineElementTransformer = {
+  ...CODE,
+  replace: (rootNode, children, startMatch, endMatch, linesInBetween, isImport) => {
+    const language = startMatch[1];
+    if (children && language !== undefined && !getCodeLanguages().includes(language)) {
+      return false;
+    }
+    return CODE.replace(rootNode, children, startMatch, endMatch, linesInBetween, isImport);
+  },
+};
+
+export const EDITOR_TRANSFORMERS = [
+  HR,
+  BLOCK_EQUATION,
+  INLINE_EQUATION,
+  CODE_WITH_KNOWN_LANGUAGE,
+  ...TRANSFORMERS.filter((transformer) => transformer !== CODE),
+];
