@@ -75,6 +75,7 @@ export function useAutoSave({
       if (loadedItemContentRef.current !== selectedItemId) return;
       const json = JSON.stringify(editorState.toJSON());
       onOptimisticUpdate(selectedItemId, json);
+      if (json.includes('"src":"blob:')) return;
 
       pendingContentRef.current = { itemId: selectedItemId, content: json };
       setSaveStatus('saving');
