@@ -582,6 +582,7 @@ export default function ToolbarPlugin({
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, format)}
         />
       ))}
+      <Divider />
       <ToolbarButton
         label="Insert Link"
         tooltip="Link"
