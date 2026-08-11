@@ -6,12 +6,9 @@ import { mergeRegister } from '@lexical/utils';
 import {
   $createParagraphNode,
   $getNodeByKey,
-  $getRoot,
   $insertNodes,
   $isElementNode,
-  CLICK_COMMAND,
   COMMAND_PRIORITY_HIGH,
-  COMMAND_PRIORITY_LOW,
   createCommand,
   DRAGOVER_COMMAND,
   DROP_COMMAND,
@@ -131,21 +128,6 @@ export default function ImagesPlugin({ projectId }: { projectId?: string }): nul
           return true;
         },
         COMMAND_PRIORITY_HIGH,
-      ),
-      editor.registerCommand(
-        CLICK_COMMAND,
-        (event: MouseEvent) => {
-          if (event.target !== editor.getRootElement()) return false;
-          const last = $getRoot().getLastChild();
-          if ($isElementNode(last) && $isImageNode(last.getLastChild())) {
-            const paragraph = $createParagraphNode();
-            last.insertAfter(paragraph);
-            paragraph.select();
-            return true;
-          }
-          return false;
-        },
-        COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand(
         PASTE_COMMAND,

@@ -23,6 +23,7 @@ import EquationsPlugin from '../../plugins/EquationsPlugin';
 import ListTabPlugin from '../../plugins/ListTabPlugin';
 import PastePlugin from '../../plugins/PastePlugin';
 import CodeHighlightPlugin from '../../plugins/CodeHighlightPlugin';
+import TrailingParagraphPlugin from '../../plugins/TrailingParagraphPlugin';
 import SlashMenuPlugin from '../../plugins/SlashMenuPlugin';
 import FloatingLinkEditorPlugin from '../../plugins/FloatingLinkEditorPlugin';
 import FindReplacePlugin from '../../plugins/FindReplacePlugin';
@@ -161,6 +162,7 @@ export function WriteView({
                 <EquationsPlugin />
                 <PastePlugin />
                 <CodeHighlightPlugin />
+                <TrailingParagraphPlugin />
                 <ListTabPlugin />
                 <TabIndentationPlugin />
                 <HorizontalRulePlugin />
