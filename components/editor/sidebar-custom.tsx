@@ -1,5 +1,5 @@
 import { ChevronRight, GitBranch, Link2, ListPlus, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Mark } from "@/components/layout/logo"
 import {
@@ -22,9 +22,14 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Trail, Item } from "@/app/editor/types"
+import { MIN_SEARCH_LENGTH } from "@/app/editor/editor-utils"
+import { searchProjectItems } from "@/lib/projects-store"
+
+const EMPTY_MATCHES: Set<string> = new Set()
 
 interface SidebarCustomProps {
   homeHref: string;
+  projectId: string;
   trails: Trail[];
   items: Record<string, Item>;
   selectedItemId?: string;
@@ -106,6 +111,7 @@ function AddToTrailSelect({
 
 export function SidebarCustom({
   homeHref,
+  projectId,
   trails,
   items,
   selectedItemId,
@@ -147,13 +153,30 @@ export function SidebarCustom({
   const allItems = Object.values(items);
 
   const q = query.trim().toLowerCase();
-  const visibleItems = q ? allItems.filter((i) => i.title.toLowerCase().includes(q)) : allItems;
+
+  const [bodyMatches, setBodyMatches] = useState<{ query: string; ids: Set<string> }>({
+    query: "",
+    ids: EMPTY_MATCHES,
+  });
+
+  useEffect(() => {
+    if (q.length < MIN_SEARCH_LENGTH) return;
+    const timeout = setTimeout(() => {
+      searchProjectItems(projectId, q)
+        .then((ids) => setBodyMatches({ query: q, ids: new Set(ids) }))
+        .catch(() => setBodyMatches({ query: q, ids: EMPTY_MATCHES }));
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [projectId, q]);
+
+  const bodyMatchIds = bodyMatches.query === q ? bodyMatches.ids : EMPTY_MATCHES;
+
+  const matchesItem = (id: string) =>
+    items[id]?.title.toLowerCase().includes(q) || bodyMatchIds.has(id);
+
+  const visibleItems = q ? allItems.filter((i) => matchesItem(i.id)) : allItems;
   const visibleTrails = q
-    ? trails.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.itemIds.some((id) => items[id]?.title.toLowerCase().includes(q))
-      )
+    ? trails.filter((t) => t.title.toLowerCase().includes(q) || t.itemIds.some(matchesItem))
     : trails;
 
   const submitNewTrail = () => {

@@ -94,6 +94,7 @@ export default function EditorPage() {
         sidebar={
           <SidebarCustom
             homeHref="/projects"
+            projectId={projectId}
             trails={project.trails}
             items={project.items}
             selectedItemId={project.selectedItemId}

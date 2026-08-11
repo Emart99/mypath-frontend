@@ -253,6 +253,11 @@ export async function getProjectImages(id: string): Promise<ProjectImage[]> {
   return apiJson<ProjectImageDTO[]>(`/api/project/${id}/images`);
 }
 
+export async function searchProjectItems(id: string, q: string): Promise<string[]> {
+  const ids = await apiJson<number[]>(`/api/project/${id}/item/search?q=${encodeURIComponent(q)}`);
+  return ids.map(String);
+}
+
 export async function setProjectDescription(id: string, description: string): Promise<void> {
   await apiVoid(`/api/project/${id}`, { method: "PUT", json: { description } });
 }
