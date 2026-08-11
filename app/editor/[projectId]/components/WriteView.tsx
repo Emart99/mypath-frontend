@@ -131,7 +131,7 @@ export function WriteView({
             />
             <hr/>
             <div className="editor-inner" ref={editorInnerRef}>
-              <div className="editor-content-column" ref={setBlockAnchor}>
+              <div className={`editor-content-column${stacked ? ' pt-6 pb-16' : ''}`} ref={setBlockAnchor}>
                 {steps.map((step, i) => {
                   const stepItem = items[step.itemId];
                   if (!stepItem) return null;
@@ -147,12 +147,6 @@ export function WriteView({
                         if (el) slotRefs.current.set(step.itemId, el);
                         else slotRefs.current.delete(step.itemId);
                       }}
-                      onClick={(e) => {
-                        if (isActive) return;
-                        if ((e.target as HTMLElement).closest('a')) return;
-                        activateItem(stepItem);
-                      }}
-                      className={!isActive ? 'cursor-pointer opacity-70 transition-opacity hover:opacity-100' : undefined}
                     >
                       {i > 0 && trail && (
                         <div className="pl-7">
@@ -163,7 +157,26 @@ export function WriteView({
                           />
                         </div>
                       )}
-                      <div className="pt-9 pl-7">
+                      <div
+                        onClick={(e) => {
+                          if (isActive) return;
+                          if ((e.target as HTMLElement).closest('a')) return;
+                          activateItem(stepItem);
+                        }}
+                        className={
+                          stacked
+                            ? `rounded-2xl border pb-4 pr-7 transition-colors ${
+                                isActive ? 'border-primary/40 bg-popover' : 'cursor-pointer border-border bg-popover/40 hover:border-primary/40'
+                              }`
+                            : undefined
+                        }
+                      >
+                        {stacked && (
+                          <div className="pl-7 pt-6 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                            Step {i + 1}
+                          </div>
+                        )}
+                      <div className={stacked ? 'pl-7 pt-1' : 'pt-9 pl-7'}>
                         <input
                           key={`${stepItem.id}-${stepItem.title}`}
                           defaultValue={stepItem.title}
@@ -200,6 +213,7 @@ export function WriteView({
                       ) : (
                         <LexicalReadOnly content={stepItem.content ?? ''} />
                       )}
+                      </div>
                     </div>
                   );
                 })}
