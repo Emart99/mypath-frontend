@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trail, Item, TitleAlign, Association, AssociationType, AssociationTargetType } from '../../types';
-import { bridgeTie } from '../../associations';
 import { lastItemStorageKey } from '../../editor-utils';
 import {
   getProject,
@@ -25,15 +24,6 @@ import {
 import { getItemContent, getTrailContents } from '@/lib/item-content-client';
 import { getMyProfile } from '@/lib/profile';
 import type { GraphPreviewData } from '@/lib/feed';
-
-export interface IncomingStep {
-  trailId: string;
-  itemId: string;
-  trailTitle: string;
-  annotation: string | null;
-  associationType: AssociationType | null;
-  connectionTitle: string | null;
-}
 
 export function useProjectEditorState(projectId: string) {
   const router = useRouter();
@@ -132,25 +122,6 @@ export function useProjectEditorState(projectId: string) {
     Object.values(items).forEach((it) => it.associations.forEach((a) => map.set(a.id, a)));
     return map;
   }, [items]);
-
-  const incomingStep: IncomingStep | null = useMemo(() => {
-    if (!activeTrail || !selectedItemId) return null;
-    const idx = activeTrail.steps.findIndex((s) => s.itemId === selectedItemId);
-    if (idx <= 0) return null;
-    const step = activeTrail.steps[idx];
-    const prevItemId = activeTrail.steps[idx - 1].itemId;
-    const conn = step.associationId
-      ? associationById.get(step.associationId) ?? null
-      : bridgeTie(items, prevItemId, selectedItemId);
-    return {
-      trailId: activeTrail.id,
-      itemId: selectedItemId,
-      trailTitle: activeTrail.title,
-      annotation: step.annotation,
-      associationType: conn?.type ?? null,
-      connectionTitle: conn?.targetTitle ?? null,
-    };
-  }, [activeTrail, selectedItemId, associationById, items]);
 
   const handleUpdateAnnotation = async (trailId: string, itemId: string, annotation: string) => {
     const step = trails.find((t) => t.id === trailId)?.steps.find((s) => s.itemId === itemId);
@@ -436,7 +407,6 @@ export function useProjectEditorState(projectId: string) {
     view,
     setView,
     associationById,
-    incomingStep,
     loadedContentTrailId,
     redirectToLogin,
     handleUpdateAnnotation,

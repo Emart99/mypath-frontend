@@ -34,9 +34,10 @@ import WikiLinkPlugin from '../../plugins/WikiLinkPlugin';
 import ItemLinkClickPlugin from '../../plugins/ItemLinkClickPlugin';
 import { editorConfig, placeholder } from '../../lexical-config';
 import { ConnectionsPanel } from '@/components/editor/connections-panel';
-import { AnnotationBanner } from '@/components/editor/annotation-banner';
-import { Trail, Item, TitleAlign, AssociationType, AssociationTargetType } from '../../types';
-import type { IncomingStep } from '../hooks/useProjectEditorState';
+import { TrailConnector } from '@/components/editor/trail-connector';
+import { LexicalReadOnly } from '@/components/project/lexical-read-only';
+import { bridgeTie } from '../../associations';
+import { Trail, Item, TitleAlign, Association, AssociationType, AssociationTargetType } from '../../types';
 
 interface WriteViewProps {
   projectId: string;
@@ -44,7 +45,9 @@ interface WriteViewProps {
   items: Record<string, Item>;
   trails: Trail[];
   activeTrailId: string | undefined;
-  incomingStep: IncomingStep | null;
+  trail: Trail | undefined;
+  associationById: Map<string, Association>;
+  contentReady: boolean;
   onUpdateAnnotation: (trailId: string, itemId: string, annotation: string) => void;
   onCommitTitle: (itemId: string, currentTitle: string, nextValue: string) => void;
   onSetTitleAlign: (itemId: string, titleAlign: TitleAlign) => void;
@@ -65,7 +68,9 @@ export function WriteView({
   items,
   trails,
   activeTrailId,
-  incomingStep,
+  trail,
+  associationById,
+  contentReady,
   onUpdateAnnotation,
   onCommitTitle,
   onSetTitleAlign,
@@ -82,19 +87,41 @@ export function WriteView({
   const [activeAlignTarget, setActiveAlignTarget] = useState<'title' | 'body'>('body');
   const [blockAnchor, setBlockAnchor] = useState<HTMLDivElement | null>(null);
   const editorInnerRef = useRef<HTMLDivElement>(null);
+  const slotRefs = useRef(new Map<string, HTMLDivElement>());
+  const preserveScrollRef = useRef<number | null>(null);
+
+  const steps = trail?.itemIds.includes(item.id)
+    ? trail.steps
+    : [{ itemId: item.id, annotation: null, associationId: null }];
+  const stacked = steps.length > 1;
 
   useEffect(() => {
     const el = editorInnerRef.current;
     if (!el) return;
+    const preserved = preserveScrollRef.current;
+    preserveScrollRef.current = null;
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      el.scrollTop = 0;
+      if (preserved != null) {
+        el.scrollTop = preserved;
+        return;
+      }
+      const slot = slotRefs.current.get(item.id);
+      if (slot && stacked) slot.scrollIntoView({ block: 'start' });
+      else el.scrollTop = 0;
     }));
-  }, [item.id]);
+  }, [item.id, stacked, contentReady]);
+
+  const activateItem = (target: Item) => {
+    if (target.id === item.id) return;
+    const el = editorInnerRef.current;
+    if (el) preserveScrollRef.current = el.scrollTop;
+    onSelectItem(target);
+  };
 
   return (
     <>
       <div data-tour="write-panel" className="flex min-w-0 flex-1 flex-col overflow-hidden ">
-        <LexicalComposer key={item.id} initialConfig={editorConfig}>
+        <LexicalComposer initialConfig={editorConfig}>
           <div className="editor-container flex flex-1 min-h-0 flex-col">
             <ToolbarPlugin
               projectId={projectId}
@@ -105,52 +132,79 @@ export function WriteView({
             <hr/>
             <div className="editor-inner" ref={editorInnerRef}>
               <div className="editor-content-column" ref={setBlockAnchor}>
-                {incomingStep && (
-                  <div className="px-7 pt-6">
-                    <AnnotationBanner
-                      key={`${incomingStep.trailId}-${incomingStep.itemId}`}
-                      annotation={incomingStep.annotation}
-                      associationType={incomingStep.associationType}
-                      connectionTitle={incomingStep.connectionTitle}
-                      trailTitle={incomingStep.trailTitle}
-                      onSave={(text) => onUpdateAnnotation(incomingStep.trailId, incomingStep.itemId, text)}
-                    />
-                  </div>
-                )}
-                <div className="pt-9 pl-7">
-                  <input
-                    key={`${item.id}-${item.title}`}
-                    defaultValue={item.title}
-                    onFocus={() => setActiveAlignTarget('title')}
-                    onBlur={(e) => onCommitTitle(item.id, item.title, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        (e.target as HTMLInputElement).blur();
-                      }
-                    }}
-                    placeholder="Untitled"
-                    style={{ textAlign: item.titleAlign }}
-                    className="w-full border-0 bg-transparent font-display text-[28px] font-medium text-foreground outline-none placeholder:text-muted-foreground/40"
-                  />
-                </div>
-                <div className="relative grid flex-1 min-h-0">
-                  <RichTextPlugin
-                    contentEditable={
-                      <ContentEditable
-                        className="editor-input"
-                        aria-placeholder={placeholder}
-                        onFocus={() => setActiveAlignTarget('body')}
-                        placeholder={
-                          <div className="editor-placeholder">{placeholder}</div>
-                        }
-                      />
-                    }
-                    ErrorBoundary={LexicalErrorBoundary}
-                  />
-                </div>
+                {steps.map((step, i) => {
+                  const stepItem = items[step.itemId];
+                  if (!stepItem) return null;
+                  const isActive = step.itemId === item.id;
+                  const conn = step.associationId
+                    ? associationById.get(step.associationId) ?? null
+                    : i > 0 && trail ? bridgeTie(items, trail.steps[i - 1].itemId, step.itemId) : null;
+
+                  return (
+                    <div
+                      key={step.itemId}
+                      ref={(el) => {
+                        if (el) slotRefs.current.set(step.itemId, el);
+                        else slotRefs.current.delete(step.itemId);
+                      }}
+                      onClick={(e) => {
+                        if (isActive) return;
+                        if ((e.target as HTMLElement).closest('a')) return;
+                        activateItem(stepItem);
+                      }}
+                      className={!isActive ? 'cursor-pointer opacity-70 transition-opacity hover:opacity-100' : undefined}
+                    >
+                      {i > 0 && trail && (
+                        <div className="pl-7">
+                          <TrailConnector
+                            conn={conn}
+                            annotation={step.annotation}
+                            onSaveAnnotation={(text) => onUpdateAnnotation(trail.id, step.itemId, text)}
+                          />
+                        </div>
+                      )}
+                      <div className="pt-9 pl-7">
+                        <input
+                          key={`${stepItem.id}-${stepItem.title}`}
+                          defaultValue={stepItem.title}
+                          readOnly={!isActive}
+                          onFocus={() => setActiveAlignTarget('title')}
+                          onBlur={(e) => { if (isActive) onCommitTitle(stepItem.id, stepItem.title, e.target.value); }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              (e.target as HTMLInputElement).blur();
+                            }
+                          }}
+                          placeholder="Untitled"
+                          style={{ textAlign: stepItem.titleAlign }}
+                          className="w-full border-0 bg-transparent font-display text-[28px] font-medium text-foreground outline-none placeholder:text-muted-foreground/40"
+                        />
+                      </div>
+                      {isActive ? (
+                        <div className={stacked ? 'relative' : 'relative grid flex-1 min-h-0'}>
+                          <RichTextPlugin
+                            contentEditable={
+                              <ContentEditable
+                                className="editor-input"
+                                aria-placeholder={placeholder}
+                                onFocus={() => setActiveAlignTarget('body')}
+                                placeholder={
+                                  <div className="editor-placeholder">{placeholder}</div>
+                                }
+                              />
+                            }
+                            ErrorBoundary={LexicalErrorBoundary}
+                          />
+                        </div>
+                      ) : (
+                        <LexicalReadOnly content={stepItem.content ?? ''} />
+                      )}
+                    </div>
+                  );
+                })}
                 <HistoryPlugin />
-                <AutoFocusPlugin />
+                <AutoFocusPlugin key={item.id} />
                 <ListPlugin />
                 <CheckListPlugin />
                 <LinkPlugin />

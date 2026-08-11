@@ -139,7 +139,9 @@ export default function EditorPage() {
                 items={project.items}
                 trails={project.trails}
                 activeTrailId={project.activeTrailId}
-                incomingStep={project.incomingStep}
+                trail={project.activeTrail}
+                associationById={project.associationById}
+                contentReady={project.loadedContentTrailId === project.activeTrailId}
                 onUpdateAnnotation={project.handleUpdateAnnotation}
                 onCommitTitle={project.commitItemTitle}
                 onSetTitleAlign={project.handleSetItemTitleAlign}
