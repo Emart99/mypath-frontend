@@ -131,8 +131,9 @@ const TEXT_FORMATS = [
   { format: 'italic', label: 'Format Italics', tooltip: 'Italic', Icon: Italic },
   { format: 'underline', label: 'Format Underline', tooltip: 'Underline', Icon: Underline },
   { format: 'strikethrough', label: 'Format Strikethrough', tooltip: 'Strikethrough', Icon: Strikethrough },
-  { format: 'code', label: 'Format Code', tooltip: 'Inline code', Icon: Code },
 ] as const;
+
+const INLINE_CODE_FORMAT = { format: 'code', label: 'Format Code', tooltip: 'Inline code', Icon: Code } as const;
 
 const LIST_OPTIONS = [
   { type: 'bullet', label: 'Bullet List', tooltip: 'Bulleted list', Icon: ListIcon, command: INSERT_UNORDERED_LIST_COMMAND },
@@ -262,7 +263,11 @@ export default function ToolbarPlugin({
       }
 
       setFormats(
-        new Set(TEXT_FORMATS.filter(({ format }) => selection.hasFormat(format)).map(({ format }) => format)),
+        new Set(
+          [...TEXT_FORMATS, INLINE_CODE_FORMAT]
+            .filter(({ format }) => selection.hasFormat(format))
+            .map(({ format }) => format),
+        ),
       );
 
       const node = selection.anchor.getNode();
@@ -500,6 +505,22 @@ export default function ToolbarPlugin({
           onClick={() => updateFontSizeByStep(1)}
         />
       </div>
+      <DropdownMenu>
+        <ToolbarMenuButton label="Text color" tooltip="Text color" className="toolbar-item spaced">
+          <Baseline size={18} style={textColor ? { color: textColor } : undefined} />
+        </ToolbarMenuButton>
+        <DropdownMenuContent align="start">
+          {COLOR_OPTIONS.map(({ value, label }) => (
+            <DropdownMenuItem key={label} onSelect={() => applyStyleText({ color: value || null })}>
+              <span
+                className="toolbar-color-swatch"
+                style={{ background: value || 'var(--foreground)' }}
+              />
+              {label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Divider />
       <DropdownMenu>
@@ -562,29 +583,6 @@ export default function ToolbarPlugin({
         />
       ))}
       <ToolbarButton
-        label="Code Block"
-        tooltip="Code block"
-        Icon={SquareCode}
-        active={blockType === 'code'}
-        onClick={formatCode}
-      />
-      <DropdownMenu>
-        <ToolbarMenuButton label="Text color" tooltip="Text color" className="toolbar-item spaced">
-          <Baseline size={18} style={textColor ? { color: textColor } : undefined} />
-        </ToolbarMenuButton>
-        <DropdownMenuContent align="start">
-          {COLOR_OPTIONS.map(({ value, label }) => (
-            <DropdownMenuItem key={label} onSelect={() => applyStyleText({ color: value || null })}>
-              <span
-                className="toolbar-color-swatch"
-                style={{ background: value || 'var(--foreground)' }}
-              />
-              {label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <ToolbarButton
         label="Insert Link"
         tooltip="Link"
         Icon={LinkIcon}
@@ -613,6 +611,21 @@ export default function ToolbarPlugin({
         Icon={Sigma}
         disabled={blockType === 'code'}
         onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })}
+      />
+      <Divider />
+      <ToolbarButton
+        label={INLINE_CODE_FORMAT.label}
+        tooltip={INLINE_CODE_FORMAT.tooltip}
+        Icon={INLINE_CODE_FORMAT.Icon}
+        active={formats.has(INLINE_CODE_FORMAT.format)}
+        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, INLINE_CODE_FORMAT.format)}
+      />
+      <ToolbarButton
+        label="Code Block"
+        tooltip="Code block"
+        Icon={SquareCode}
+        active={blockType === 'code'}
+        onClick={formatCode}
       />
       <input
         ref={fileInputRef}
