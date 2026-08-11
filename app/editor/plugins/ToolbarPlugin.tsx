@@ -413,7 +413,7 @@ export default function ToolbarPlugin({
   };
 
   const formatCode = () => {
-    if (blockType !== 'code') setBlock($createCodeNode);
+    setBlock(blockType === 'code' ? $createParagraphNode : $createCodeNode);
   };
 
   const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -561,6 +561,13 @@ export default function ToolbarPlugin({
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, format)}
         />
       ))}
+      <ToolbarButton
+        label="Code Block"
+        tooltip="Code block"
+        Icon={SquareCode}
+        active={blockType === 'code'}
+        onClick={formatCode}
+      />
       <DropdownMenu>
         <ToolbarMenuButton label="Text color" tooltip="Text color" className="toolbar-item spaced">
           <Baseline size={18} style={textColor ? { color: textColor } : undefined} />
