@@ -131,7 +131,7 @@ export function WriteView({
             />
             <hr/>
             <div className="editor-inner" ref={editorInnerRef}>
-              <div className={`editor-content-column${stacked ? ' pt-6 pb-16' : ''}`} ref={setBlockAnchor}>
+              <div className={`editor-content-column${stacked ? ' pb-16' : ''}`} ref={setBlockAnchor}>
                 {steps.map((step, i) => {
                   const stepItem = items[step.itemId];
                   if (!stepItem) return null;
@@ -149,7 +149,7 @@ export function WriteView({
                       }}
                     >
                       {i > 0 && trail && (
-                        <div className="pl-7">
+                        <div className="mt-4 border-y border-border pl-7">
                           <TrailConnector
                             conn={conn}
                             annotation={step.annotation}
@@ -163,16 +163,21 @@ export function WriteView({
                           if ((e.target as HTMLElement).closest('a')) return;
                           activateItem(stepItem);
                         }}
-                        className={
-                          stacked
-                            ? `rounded-2xl border pb-4 pr-7 transition-colors ${
-                                isActive ? 'border-primary/40 bg-popover' : 'cursor-pointer border-border bg-popover/40 hover:border-primary/40'
-                              }`
-                            : undefined
-                        }
+                        className={stacked && !isActive ? 'cursor-pointer' : undefined}
                       >
                         {stacked && (
-                          <div className="pl-7 pt-6 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                          <div
+                            className={`flex items-center gap-2 pl-7 pt-6 text-[11px] font-medium uppercase tracking-[0.1em] ${
+                              isActive ? 'text-foreground' : 'text-muted-foreground'
+                            }`}
+                          >
+                            <span
+                              className={
+                                isActive
+                                  ? 'h-[7px] w-[7px] shrink-0 rounded-full bg-primary'
+                                  : 'h-[7px] w-[7px] shrink-0 rounded-full border-[1.5px] border-muted-foreground box-border'
+                              }
+                            />
                             Step {i + 1}
                           </div>
                         )}
