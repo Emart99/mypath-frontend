@@ -7,12 +7,17 @@ import {
   $createParagraphNode,
   $getRoot,
   $getSelection,
+  $isElementNode,
   $isParagraphNode,
   $isRangeSelection,
   CLICK_COMMAND,
   COMMAND_PRIORITY_LOW,
+  COMMAND_PRIORITY_NORMAL,
   KEY_ARROW_DOWN_COMMAND,
+  KEY_ARROW_UP_COMMAND,
+  LexicalNode,
 } from 'lexical';
+import { $isCodeNode } from '@lexical/code';
 
 function $appendTrailingParagraph(): boolean {
   const root = $getRoot();
@@ -25,6 +30,32 @@ function $appendTrailingParagraph(): boolean {
   root.append(paragraph);
   paragraph.select();
   return true;
+}
+
+function $codeBlockAtBoundary(direction: 'up' | 'down'): LexicalNode | null {
+  const selection = $getSelection();
+  if (!$isRangeSelection(selection) || !selection.isCollapsed()) return null;
+
+  const anchor = selection.anchor;
+  const anchorNode = anchor.getNode();
+  const block = anchorNode.getTopLevelElement();
+  if (!$isCodeNode(block)) return null;
+
+  const atEdge =
+    direction === 'down'
+      ? anchor.offset === anchorNode.getTextContentSize() && anchorNode.getNextSibling() === null
+      : anchor.offset === 0 && anchorNode.getPreviousSibling() === null;
+  return atEdge ? block : null;
+}
+
+function $selectSibling(sibling: LexicalNode, edge: 'start' | 'end'): void {
+  if ($isElementNode(sibling)) {
+    if (edge === 'start') sibling.selectStart();
+    else sibling.selectEnd();
+    return;
+  }
+  if (edge === 'start') sibling.selectNext(0, 0);
+  else sibling.selectPrevious();
 }
 
 function getCaretRect(): DOMRect | null {
@@ -55,8 +86,33 @@ export default function TrailingParagraphPlugin(): null {
         COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand<KeyboardEvent>(
+        KEY_ARROW_UP_COMMAND,
+        (event) => {
+          if (event.altKey) return false;
+          const code = $codeBlockAtBoundary('up');
+          if (code === null) return false;
+          const previous = code.getPreviousSibling();
+          if (previous === null) return false;
+          event.preventDefault();
+          $selectSibling(previous, 'end');
+          return true;
+        },
+        COMMAND_PRIORITY_NORMAL,
+      ),
+      editor.registerCommand<KeyboardEvent>(
         KEY_ARROW_DOWN_COMMAND,
         (event) => {
+          if (event.altKey) return false;
+
+          const code = $codeBlockAtBoundary('down');
+          if (code !== null) {
+            const next = code.getNextSibling();
+            event.preventDefault();
+            if (next === null) return $appendTrailingParagraph();
+            $selectSibling(next, 'start');
+            return true;
+          }
+
           const selection = $getSelection();
           if (!$isRangeSelection(selection) || !selection.isCollapsed()) return false;
 
@@ -72,10 +128,11 @@ export default function TrailingParagraphPlugin(): null {
           const blockRect = blockElement.getBoundingClientRect();
           if (blockRect.bottom - caretRect.bottom >= caretRect.height) return false;
 
+          if ($isParagraphNode(block) && block.isEmpty()) return false;
           event.preventDefault();
           return $appendTrailingParagraph();
         },
-        COMMAND_PRIORITY_LOW,
+        COMMAND_PRIORITY_NORMAL,
       ),
     );
   }, [editor]);
