@@ -36,7 +36,7 @@ import { editorConfig, placeholder } from '../../lexical-config';
 import { ConnectionsPanel } from '@/components/editor/connections-panel';
 import { TrailConnector } from '@/components/editor/trail-connector';
 import { LexicalReadOnly } from '@/components/project/lexical-read-only';
-import { bridgeTie } from '../../associations';
+import { bridgeTies } from '../../associations';
 import { Trail, Item, TitleAlign, Association, AssociationType, AssociationTargetType } from '../../types';
 
 interface WriteViewProps {
@@ -136,9 +136,11 @@ export function WriteView({
                   const stepItem = items[step.itemId];
                   if (!stepItem) return null;
                   const isActive = step.itemId === item.id;
-                  const conn = step.associationId
-                    ? associationById.get(step.associationId) ?? null
-                    : i > 0 && trail ? bridgeTie(items, trail.steps[i - 1].itemId, step.itemId) : null;
+                  const ties = i > 0 && trail ? bridgeTies(items, trail.steps[i - 1].itemId, step.itemId) : [];
+                  const explicit = step.associationId ? associationById.get(step.associationId) : undefined;
+                  if (explicit && !ties.some((t) => t.association.id === explicit.id)) {
+                    ties.unshift({ association: explicit, forward: true });
+                  }
 
                   return (
                     <div
@@ -151,7 +153,7 @@ export function WriteView({
                       {i > 0 && trail && (
                         <div className="trail-divider mt-4">
                           <TrailConnector
-                            conn={conn}
+                            ties={ties}
                             annotation={step.annotation}
                             onSaveAnnotation={(text) => onUpdateAnnotation(trail.id, step.itemId, text)}
                           />

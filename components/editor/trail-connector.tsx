@@ -3,11 +3,10 @@
 import { useState } from "react"
 import { ArrowDown, Plus } from "lucide-react"
 
-import { Association } from "@/app/editor/types"
-import { ASSOCIATION_META, ASSOCIATION_COLOR_VAR } from "@/app/editor/associations"
+import { ASSOCIATION_META, ASSOCIATION_COLOR_VAR, type BridgeTie } from "@/app/editor/associations"
 
 interface TrailConnectorProps {
-  conn: Association | null;
+  ties: BridgeTie[];
   annotation: string | null;
   onSaveAnnotation?: (annotation: string) => void;
 }
@@ -59,23 +58,33 @@ function AnnotationEditor({ annotation, onSave }: { annotation: string | null; o
   );
 }
 
-export function TrailConnector({ conn, annotation, onSaveAnnotation }: TrailConnectorProps) {
-  const meta = conn ? ASSOCIATION_META[conn.type] : null;
-  const BridgeIcon = meta?.Icon ?? ArrowDown;
-  const color = conn ? `var(${ASSOCIATION_COLOR_VAR[conn.type]})` : undefined;
-
+export function TrailConnector({ ties, annotation, onSaveAnnotation }: TrailConnectorProps) {
   return (
     <div className="py-5">
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span
-          className={`flex shrink-0 items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.1em] ${
-            conn ? "text-foreground" : "text-muted-foreground"
-          }`}
-          style={{ color }}
-        >
-          <BridgeIcon className="h-3.5 w-3.5" />
-          {meta ? `${meta.label} ${conn?.targetTitle ?? ""}`.trim() : "deliberate jump"}
+        <span className="flex shrink-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] font-medium uppercase tracking-[0.1em]">
+          {ties.length === 0 ? (
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <ArrowDown className="h-3.5 w-3.5" />
+              deliberate jump
+            </span>
+          ) : (
+            ties.map(({ association, forward }, index) => {
+              const meta = ASSOCIATION_META[association.type];
+              const BridgeIcon = meta.Icon;
+              const color = `var(${ASSOCIATION_COLOR_VAR[association.type]})`;
+              return (
+                <span key={association.id} className="flex items-center gap-2">
+                  {index > 0 && <span className="text-muted-foreground">·</span>}
+                  <span className="flex items-center gap-1.5" style={{ color }}>
+                    <BridgeIcon className={`h-3.5 w-3.5 ${forward ? "" : "rotate-180"}`} />
+                    {forward ? `${meta.label} ${association.targetTitle}`.trim() : `${meta.label} back`}
+                  </span>
+                </span>
+              );
+            })
+          )}
         </span>
         <span className="h-px flex-1 bg-border" />
       </div>

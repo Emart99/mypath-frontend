@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 
 import { Association, Item, Trail } from "@/app/editor/types"
-import { bridgeTie } from "@/app/editor/associations"
+import { bridgeTies } from "@/app/editor/associations"
 import { collectPlainText } from "@/app/editor/editor-utils"
 import { TrailConnector } from "@/components/editor/trail-connector"
 
@@ -93,14 +93,16 @@ export function TrailReader({ trail, items, associationById, selectedItemId, onS
           {trail.steps.map((step, i) => {
             const item = items[step.itemId];
             if (!item) return null;
-            const conn = step.associationId
-              ? associationById.get(step.associationId) ?? null
-              : i > 0 ? bridgeTie(items, trail.steps[i - 1].itemId, step.itemId) : null;
+            const ties = i > 0 ? bridgeTies(items, trail.steps[i - 1].itemId, step.itemId) : [];
+            const explicit = step.associationId ? associationById.get(step.associationId) : undefined;
+            if (explicit && !ties.some((t) => t.association.id === explicit.id)) {
+              ties.unshift({ association: explicit, forward: true });
+            }
             const on = step.itemId === selectedItemId;
 
             return (
               <div key={step.itemId}>
-                {i > 0 && <TrailConnector conn={conn} annotation={step.annotation} />}
+                {i > 0 && <TrailConnector ties={ties} annotation={step.annotation} />}
                 <button
                   type="button"
                   onClick={() => onSelectItem(item)}

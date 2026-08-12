@@ -19,15 +19,24 @@ export const ASSOCIATION_COLOR_VAR: Record<AssociationType, string> = {
   RELATED: "--ed-orange",
 };
 
-export function bridgeTie(
+export interface BridgeTie {
+  association: Association;
+  forward: boolean;
+}
+
+export function bridgeTies(
   items: Record<string, Item>,
   prevItemId: string,
   itemId: string,
-): Association | null {
-  const own = items[itemId]?.associations ?? [];
-  return (
-    own.find((a) => a.targetType === "ITEM" && a.targetId === prevItemId) ??
-    own[0] ??
-    null
+): BridgeTie[] {
+  const ties: BridgeTie[] = [];
+  const forward = (items[itemId]?.associations ?? []).find(
+    (a) => a.targetType === "ITEM" && a.targetId === prevItemId,
   );
+  if (forward) ties.push({ association: forward, forward: true });
+  const backward = (items[prevItemId]?.associations ?? []).find(
+    (a) => a.targetType === "ITEM" && a.targetId === itemId,
+  );
+  if (backward) ties.push({ association: backward, forward: false });
+  return ties;
 }
