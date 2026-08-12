@@ -1,12 +1,13 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { Eye, FolderPlus, ListTree, MessageCircle, Route } from "lucide-react"
 
 import { PublicSidebar } from "@/components/project/public-sidebar"
 import { LexicalReadOnly } from "@/components/project/lexical-read-only"
 import { ProjectShell } from "@/components/editor/project-shell"
+import { TrailConnector } from "@/components/editor/trail-connector"
 import { GraphView } from "@/components/editor/graph-view"
 import { TrailView } from "@/components/editor/trail-view"
 import { VoteButton } from "@/components/social/vote-button"
@@ -21,6 +22,7 @@ import { UserMenu } from "@/components/layout/user-menu"
 import { Button } from "@/components/ui/button"
 import type { PublicItem, PublicProject } from "@/lib/public-project"
 import type { Association, Item, Trail } from "@/app/editor/types"
+import { bridgeTies } from "@/app/editor/associations"
 
 function toEditorShape(project: PublicProject): { trails: Trail[]; items: Record<string, Item> } {
   const items: Record<string, Item> = {};
@@ -85,6 +87,27 @@ export function PublicProjectView({
     Object.values(items).forEach((it) => it.associations.forEach((a) => map.set(a.id, a)));
     return map;
   }, [items])
+
+  const inTrail = !!(selectedItem && activeTrail?.itemIds.includes(selectedItem.id))
+  const steps = inTrail && activeTrail
+    ? activeTrail.steps
+    : selectedItem
+      ? [{ itemId: selectedItem.id, annotation: null, associationId: null }]
+      : []
+  const stacked = steps.length > 1
+
+  const columnRef = useRef<HTMLDivElement>(null)
+  const slotRefs = useRef(new Map<string, HTMLDivElement>())
+
+  useEffect(() => {
+    const el = columnRef.current
+    if (!el || !selectedItem) return
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const slot = slotRefs.current.get(selectedItem.id)
+      if (slot && stacked) slot.scrollIntoView({ block: 'start' })
+      else el.scrollTop = 0
+    }))
+  }, [selectedItem, stacked])
 
   const handleSelectItem = (item: PublicItem) => {
     setSelectedItem(item)
@@ -246,14 +269,72 @@ export function PublicProjectView({
               emptyState={emptyState}
             />
           ) : (
-            <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-auto">
+            <div ref={columnRef} className="flex min-w-0 flex-1 flex-col gap-3 overflow-auto">
               {selectedItem ? (
                 <div className="rounded-2xl bg-popover">
-                  <div className="mx-auto flex w-full max-w-[820px] flex-col gap-4 px-6 py-8">
-                    <h1 className="font-display text-[28px] font-medium" style={{ textAlign: selectedItem.titleAlign }}>
-                      {selectedItem.title}
-                    </h1>
-                    <LexicalReadOnly key={selectedItem.id} content={selectedItem.content} onItemClick={handleItemLinkClick} />
+                  <div className="public-trail-column mx-auto w-full max-w-[820px] px-6 py-8">
+                    {steps.map((step, i) => {
+                      const stepItem = items[step.itemId]
+                      if (!stepItem) return null
+                      const isActive = step.itemId === selectedItem.id
+                      const ties = i > 0 ? bridgeTies(items, steps[i - 1].itemId, step.itemId) : []
+                      const explicit = step.associationId ? associationById.get(step.associationId) : undefined
+                      if (explicit && !ties.some((t) => t.association.id === explicit.id)) {
+                        ties.unshift({ association: explicit, forward: true })
+                      }
+
+                      return (
+                        <div
+                          key={step.itemId}
+                          ref={(el) => {
+                            if (el) slotRefs.current.set(step.itemId, el)
+                            else slotRefs.current.delete(step.itemId)
+                          }}
+                        >
+                          {i > 0 && (
+                            <div className="trail-divider mt-4">
+                              <TrailConnector ties={ties} annotation={step.annotation} />
+                            </div>
+                          )}
+                          <div
+                            onClick={(e) => {
+                              if (isActive) return
+                              if ((e.target as HTMLElement).closest('a')) return
+                              handleItemLinkClick(step.itemId)
+                            }}
+                            className={stacked && !isActive ? 'group cursor-pointer' : undefined}
+                          >
+                            {stacked && (
+                              <div
+                                className={`flex items-center gap-2 pl-7 pt-6 text-[11px] font-medium uppercase tracking-[0.1em] ${
+                                  isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
+                                }`}
+                              >
+                                <span
+                                  className={
+                                    isActive
+                                      ? 'h-[7px] w-[7px] shrink-0 rounded-full bg-primary'
+                                      : 'h-[7px] w-[7px] shrink-0 rounded-full border-[1.5px] border-muted-foreground box-border group-hover:border-primary'
+                                  }
+                                />
+                                Step {i + 1}
+                              </div>
+                            )}
+                            <h1
+                              className={`font-display text-[28px] font-medium ${stacked ? 'pl-7 pt-1' : 'pl-7'}`}
+                              style={{ textAlign: stepItem.titleAlign }}
+                            >
+                              {stepItem.title}
+                            </h1>
+                            <LexicalReadOnly
+                              key={step.itemId}
+                              content={stepItem.content ?? ''}
+                              onItemClick={handleItemLinkClick}
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               ) : emptyState}
