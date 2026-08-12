@@ -38,7 +38,6 @@ import { ConnectionsPanel } from '@/components/editor/connections-panel';
 import { TrailConnector } from '@/components/editor/trail-connector';
 import { LexicalReadOnly } from '@/components/project/lexical-read-only';
 import { bridgeTies } from '../../associations';
-import { useScrollSpy } from '@/hooks/use-scroll-spy';
 import { Trail, Item, TitleAlign, Association, AssociationType, AssociationTargetType } from '../../types';
 
 interface WriteViewProps {
@@ -53,8 +52,7 @@ interface WriteViewProps {
   onUpdateAnnotation: (trailId: string, itemId: string, annotation: string) => void;
   onCommitTitle: (itemId: string, currentTitle: string, nextValue: string) => void;
   onSetTitleAlign: (itemId: string, titleAlign: TitleAlign) => void;
-  onSelectItem: (item: Item, options?: { viaScroll?: boolean }) => void;
-  focusToken: number;
+  onSelectItem: (item: Item) => void;
   onCreateItem: (trailId: string, title: string) => void;
   onLinkItems: (itemId: string, otherItemId: string) => void;
   onTie: (itemId: string, targetId: string, targetType: AssociationTargetType, type: AssociationType) => void;
@@ -79,7 +77,6 @@ export function WriteView({
   onCommitTitle,
   onSetTitleAlign,
   onSelectItem,
-  focusToken,
   onCreateItem,
   onLinkItems,
   onTie,
@@ -95,7 +92,6 @@ export function WriteView({
   const editorInnerRef = useRef<HTMLDivElement>(null);
   const slotRefs = useRef(new Map<string, HTMLDivElement>());
   const preserveScrollRef = useRef<number | null>(null);
-  const skipScrollRef = useRef(false);
 
   const inTrail = !!trail?.itemIds.includes(item.id);
   const steps = inTrail && trail
@@ -118,10 +114,6 @@ export function WriteView({
   useEffect(() => {
     const el = editorInnerRef.current;
     if (!el) return;
-    if (skipScrollRef.current) {
-      skipScrollRef.current = false;
-      return;
-    }
     const preserved = preserveScrollRef.current;
     preserveScrollRef.current = null;
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -134,20 +126,6 @@ export function WriteView({
       else el.scrollTop = 0;
     }));
   }, [item.id, stacked, contentReady]);
-
-  useScrollSpy({
-    root: editorInnerRef,
-    slots: slotRefs,
-    ids: steps.map((step) => step.itemId),
-    enabled: stacked,
-    settle: 150,
-    onVisible: (itemId) => {
-      const target = items[itemId];
-      if (!target || target.id === item.id) return;
-      skipScrollRef.current = true;
-      onSelectItem(target, { viaScroll: true });
-    },
-  });
 
   const activateItem = (target: Item) => {
     if (target.id === item.id) return;
@@ -283,7 +261,7 @@ export function WriteView({
                   </div>
                 )}
                 <HistoryPlugin />
-                <AutoFocusPlugin key={focusToken} />
+                <AutoFocusPlugin key={item.id} />
                 <ListPlugin />
                 <CheckListPlugin />
                 <LinkPlugin />

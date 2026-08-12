@@ -47,7 +47,6 @@ export function useProjectEditorState(projectId: string) {
   const [trails, setTrails] = useState<Trail[]>([]);
   const [items, setItems] = useState<Record<string, Item>>({});
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
-  const [focusToken, setFocusToken] = useState(0);
   const [activeTrailId, setActiveTrailId] = useState<string | undefined>(undefined);
   const [view, setView] = useState<'write' | 'trail' | 'graph'>('write');
   const [profile, setProfile] = useState<{ username: string; imageUrl: string | null } | null>(null);
@@ -176,18 +175,13 @@ export function useProjectEditorState(projectId: string) {
       .catch((err) => console.error(err));
   }, [activeTrailId]);
 
-  const handleSelectItem = async (item: Item, options?: { viaScroll?: boolean }) => {
+  const handleSelectItem = async (item: Item) => {
     setView('write');
     setActiveTrailId((prev) => {
       const current = trails.find((t) => t.id === prev);
       if (current?.itemIds.includes(item.id)) return prev;
       return trails.find((t) => t.itemIds.includes(item.id))?.id ?? prev;
     });
-    if (options?.viaScroll && items[item.id]?.content != null) {
-      setSelectedItemId(item.id);
-      return;
-    }
-    setFocusToken((token) => token + 1);
     if (items[item.id]?.content != null) setSelectedItemId(item.id);
     const requestId = ++selectItemRequestRef.current;
     try {
@@ -432,7 +426,6 @@ export function useProjectEditorState(projectId: string) {
     items,
     selectedItem,
     selectedItemId,
-    focusToken,
     activeTrail,
     activeTrailId,
     view,

@@ -147,7 +147,6 @@ export default function EditorPage() {
                 onCommitTitle={project.commitItemTitle}
                 onSetTitleAlign={project.handleSetItemTitleAlign}
                 onSelectItem={project.handleSelectItem}
-                focusToken={project.focusToken}
                 onCreateItem={project.handleCreateItem}
                 onLinkItems={project.handleLinkItems}
                 onTie={project.handleTie}
