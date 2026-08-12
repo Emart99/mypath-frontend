@@ -32,10 +32,6 @@ export default function EditorPage() {
   }, [connectionsPanelOpen]);
 
   const project = useProjectEditorState(projectId);
-  const [visibleStep, setVisibleStep] = useState<{ under: string; itemId: string } | undefined>(undefined);
-  const highlightedItemId = visibleStep && visibleStep.under === project.selectedItemId
-    ? visibleStep.itemId
-    : project.selectedItemId;
   const autoSave = useAutoSave({
     selectedItemId: project.selectedItemId,
     onOptimisticUpdate: project.updateItemContentLocally,
@@ -101,7 +97,7 @@ export default function EditorPage() {
             projectId={projectId}
             trails={project.trails}
             items={project.items}
-            selectedItemId={highlightedItemId}
+            selectedItemId={project.selectedItemId}
             onSelectItem={project.handleSelectItem}
             onCreateTrail={project.handleCreateTrail}
             onCreateItem={project.handleCreateItem}
@@ -151,7 +147,7 @@ export default function EditorPage() {
                 onCommitTitle={project.commitItemTitle}
                 onSetTitleAlign={project.handleSetItemTitleAlign}
                 onSelectItem={project.handleSelectItem}
-                onVisibleStep={(itemId) => setVisibleStep({ under: project.selectedItem!.id, itemId })}
+                focusToken={project.focusToken}
                 onCreateItem={project.handleCreateItem}
                 onLinkItems={project.handleLinkItems}
                 onTie={project.handleTie}
