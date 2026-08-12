@@ -149,7 +149,7 @@ export function WriteView({
                       }}
                     >
                       {i > 0 && trail && (
-                        <div className="trail-divider mt-4 border-y border-border pl-7">
+                        <div className="trail-divider mt-4">
                           <TrailConnector
                             conn={conn}
                             annotation={step.annotation}

@@ -48,8 +48,6 @@
   --trail-divider-bleed: calc(2.6316% + 48px);
   margin-left: calc(-1 * var(--trail-divider-bleed));
   margin-right: calc(-1 * var(--trail-divider-bleed));
-  padding-left: var(--trail-divider-bleed);
-  padding-right: var(--trail-divider-bleed);
 }
 
 .editor-content-column .editor-input {

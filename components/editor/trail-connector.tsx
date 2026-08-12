@@ -42,7 +42,7 @@ function AnnotationEditor({ annotation, onSave }: { annotation: string | null; o
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="mt-1 flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+        className="mx-auto flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
       >
         <Plus className="h-3.5 w-3.5" />
         Add annotation
@@ -52,7 +52,7 @@ function AnnotationEditor({ annotation, onSave }: { annotation: string | null; o
   return (
     <p
       onClick={() => setEditing(true)}
-      className="mt-1 cursor-text whitespace-pre-wrap text-[15px] italic leading-relaxed text-foreground/90"
+      className="cursor-text whitespace-pre-wrap text-[15px] italic leading-relaxed text-foreground/90"
     >
       {current}
     </p>
@@ -65,29 +65,26 @@ export function TrailConnector({ conn, annotation, onSaveAnnotation }: TrailConn
   const color = conn ? `var(${ASSOCIATION_COLOR_VAR[conn.type]})` : undefined;
 
   return (
-    <div className="flex gap-3 py-4 pl-1">
-      <div className="flex flex-col items-center">
-        <span className="h-3 w-px bg-border" style={{ backgroundColor: color }} />
+    <div className="py-5">
+      <div className="flex items-center gap-3">
+        <span className="h-px flex-1 bg-border" />
         <span
-          className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-border text-foreground"
-          style={{ borderColor: color, color }}
-        >
-          <BridgeIcon className="h-3.5 w-3.5" />
-        </span>
-        <span className="mt-1 h-3 w-px bg-border" style={{ backgroundColor: color }} />
-      </div>
-      <div className="min-w-0 flex-1 pt-1">
-        <p
-          className={`text-[11px] font-medium uppercase tracking-[0.1em] ${conn ? "text-foreground" : "text-muted-foreground"}`}
+          className={`flex shrink-0 items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.1em] ${
+            conn ? "text-foreground" : "text-muted-foreground"
+          }`}
           style={{ color }}
         >
+          <BridgeIcon className="h-3.5 w-3.5" />
           {meta ? `${meta.label} ${conn?.targetTitle ?? ""}`.trim() : "deliberate jump"}
-        </p>
+        </span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <div className="mx-auto mt-2 max-w-[560px] px-4 text-center">
         {onSaveAnnotation ? (
           <AnnotationEditor annotation={annotation} onSave={onSaveAnnotation} />
         ) : (
           annotation?.trim() && (
-            <p className="mt-1 text-[15px] italic leading-relaxed text-foreground/90">{annotation}</p>
+            <p className="text-[15px] italic leading-relaxed text-foreground/90">{annotation}</p>
           )
         )}
       </div>
