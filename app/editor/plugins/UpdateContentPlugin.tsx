@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useEffect, useRef } from 'react';
-import { CLEAR_EDITOR_COMMAND, CLEAR_HISTORY_COMMAND } from 'lexical';
+import { $createParagraphNode, $getRoot, CLEAR_HISTORY_COMMAND } from 'lexical';
 
 export default function UpdateContentPlugin({
     content,
@@ -25,7 +25,9 @@ export default function UpdateContentPlugin({
                     const initialEditorState = editor.parseEditorState(content);
                     editor.setEditorState(initialEditorState);
                 } else {
-                    editor.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
+                    const root = $getRoot();
+                    root.clear();
+                    root.append($createParagraphNode());
                 }
             });
             editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
