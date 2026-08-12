@@ -246,7 +246,7 @@ export function WriteView({
                   );
                 })}
                 {inTrail && trail && (
-                  <div className="mt-20 flex justify-center">
+                  <div className="mt-40 flex justify-center">
                     <button
                       type="button"
                       onClick={() => onCreateItem(trail.id, 'Untitled')}
