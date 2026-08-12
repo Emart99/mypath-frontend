@@ -246,8 +246,7 @@ export function WriteView({
                   );
                 })}
                 {inTrail && trail && (
-                  <div className="trail-divider mt-4 flex items-center gap-3">
-                    <span className="h-px flex-1 bg-border" />
+                  <div className="mt-20 flex justify-center">
                     <button
                       type="button"
                       onClick={() => onCreateItem(trail.id, 'Untitled')}
@@ -259,7 +258,6 @@ export function WriteView({
                         ⌘↵
                       </kbd>
                     </button>
-                    <span className="h-px flex-1 bg-border" />
                   </div>
                 )}
                 <HistoryPlugin />
