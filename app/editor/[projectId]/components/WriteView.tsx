@@ -147,7 +147,7 @@ export function WriteView({
             />
             <hr/>
             <div className="editor-inner" ref={editorInnerRef}>
-              <div className={`editor-content-column${stacked ? ' pb-16' : ''}`} ref={setBlockAnchor}>
+              <div className="editor-content-column" ref={setBlockAnchor}>
                 {steps.map((step, i) => {
                   const stepItem = items[step.itemId];
                   if (!stepItem) return null;
@@ -246,7 +246,7 @@ export function WriteView({
                   );
                 })}
                 {inTrail && trail && (
-                  <div className="mt-40 flex justify-center">
+                  <div className="mt-20 flex justify-center">
                     <button
                       type="button"
                       onClick={() => onCreateItem(trail.id, 'Untitled')}
