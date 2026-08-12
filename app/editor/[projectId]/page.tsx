@@ -108,6 +108,7 @@ export default function EditorPage() {
             onDeleteTrail={project.handleDeleteTrail}
             onUnlinkItemFromTrail={project.handleUnlinkItemFromTrail}
             onDeleteItem={project.handleDeleteItem}
+            onReorderTrailItems={project.handleReorderTrailItems}
           />
         }
         content={
@@ -146,6 +147,7 @@ export default function EditorPage() {
                 onCommitTitle={project.commitItemTitle}
                 onSetTitleAlign={project.handleSetItemTitleAlign}
                 onSelectItem={project.handleSelectItem}
+                onCreateItem={project.handleCreateItem}
                 onLinkItems={project.handleLinkItems}
                 onTie={project.handleTie}
                 onUntie={project.handleUntie}

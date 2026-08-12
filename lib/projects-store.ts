@@ -318,6 +318,13 @@ export async function createTrail(projectId: string, title: string): Promise<Tra
   };
 }
 
+export async function reorderTrailItems(trailId: string, itemIds: string[]): Promise<void> {
+  await apiVoid(`/api/trail/${trailId}/item/order`, {
+    method: "PUT",
+    json: { itemIds: itemIds.map(Number) },
+  });
+}
+
 export async function updateStep(
   trailId: string,
   itemId: string,

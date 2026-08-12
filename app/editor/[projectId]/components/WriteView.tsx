@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Plus } from 'lucide-react';
 import type { EditorState } from 'lexical';
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -52,6 +53,7 @@ interface WriteViewProps {
   onCommitTitle: (itemId: string, currentTitle: string, nextValue: string) => void;
   onSetTitleAlign: (itemId: string, titleAlign: TitleAlign) => void;
   onSelectItem: (item: Item) => void;
+  onCreateItem: (trailId: string, title: string) => void;
   onLinkItems: (itemId: string, otherItemId: string) => void;
   onTie: (itemId: string, targetId: string, targetType: AssociationTargetType, type: AssociationType) => void;
   onUntie: (itemId: string, targetId: string, targetType: AssociationTargetType) => void;
@@ -75,6 +77,7 @@ export function WriteView({
   onCommitTitle,
   onSetTitleAlign,
   onSelectItem,
+  onCreateItem,
   onLinkItems,
   onTie,
   onUntie,
@@ -90,10 +93,23 @@ export function WriteView({
   const slotRefs = useRef(new Map<string, HTMLDivElement>());
   const preserveScrollRef = useRef<number | null>(null);
 
-  const steps = trail?.itemIds.includes(item.id)
+  const inTrail = !!trail?.itemIds.includes(item.id);
+  const steps = inTrail && trail
     ? trail.steps
     : [{ itemId: item.id, annotation: null, associationId: null }];
   const stacked = steps.length > 1;
+
+  useEffect(() => {
+    if (!inTrail || !trail) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' || !(event.metaKey || event.ctrlKey)) return;
+      if (!editorInnerRef.current?.contains(document.activeElement)) return;
+      event.preventDefault();
+      onCreateItem(trail.id, 'Untitled');
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [inTrail, trail, onCreateItem]);
 
   useEffect(() => {
     const el = editorInnerRef.current;
@@ -229,6 +245,23 @@ export function WriteView({
                     </div>
                   );
                 })}
+                {inTrail && trail && (
+                  <div className="trail-divider mt-4 flex items-center gap-3">
+                    <span className="h-px flex-1 bg-border" />
+                    <button
+                      type="button"
+                      onClick={() => onCreateItem(trail.id, 'Untitled')}
+                      className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add next step
+                      <kbd className="ml-1 rounded border border-border px-1 font-sans text-[10px] normal-case tracking-normal">
+                        ⌘↵
+                      </kbd>
+                    </button>
+                    <span className="h-px flex-1 bg-border" />
+                  </div>
+                )}
                 <HistoryPlugin />
                 <AutoFocusPlugin key={item.id} />
                 <ListPlugin />

@@ -17,6 +17,7 @@ import {
   attachItemToTrail,
   detachItemFromTrail,
   updateStep,
+  reorderTrailItems,
   tie,
   untie,
   type ProjectVisibility,
@@ -196,6 +197,29 @@ export function useProjectEditorState(projectId: string) {
     }
     if (selectItemRequestRef.current !== requestId) return;
     setSelectedItemId(item.id);
+  };
+
+  const handleReorderTrailItems = async (trailId: string, itemIds: string[]) => {
+    const previous = trails.find((trail) => trail.id === trailId);
+    if (!previous) return;
+    setTrails((prev) => prev.map((trail) => {
+      if (trail.id !== trailId) return trail;
+      const stepByItemId = new Map(trail.steps.map((step) => [step.itemId, step]));
+      const steps = itemIds.flatMap((itemId) => {
+        const step = stepByItemId.get(itemId);
+        return step ? [step] : [];
+      });
+      if (steps.length !== trail.steps.length) return trail;
+      return { ...trail, itemIds, steps };
+    }));
+    try {
+      await reorderTrailItems(trailId, itemIds);
+    } catch (err) {
+      console.error(err);
+      setTrails((prev) => prev.map((trail) =>
+        trail.id === trailId ? { ...trail, itemIds: previous.itemIds, steps: previous.steps } : trail
+      ));
+    }
   };
 
   const handleCreateTrail = async (title: string) => {
@@ -413,6 +437,7 @@ export function useProjectEditorState(projectId: string) {
     commitItemTitle,
     handleSetItemTitleAlign,
     handleSelectItem,
+    handleReorderTrailItems,
     handleCreateTrail,
     handleCreateItem,
     handleLinkItemToTrail,

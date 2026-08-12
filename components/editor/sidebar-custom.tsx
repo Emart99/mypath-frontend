@@ -43,6 +43,7 @@ interface SidebarCustomProps {
   onDeleteTrail: (trailId: string) => void;
   onUnlinkItemFromTrail: (trailId: string, itemId: string) => void;
   onDeleteItem: (itemId: string) => void;
+  onReorderTrailItems: (trailId: string, itemIds: string[]) => void;
 }
 
 function InlineInput({
@@ -125,6 +126,7 @@ export function SidebarCustom({
   onDeleteTrail,
   onUnlinkItemFromTrail,
   onDeleteItem,
+  onReorderTrailItems,
 }: SidebarCustomProps) {
   const { state } = useSidebar();
   const [query, setQuery] = useState("");
@@ -148,6 +150,22 @@ export function SidebarCustom({
     description: string;
     onConfirm: () => void;
   } | null>(null);
+
+  const [drag, setDrag] = useState<{ trailId: string; itemId: string; overIndex: number | null } | null>(null);
+
+  const commitDrag = (trail: Trail) => {
+    if (!drag || drag.trailId !== trail.id || drag.overIndex === null) {
+      setDrag(null);
+      return;
+    }
+    const from = trail.itemIds.indexOf(drag.itemId);
+    setDrag(null);
+    if (from < 0 || from === drag.overIndex) return;
+    const next = [...trail.itemIds];
+    next.splice(from, 1);
+    next.splice(drag.overIndex, 0, drag.itemId);
+    onReorderTrailItems(trail.id, next);
+  };
 
   const trailsForItem = (itemId: string) => trails.filter(trail => trail.itemIds.includes(itemId));
   const allItems = Object.values(items);
@@ -487,7 +505,30 @@ export function SidebarCustom({
                                     const addableTrails = trails.filter((t) => !t.itemIds.includes(item.id));
 
                                     return (
-                                      <SidebarMenuSubItem key={item.id} className="group/item">
+                                      <SidebarMenuSubItem
+                                        key={item.id}
+                                        draggable={editingItemId !== item.id}
+                                        onDragStart={(e) => {
+                                          e.dataTransfer.effectAllowed = "move";
+                                          setDrag({ trailId: trail.id, itemId: item.id, overIndex: null });
+                                        }}
+                                        onDragOver={(e) => {
+                                          if (!drag || drag.trailId !== trail.id) return;
+                                          e.preventDefault();
+                                          e.dataTransfer.dropEffect = "move";
+                                          if (drag.overIndex !== index) setDrag({ ...drag, overIndex: index });
+                                        }}
+                                        onDrop={(e) => {
+                                          e.preventDefault();
+                                          commitDrag(trail);
+                                        }}
+                                        onDragEnd={() => setDrag(null)}
+                                        className={`group/item ${
+                                          drag && drag.trailId === trail.id && drag.overIndex === index
+                                            ? "border-t-2 border-primary"
+                                            : "border-t-2 border-transparent"
+                                        } ${drag?.itemId === item.id ? "opacity-40" : ""}`}
+                                      >
                                         {editingItemId === item.id ? (
                                           <InlineInput
                                             value={editingItemTitle}
