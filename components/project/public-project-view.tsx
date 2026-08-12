@@ -9,7 +9,7 @@ import { LexicalReadOnly } from "@/components/project/lexical-read-only"
 import { ProjectShell } from "@/components/editor/project-shell"
 import { TrailConnector } from "@/components/editor/trail-connector"
 import { GraphView } from "@/components/editor/graph-view"
-import { TrailView } from "@/components/editor/trail-view"
+import { OverviewView } from "@/components/editor/overview-view"
 import { VoteButton } from "@/components/social/vote-button"
 import { ForkButton } from "@/components/social/fork-button"
 import { BookmarkButton } from "@/components/social/bookmark-button"
@@ -76,7 +76,7 @@ export function PublicProjectView({
   const allItems = [...project.trails.flatMap((trail) => trail.items), ...project.looseItems]
   const [selectedItem, setSelectedItem] = useState<PublicItem | undefined>(allItems[0])
   const [activeTrailId, setActiveTrailId] = useState<string | undefined>(project.trails[0]?.id)
-  const [view, setView] = useState<'content' | 'trail' | 'graph'>('content')
+  const [view, setView] = useState<'content' | 'overview' | 'graph'>('content')
   const [commentCount, setCommentCount] = useState(project.commentCount)
 
   const { trails, items } = useMemo(() => toEditorShape(project), [project])
@@ -222,13 +222,13 @@ export function PublicProjectView({
           )}
           {activeTrail && (
             <Button
-              variant={view === 'trail' ? 'secondary' : 'ghost'}
+              variant={view === 'overview' ? 'secondary' : 'ghost'}
               size="lg"
-              onClick={() => setView((v) => (v === 'trail' ? 'content' : 'trail'))}
-              title="Read this trail as a narrated sequence"
+              onClick={() => setView((v) => (v === 'overview' ? 'content' : 'overview'))}
+              title="See the whole trail at a glance"
             >
               <Route className="h-[15px] w-[15px]" />
-              Trail
+              Overview
             </Button>
           )}
           {isLoggedIn ? (
@@ -274,8 +274,8 @@ export function PublicProjectView({
               onSelectItem={handleSelectMappedItem}
               onClose={() => setView('content')}
             />
-          ) : view === 'trail' ? (
-            <TrailView
+          ) : view === 'overview' ? (
+            <OverviewView
               trail={activeTrail}
               items={items}
               associationById={associationById}

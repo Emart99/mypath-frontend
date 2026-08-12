@@ -83,8 +83,8 @@ interface EditorActionsProps {
   showWordCount: boolean;
   textStats: { words: number; characters: number };
   hasActiveTrail: boolean;
-  trailViewActive: boolean;
-  onToggleTrailView: () => void;
+  overviewActive: boolean;
+  onToggleOverview: () => void;
   projectId: string;
   profile: { username: string; imageUrl: string | null } | null;
 }
@@ -93,8 +93,8 @@ export function EditorActions({
   showWordCount,
   textStats,
   hasActiveTrail,
-  trailViewActive,
-  onToggleTrailView,
+  overviewActive,
+  onToggleOverview,
   projectId,
   profile,
 }: EditorActionsProps) {
@@ -107,14 +107,14 @@ export function EditorActions({
       )}
       {hasActiveTrail && (
         <Button
-          data-tour="trail-toggle"
-          variant={trailViewActive ? 'secondary' : 'ghost'}
+          data-tour="overview-toggle"
+          variant={overviewActive ? 'secondary' : 'ghost'}
           size="lg"
-          onClick={onToggleTrailView}
-          title="Read this trail as a narrated sequence"
+          onClick={onToggleOverview}
+          title="See the whole trail at a glance"
         >
           <Route className="h-[15px] w-[15px]" />
-          Trail
+          Overview
         </Button>
       )}
       <Button data-tour="share" variant="secondary" size="lg" asChild>

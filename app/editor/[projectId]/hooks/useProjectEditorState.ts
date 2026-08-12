@@ -48,7 +48,7 @@ export function useProjectEditorState(projectId: string) {
   const [items, setItems] = useState<Record<string, Item>>({});
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const [activeTrailId, setActiveTrailId] = useState<string | undefined>(undefined);
-  const [view, setView] = useState<'write' | 'trail' | 'graph'>('write');
+  const [view, setView] = useState<'write' | 'overview' | 'graph'>('write');
   const [profile, setProfile] = useState<{ username: string; imageUrl: string | null } | null>(null);
 
   useEffect(() => {

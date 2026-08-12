@@ -33,10 +33,10 @@ const TOUR_STEPS = [
     },
   },
   {
-    element: '[data-tour="trail-toggle"]',
+    element: '[data-tour="overview-toggle"]',
     popover: {
-      title: 'Trail view',
-      description: 'Switch to Trail view to read the trail as a narrated sequence.',
+      title: 'Overview',
+      description: 'Switch to Overview to see the whole trail at a glance.',
     },
   },
   {

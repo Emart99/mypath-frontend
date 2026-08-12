@@ -12,7 +12,7 @@ import { useAutoSave } from './hooks/useAutoSave';
 import { useEditorTour } from './hooks/useEditorTour';
 import { EditorTitleSlot, EditorActions } from './components/EditorHeader';
 import { WriteView } from './components/WriteView';
-import { TrailView } from '@/components/editor/trail-view';
+import { OverviewView } from '@/components/editor/overview-view';
 import { GraphView } from '@/components/editor/graph-view';
 
 export default function EditorPage() {
@@ -85,8 +85,8 @@ export default function EditorPage() {
             showWordCount={project.view === 'write' && !!project.selectedItem}
             textStats={textStats}
             hasActiveTrail={!!project.activeTrail}
-            trailViewActive={project.view === 'trail'}
-            onToggleTrailView={() => project.setView((v) => (v === 'trail' ? 'write' : 'trail'))}
+            overviewActive={project.view === 'overview'}
+            onToggleOverview={() => project.setView((v) => (v === 'overview' ? 'write' : 'overview'))}
             projectId={projectId}
             profile={project.profile}
           />
@@ -122,8 +122,8 @@ export default function EditorPage() {
                 onSelectItem={project.handleSelectItem}
                 onClose={() => project.setView('write')}
               />
-            ) : project.view === 'trail' ? (
-              <TrailView
+            ) : project.view === 'overview' ? (
+              <OverviewView
                 trail={project.activeTrail}
                 items={project.items}
                 associationById={project.associationById}

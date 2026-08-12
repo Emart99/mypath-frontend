@@ -5,10 +5,9 @@ import { Plus } from "lucide-react"
 
 import { Association, Item, Trail } from "@/app/editor/types"
 import { bridgeTies } from "@/app/editor/associations"
-import { collectPlainText } from "@/app/editor/editor-utils"
 import { TrailConnector } from "@/components/editor/trail-connector"
 
-interface TrailReaderProps {
+interface OverviewReaderProps {
   trail: Trail;
   items: Record<string, Item>;
   associationById: Map<string, Association>;
@@ -56,17 +55,7 @@ function TrailDescriptionEditor({ trailId, description, onSave }: { trailId: str
   );
 }
 
-function excerpt(content: string | null): string {
-  if (!content) return "";
-  try {
-    const joined = collectPlainText(content).join(" ").trim();
-    return joined.length > 180 ? `${joined.slice(0, 179)}…` : joined;
-  } catch {
-    return "";
-  }
-}
-
-export function TrailReader({ trail, items, associationById, selectedItemId, onSelectItem, onSetDescription }: TrailReaderProps) {
+export function OverviewReader({ trail, items, associationById, selectedItemId, onSelectItem, onSetDescription }: OverviewReaderProps) {
   return (
     <div className="flex-1 overflow-y-auto rounded-2xl bg-popover">
       <div className="mx-auto max-w-[640px] px-5 py-10">
@@ -114,9 +103,6 @@ export function TrailReader({ trail, items, associationById, selectedItemId, onS
                     Step {i + 1}
                   </span>
                   <span className="mt-0.5 block font-display text-[22px] font-medium leading-tight">{item.title}</span>
-                  {excerpt(item.content) && (
-                    <span className="mt-1 block text-sm text-muted-foreground">{excerpt(item.content)}</span>
-                  )}
                 </button>
               </div>
             );

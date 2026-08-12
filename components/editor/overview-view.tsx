@@ -1,8 +1,8 @@
 import { X } from 'lucide-react';
-import { TrailReader } from '@/components/editor/trail-reader';
+import { OverviewReader } from '@/components/editor/overview-reader';
 import { Trail, Item, Association } from '@/app/editor/types';
 
-interface TrailViewProps {
+interface OverviewViewProps {
   trail: Trail | undefined;
   items: Record<string, Item>;
   associationById: Map<string, Association>;
@@ -13,7 +13,7 @@ interface TrailViewProps {
   emptyState: React.ReactNode;
 }
 
-export function TrailView({
+export function OverviewView({
   trail,
   items,
   associationById,
@@ -22,7 +22,7 @@ export function TrailView({
   onSetDescription,
   onClose,
   emptyState,
-}: TrailViewProps) {
+}: OverviewViewProps) {
   if (!trail || trail.itemIds.length === 0) {
     return emptyState;
   }
@@ -31,12 +31,12 @@ export function TrailView({
       <button
         type="button"
         onClick={onClose}
-        title="Close trail"
+        title="Close overview"
         className="absolute top-6 right-6 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-elevation-1 hover:bg-muted"
       >
         <X className="h-4 w-4" />
       </button>
-      <TrailReader
+      <OverviewReader
         trail={trail}
         items={items}
         associationById={associationById}
