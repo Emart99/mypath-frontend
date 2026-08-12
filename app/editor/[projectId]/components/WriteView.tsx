@@ -38,6 +38,7 @@ import { ConnectionsPanel } from '@/components/editor/connections-panel';
 import { TrailConnector } from '@/components/editor/trail-connector';
 import { LexicalReadOnly } from '@/components/project/lexical-read-only';
 import { bridgeTies } from '../../associations';
+import { useScrollSpy } from '@/hooks/use-scroll-spy';
 import { Trail, Item, TitleAlign, Association, AssociationType, AssociationTargetType } from '../../types';
 
 interface WriteViewProps {
@@ -53,6 +54,7 @@ interface WriteViewProps {
   onCommitTitle: (itemId: string, currentTitle: string, nextValue: string) => void;
   onSetTitleAlign: (itemId: string, titleAlign: TitleAlign) => void;
   onSelectItem: (item: Item) => void;
+  onVisibleStep: (itemId: string) => void;
   onCreateItem: (trailId: string, title: string) => void;
   onLinkItems: (itemId: string, otherItemId: string) => void;
   onTie: (itemId: string, targetId: string, targetType: AssociationTargetType, type: AssociationType) => void;
@@ -77,6 +79,7 @@ export function WriteView({
   onCommitTitle,
   onSetTitleAlign,
   onSelectItem,
+  onVisibleStep,
   onCreateItem,
   onLinkItems,
   onTie,
@@ -126,6 +129,14 @@ export function WriteView({
       else el.scrollTop = 0;
     }));
   }, [item.id, stacked, contentReady]);
+
+  useScrollSpy({
+    root: editorInnerRef,
+    slots: slotRefs,
+    ids: steps.map((step) => step.itemId),
+    enabled: stacked,
+    onVisible: onVisibleStep,
+  });
 
   const activateItem = (target: Item) => {
     if (target.id === item.id) return;

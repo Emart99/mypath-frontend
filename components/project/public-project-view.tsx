@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 import type { PublicItem, PublicProject } from "@/lib/public-project"
 import type { Association, Item, Trail } from "@/app/editor/types"
 import { bridgeTies } from "@/app/editor/associations"
+import { useScrollSpy } from "@/hooks/use-scroll-spy"
 
 function toEditorShape(project: PublicProject): { trails: Trail[]; items: Record<string, Item> } {
   const items: Record<string, Item> = {};
@@ -98,10 +99,12 @@ export function PublicProjectView({
 
   const columnRef = useRef<HTMLDivElement>(null)
   const slotRefs = useRef(new Map<string, HTMLDivElement>())
+  const shouldScrollRef = useRef(false)
 
   useEffect(() => {
     const el = columnRef.current
-    if (!el || !selectedItem) return
+    if (!el || !selectedItem || !shouldScrollRef.current) return
+    shouldScrollRef.current = false
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const slot = slotRefs.current.get(selectedItem.id)
       if (slot && stacked) slot.scrollIntoView({ block: 'start' })
@@ -109,7 +112,20 @@ export function PublicProjectView({
     }))
   }, [selectedItem, stacked])
 
+  useScrollSpy({
+    root: columnRef,
+    slots: slotRefs,
+    ids: steps.map((step) => step.itemId),
+    enabled: stacked && view === 'content',
+    onVisible: (itemId) => {
+      if (itemId === selectedItem?.id) return
+      const item = allItems.find((candidate) => candidate.id === itemId)
+      if (item) setSelectedItem(item)
+    },
+  })
+
   const handleSelectItem = (item: PublicItem) => {
+    shouldScrollRef.current = true
     setSelectedItem(item)
     setView('content')
     setActiveTrailId((prev) => {
@@ -300,7 +316,8 @@ export function PublicProjectView({
                             onClick={(e) => {
                               if (isActive) return
                               if ((e.target as HTMLElement).closest('a')) return
-                              handleItemLinkClick(step.itemId)
+                              const target = allItems.find((candidate) => candidate.id === step.itemId)
+                              if (target) setSelectedItem(target)
                             }}
                             className={stacked && !isActive ? 'group cursor-pointer' : undefined}
                           >
