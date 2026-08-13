@@ -38,21 +38,44 @@ function loadAbcjs() {
   return abcjsModule;
 }
 
+const RENDER_PARAMS = {
+  ariaLabel: '',
+  foregroundColor: 'currentColor',
+  paddingtop: 0,
+  paddingbottom: 0,
+  paddingleft: 0,
+  paddingright: 0,
+} as const;
+
+function naturalWidth(abcjs: typeof import('abcjs'), abc: string): number {
+  const widths = abcjs
+    .tuneMetrics(abc, RENDER_PARAMS)
+    .flatMap((tune) => tune.sections.map((section) => section.left + section.total));
+  return widths.length === 0 ? 0 : Math.ceil(Math.max(...widths));
+}
+
+function fitToDrawing(svg: SVGSVGElement) {
+  const drawn = svg.getBBox();
+  if (drawn.width === 0) return;
+  const height = svg.getAttribute('height') ?? String(drawn.height);
+  svg.setAttribute('viewBox', `${drawn.x} 0 ${drawn.width} ${height}`);
+  svg.setAttribute('width', String(Math.ceil(drawn.width)));
+}
+
 function renderScore(
   abcjs: typeof import('abcjs'),
   target: HTMLElement,
   abc: string,
 ): string[] {
-  const [tune] = abcjs.renderAbc(target, abc, {
-    ariaLabel: '',
-    responsive: 'resize',
-    foregroundColor: 'currentColor',
-    paddingtop: 0,
-    paddingbottom: 0,
-    paddingleft: 0,
-    paddingright: 0,
-  });
+  const staffwidth = naturalWidth(abcjs, abc);
+  const [tune] = abcjs.renderAbc(
+    target,
+    abc,
+    staffwidth > 0 ? { ...RENDER_PARAMS, staffwidth } : RENDER_PARAMS,
+  );
   target.querySelectorAll('style').forEach((node) => node.remove());
+  const svg = target.querySelector('svg');
+  if (svg !== null) fitToDrawing(svg);
   return tune?.warnings ?? [];
 }
 
@@ -87,6 +110,7 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
   const [draft, setDraft] = useState(() => (abc === '' ? DEFAULT_ABC : abc));
   const [warnings, setWarnings] = useState<string[]>([]);
   const scoreRef = useRef<HTMLDivElement | null>(null);
+  const scoreBoxRef = useRef<HTMLDivElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const exitEdgeRef = useRef<Edge | null>(null);
@@ -221,7 +245,7 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
       editor.registerCommand(
         CLICK_COMMAND,
         (event: MouseEvent) => {
-          if (scoreRef.current === null || !scoreRef.current.contains(event.target as Node)) {
+          if (scoreBoxRef.current === null || !scoreBoxRef.current.contains(event.target as Node)) {
             return false;
           }
           if (event.detail >= 2) {
@@ -275,7 +299,9 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
           placeholder={DEFAULT_ABC}
           aria-label="Notación ABC"
         />
-        <div className="editor-music-preview" ref={previewRef} aria-hidden />
+        <div className="editor-music-preview" aria-hidden>
+          <div ref={previewRef} />
+        </div>
         {warnings.length > 0 && (
           <div className="editor-music-error">{warnings.join('\n')}</div>
         )}
@@ -286,11 +312,13 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
   return (
     <div
       key="rendered"
-      ref={scoreRef}
+      ref={scoreBoxRef}
       role="img"
       aria-label="Partitura"
       className={isSelected ? 'editor-music-rendered selected' : 'editor-music-rendered'}
       onDoubleClick={() => startEditing()}
-    />
+    >
+      <div ref={scoreRef} />
+    </div>
   );
 }
