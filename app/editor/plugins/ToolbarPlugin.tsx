@@ -2,6 +2,7 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { mergeRegister, $getNearestNodeOfType } from '@lexical/utils';
 import {
+  $getNodeByKey,
   $getSelection,
   $isElementNode,
   $isRangeSelection,
@@ -31,7 +32,13 @@ import {
   $isListNode,
   ListNode,
 } from '@lexical/list';
-import { $createCodeNode } from '@lexical/code';
+import {
+  $createCodeNode,
+  $isCodeNode,
+  CODE_LANGUAGE_MAP,
+  getCodeLanguageOptions,
+  getLanguageFriendlyName,
+} from '@lexical/code';
 import {
   $isLinkNode,
   TOGGLE_LINK_COMMAND,
@@ -144,6 +151,8 @@ const LIST_OPTIONS = [
   { type: 'number', label: 'Numbered List', tooltip: 'Numbered list', Icon: ListOrdered, command: INSERT_ORDERED_LIST_COMMAND },
   { type: 'check', label: 'Check List', tooltip: 'Check list', Icon: CheckSquare, command: INSERT_CHECK_LIST_COMMAND },
 ] as const;
+
+const CODE_LANGUAGE_OPTIONS = getCodeLanguageOptions();
 
 const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 72;
@@ -279,6 +288,8 @@ export default function ToolbarPlugin({
   const [textColor, setTextColor] = useState('');
   const [elementFormat, setElementFormat] = useState<ElementFormat>('left');
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [codeLanguage, setCodeLanguage] = useState('plain');
+  const [codeElementKey, setCodeElementKey] = useState<string | null>(null);
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -300,6 +311,13 @@ export default function ToolbarPlugin({
             ? element.getTag()
             : element.getType();
           setBlockType(type);
+        }
+        if ($isCodeNode(element)) {
+          const language = element.getLanguage() ?? '';
+          setCodeLanguage(CODE_LANGUAGE_MAP[language] || language || 'plain');
+          setCodeElementKey(elementKey);
+        } else {
+          setCodeElementKey(null);
         }
         if ($isElementNode(element)) {
           const format = element.getFormatType();
@@ -461,6 +479,17 @@ export default function ToolbarPlugin({
   const formatQuote = () => {
     if (blockType !== 'quote') setBlock($createQuoteNode);
   };
+
+  const setCodeLanguageOn = useCallback(
+    (language: string) => {
+      if (codeElementKey === null) return;
+      editor.update(() => {
+        const node = $getNodeByKey(codeElementKey);
+        if ($isCodeNode(node)) node.setLanguage(language);
+      });
+    },
+    [codeElementKey, editor],
+  );
 
   const formatCode = () => {
     setBlock(blockType === 'code' ? $createParagraphNode : () => $createCodeNode('plain'));
@@ -697,6 +726,25 @@ export default function ToolbarPlugin({
         active={blockType === 'code'}
         onClick={formatCode}
       />
+      {blockType === 'code' && (
+        <DropdownMenu>
+          <ToolbarMenuButton
+            label="Code language"
+            tooltip="Code language"
+            className="toolbar-item align-dropdown-trigger spaced"
+          >
+            <span className="toolbar-code-language">{getLanguageFriendlyName(codeLanguage)}</span>
+            <ChevronDown size={12} />
+          </ToolbarMenuButton>
+          <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">
+            {CODE_LANGUAGE_OPTIONS.map(([value, label]) => (
+              <DropdownMenuItem key={value} onSelect={() => setCodeLanguageOn(value)}>
+                {label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
       <input
         ref={fileInputRef}
         type="file"

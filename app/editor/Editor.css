@@ -519,6 +519,12 @@ div.editor-equation {
   outline: 2px solid var(--primary);
 }
 
+.toolbar-code-language {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
 .toolbar-table-picker {
   padding: 4px;
 }
