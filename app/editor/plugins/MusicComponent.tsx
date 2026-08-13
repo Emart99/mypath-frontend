@@ -336,7 +336,7 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
             }
           }}
           placeholder={DEFAULT_ABC}
-          aria-label="Notación ABC"
+          aria-label="ABC notation"
         />
         <div className="editor-music-preview" aria-hidden>
           <div ref={previewRef} />
@@ -353,7 +353,7 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
       key="rendered"
       ref={scoreBoxRef}
       role="img"
-      aria-label="Partitura"
+      aria-label="Music score"
       className={isSelected ? 'editor-music-rendered selected' : 'editor-music-rendered'}
       onDoubleClick={() => startEditing()}
     >

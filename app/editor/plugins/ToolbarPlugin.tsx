@@ -235,7 +235,7 @@ function TableSizePicker({ onPick }: { onPick: (rows: number, columns: number) =
           <button
             key={`${rows}x${columns}`}
             type="button"
-            aria-label={`Insertar tabla de ${rows} por ${columns}`}
+            aria-label={`Insert ${rows} by ${columns} table`}
             className={
               rows <= hovered.rows && columns <= hovered.columns
                 ? 'toolbar-table-cell filled'
@@ -248,7 +248,7 @@ function TableSizePicker({ onPick }: { onPick: (rows: number, columns: number) =
         ))}
       </div>
       <span className="toolbar-table-size" aria-live="polite">
-        {hovered.rows > 0 ? `${hovered.rows} × ${hovered.columns}` : 'Elegí el tamaño'}
+        {hovered.rows > 0 ? `${hovered.rows} × ${hovered.columns}` : 'Pick a size'}
       </span>
     </div>
   );
