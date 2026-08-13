@@ -38,16 +38,16 @@ interface EquationComponentProps {
 }
 
 const TEMPLATES: { label: string; title: string; latex: string; at: number; len: number }[] = [
-  { label: 'a/b', title: 'Fracción', latex: '\\frac{}{}', at: 6, len: 0 },
-  { label: '√', title: 'Raíz', latex: '\\sqrt{}', at: 6, len: 0 },
-  { label: 'x²', title: 'Potencia', latex: '^{}', at: 2, len: 0 },
-  { label: 'xᵢ', title: 'Subíndice', latex: '_{}', at: 2, len: 0 },
-  { label: 'Σ', title: 'Sumatoria', latex: '\\sum_{i=1}^{n} ', at: 15, len: 0 },
+  { label: 'a/b', title: 'Fraction', latex: '\\frac{}{}', at: 6, len: 0 },
+  { label: '√', title: 'Square root', latex: '\\sqrt{}', at: 6, len: 0 },
+  { label: 'x²', title: 'Superscript', latex: '^{}', at: 2, len: 0 },
+  { label: 'xᵢ', title: 'Subscript', latex: '_{}', at: 2, len: 0 },
+  { label: 'Σ', title: 'Summation', latex: '\\sum_{i=1}^{n} ', at: 15, len: 0 },
   { label: '∫', title: 'Integral', latex: '\\int_{a}^{b} ', at: 13, len: 0 },
-  { label: 'lim', title: 'Límite', latex: '\\lim_{x \\to 0} ', at: 15, len: 0 },
-  { label: '(⋯)', title: 'Matriz', latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', at: 16, len: 1 },
-  { label: '{', title: 'Función partida', latex: '\\begin{cases}  \\\\  \\end{cases}', at: 14, len: 0 },
-  { label: 'π', title: 'Letra griega', latex: '\\pi ', at: 1, len: 2 },
+  { label: 'lim', title: 'Limit', latex: '\\lim_{x \\to 0} ', at: 15, len: 0 },
+  { label: '(⋯)', title: 'Matrix', latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', at: 16, len: 1 },
+  { label: '{', title: 'Piecewise function', latex: '\\begin{cases}  \\\\  \\end{cases}', at: 14, len: 0 },
+  { label: 'π', title: 'Greek letter', latex: '\\pi ', at: 1, len: 2 },
 ];
 
 function renderKatex(target: HTMLElement, equation: string, inline: boolean): string | null {
