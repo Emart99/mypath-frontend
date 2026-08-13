@@ -92,7 +92,7 @@ export default function PublishPage() {
     thumbnailGraph,
     tags: tagList,
     modifiedDate: project.updatedAt,
-    publishedDate: visibility === "private" ? null : project.updatedAt,
+    publishedDate: project.visibility === "private" ? null : project.updatedAt,
     lastPublishedDate: null,
     voteCount: 0,
     votedByRequester: false,
@@ -213,7 +213,13 @@ export default function PublishPage() {
                     <span className="block text-[13px] font-medium">{option.label}</span>
                     <span className="block truncate text-[12px] text-muted-foreground">{option.description}</span>
                   </span>
-                  {isActive && <Check className="h-4 w-4 shrink-0" />}
+                  {isActive && (
+                    visibility === project.visibility ? (
+                      <Check className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <span className="shrink-0 text-[11px] text-muted-foreground">unsaved</span>
+                    )
+                  )}
                 </button>
               );
             })}
@@ -247,28 +253,29 @@ export default function PublishPage() {
           onError={setError}
         />
 
-        {error && <p className="text-xs text-destructive">{error}</p>}
-
-        <button
-          type="button"
-          onClick={handleConfirm}
-          disabled={isPublishing || justPublished}
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-foreground text-[14px] font-medium text-background shadow-elevation-2 disabled:opacity-60"
-        >
-          {isPublishing ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {confirmLabel === "publish" ? "Publishing..." : confirmLabel === "update" ? "Updating..." : "Saving..."}
-            </>
-          ) : justPublished ? (
-            <>
-              <Check className="h-4 w-4" />
-              {confirmLabel === "publish" ? "Published" : confirmLabel === "update" ? "Updated" : "Saved"}
-            </>
-          ) : (
-            confirmLabel === "publish" ? "Publish" : confirmLabel === "update" ? "Update" : "Save"
-          )}
-        </button>
+        <div className="sticky bottom-0 -mx-6 flex flex-col gap-2 bg-background px-6 pb-2 pt-3">
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={isPublishing || justPublished}
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-foreground text-[14px] font-medium text-background shadow-elevation-2 disabled:opacity-60"
+          >
+            {isPublishing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {confirmLabel === "publish" ? "Publishing..." : confirmLabel === "update" ? "Updating..." : "Saving..."}
+              </>
+            ) : justPublished ? (
+              <>
+                <Check className="h-4 w-4" />
+                {confirmLabel === "publish" ? "Published" : confirmLabel === "update" ? "Updated" : "Saved"}
+              </>
+            ) : (
+              confirmLabel === "publish" ? "Publish" : confirmLabel === "update" ? "Update" : "Save"
+            )}
+          </button>
+        </div>
 
         {shareUrl && visibility !== "private" && (
           <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2">
