@@ -59,7 +59,6 @@ export default function PublishPage() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [justPublished, setJustPublished] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
@@ -147,7 +146,6 @@ export default function PublishPage() {
         }
       }
       setProject({ ...project, visibility, description: description.trim() });
-      setShareUrl(visibility === "private" ? null : `${window.location.origin}/p/${projectId}`);
       setJustPublished(true);
       setTimeout(() => setJustPublished(false), 2000);
     } catch {
@@ -156,6 +154,11 @@ export default function PublishPage() {
       setIsPublishing(false);
     }
   };
+
+  const shareUrl =
+    project.visibility === "private" || typeof window === "undefined"
+      ? null
+      : `${window.location.origin}/p/${projectId}`;
 
   const copyShareUrl = async () => {
     if (!shareUrl) return;
@@ -277,7 +280,7 @@ export default function PublishPage() {
           </button>
         </div>
 
-        {shareUrl && visibility !== "private" && (
+        {shareUrl && (
           <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2">
             <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
               {shareUrl}
