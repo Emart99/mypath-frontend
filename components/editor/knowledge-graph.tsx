@@ -82,6 +82,7 @@ const ItemNodeComp = memo(function ItemNodeComp({ data }: NodeProps<ItemNode>) {
       <Handle type="source" position={Position.Top} id="ts" style={{ opacity: 0 }} />
       <Handle type="target" position={Position.Top} id="tt" style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Bottom} id="bs" style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Bottom} id="bt" style={{ opacity: 0 }} />
       <span className="pointer-events-none line-clamp-2 font-display">{data.title}</span>
     </div>
   );
@@ -228,6 +229,16 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
       }
     }
 
+    const drawn = new Set(outgoingFrom);
+    for (const [id, item] of Object.entries(items)) {
+      if (drawn.has(id)) continue;
+      for (const a of item.associations ?? []) {
+        if (a.targetType !== "ITEM" || !drawn.has(a.targetId)) continue;
+        assocs.push({ from: id, to: a.targetId, type: a.type });
+        addLoose(id);
+      }
+    }
+
     const spineEdges = hasTrailOrder
       ? spineIds.slice(0, -1).map((from, i) => ({ from, to: spineIds[i + 1] }))
       : [];
@@ -274,14 +285,15 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
     assocs.forEach(({ from, to, type }, i) => {
       const color = typeColor(type);
       const sameRow = pos.get(from)!.y === pos.get(to)!.y;
+      const sourceBelow = pos.get(from)!.y > pos.get(to)!.y;
       const span = Math.abs((col.get(to) ?? 0) - (col.get(from) ?? 0));
       es.push({
         id: `assoc-${from}-${to}-${i}`,
         source: from,
         target: to,
         type: "assoc",
-        sourceHandle: sameRow ? "ts" : "bs",
-        targetHandle: "tt",
+        sourceHandle: sameRow || sourceBelow ? "ts" : "bs",
+        targetHandle: sourceBelow ? "bt" : "tt",
         data: { label: ASSOCIATION_META[type].label, color, incident: incident(from, to), span },
         markerEnd: { type: MarkerType.ArrowClosed, color, width: 16, height: 16 },
       });
