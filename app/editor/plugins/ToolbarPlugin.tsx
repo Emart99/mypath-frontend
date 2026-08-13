@@ -74,6 +74,7 @@ import {
   Sigma,
   Radical,
   Music,
+  Table as TableIcon,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -87,6 +88,7 @@ import { OPEN_LINK_EDITOR_COMMAND } from './FloatingLinkEditorPlugin';
 import { OPEN_FIND_REPLACE_COMMAND } from './FindReplacePlugin';
 import { INSERT_EQUATION_COMMAND } from './EquationsPlugin';
 import { INSERT_MUSIC_COMMAND } from './MusicPlugin';
+import { INSERT_TABLE_COMMAND } from '@lexical/table';
 import { INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRuleNode';
 
 const COLOR_OPTIONS: { value: string; label: string }[] = [
@@ -212,6 +214,46 @@ function ToolbarMenuButton({
   );
 }
 
+const TABLE_PICKER_ROWS = 8;
+const TABLE_PICKER_COLUMNS = 8;
+
+function TableSizePicker({ onPick }: { onPick: (rows: number, columns: number) => void }) {
+  const [hovered, setHovered] = useState({ rows: 0, columns: 0 });
+  const cells = Array.from({ length: TABLE_PICKER_ROWS * TABLE_PICKER_COLUMNS }, (_, index) => ({
+    rows: Math.floor(index / TABLE_PICKER_COLUMNS) + 1,
+    columns: (index % TABLE_PICKER_COLUMNS) + 1,
+  }));
+
+  return (
+    <div className="toolbar-table-picker">
+      <div
+        className="toolbar-table-grid"
+        onMouseLeave={() => setHovered({ rows: 0, columns: 0 })}
+        style={{ gridTemplateColumns: `repeat(${TABLE_PICKER_COLUMNS}, 1fr)` }}
+      >
+        {cells.map(({ rows, columns }) => (
+          <button
+            key={`${rows}x${columns}`}
+            type="button"
+            aria-label={`Insertar tabla de ${rows} por ${columns}`}
+            className={
+              rows <= hovered.rows && columns <= hovered.columns
+                ? 'toolbar-table-cell filled'
+                : 'toolbar-table-cell'
+            }
+            onMouseEnter={() => setHovered({ rows, columns })}
+            onFocus={() => setHovered({ rows, columns })}
+            onClick={() => onPick(rows, columns)}
+          />
+        ))}
+      </div>
+      <span className="toolbar-table-size" aria-live="polite">
+        {hovered.rows > 0 ? `${hovered.rows} × ${hovered.columns}` : 'Elegí el tamaño'}
+      </span>
+    </div>
+  );
+}
+
 export default function ToolbarPlugin({
   projectId,
   titleFocused,
@@ -236,6 +278,7 @@ export default function ToolbarPlugin({
   const [fontSize, setFontSize] = useState('15');
   const [textColor, setTextColor] = useState('');
   const [elementFormat, setElementFormat] = useState<ElementFormat>('left');
+  const [tableMenuOpen, setTableMenuOpen] = useState(false);
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -622,6 +665,23 @@ export default function ToolbarPlugin({
         disabled={blockType === 'code'}
         onClick={() => editor.dispatchCommand(INSERT_MUSIC_COMMAND, undefined)}
       />
+      <DropdownMenu open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
+        <ToolbarMenuButton label="Insert Table" tooltip="Insert table" className="toolbar-item spaced">
+          <TableIcon size={18} />
+        </ToolbarMenuButton>
+        <DropdownMenuContent align="start">
+          <TableSizePicker
+            onPick={(rows, columns) => {
+              setTableMenuOpen(false);
+              editor.dispatchCommand(INSERT_TABLE_COMMAND, {
+                rows: String(rows),
+                columns: String(columns),
+                includeHeaders: { rows: true, columns: false },
+              });
+            }}
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Divider />
       <ToolbarButton
         label={INLINE_CODE_FORMAT.label}

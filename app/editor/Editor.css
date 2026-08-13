@@ -465,6 +465,98 @@ div.editor-equation {
   color: var(--destructive);
 }
 
+.editor-table-wrapper {
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.editor-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: max-content;
+  max-width: 100%;
+  margin: 20px 0;
+  overflow-y: hidden;
+}
+
+.editor-table-wrapper > .editor-table {
+  margin: 0;
+}
+
+.editor-table-row {
+  border: none;
+}
+
+.editor-table-cell {
+  position: relative;
+  min-width: 90px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  text-align: start;
+  outline: none;
+}
+
+.editor-table-cell-header {
+  background: var(--muted);
+  font-weight: 600;
+}
+
+.editor-table-cell-selected {
+  caret-color: transparent;
+}
+
+.editor-table-cell-selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.editor-table-selected {
+  outline: 2px solid var(--primary);
+}
+
+.toolbar-table-picker {
+  padding: 4px;
+}
+
+.toolbar-table-grid {
+  display: grid;
+  gap: 3px;
+}
+
+.toolbar-table-cell {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.toolbar-table-cell.filled {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.toolbar-table-cell:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.toolbar-table-size {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
 .editor-music {
   display: block;
   margin: 28px 0;

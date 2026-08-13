@@ -21,6 +21,7 @@ import ExampleTheme from './ExampleTheme';
 import { ImageNode } from './nodes/ImageNode';
 import { EquationNode } from './nodes/EquationNode';
 import { MusicNode } from './nodes/MusicNode';
+import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
 import { parseAllowedColor, parseAllowedFontSize } from './styleConfig';
 
 export const placeholder = 'Start writing...';
@@ -131,6 +132,9 @@ export const editorConfig = {
     ImageNode,
     EquationNode,
     MusicNode,
+    TableNode,
+    TableRowNode,
+    TableCellNode,
     HorizontalRuleNode,
   ],
   onError(error: Error) {

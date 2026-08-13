@@ -22,6 +22,7 @@ import UpdateContentPlugin from '../../plugins/UpdateContentPlugin';
 import ImagesPlugin from '../../plugins/ImagesPlugin';
 import EquationsPlugin from '../../plugins/EquationsPlugin';
 import MusicPlugin from '../../plugins/MusicPlugin';
+import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
 import { CodeBlockGuardPlugin } from '../../plugins/CodeBlockGuardPlugin';
 import ListTabPlugin from '../../plugins/ListTabPlugin';
 import PastePlugin from '../../plugins/PastePlugin';
@@ -274,6 +275,7 @@ export function WriteView({
                 <ImagesPlugin projectId={projectId} />
                 <EquationsPlugin />
                 <MusicPlugin />
+                <TablePlugin hasHorizontalScroll />
                 <CodeBlockGuardPlugin />
                 <PastePlugin />
                 <CodeHighlightPlugin />

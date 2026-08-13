@@ -30,6 +30,7 @@ import {
   Music,
   Quote,
   Radical,
+  Table as TableIcon,
   Sigma,
   SquareCode,
   Type,
@@ -37,6 +38,7 @@ import {
 import { insertImageWithUpload } from './ImagesPlugin';
 import { INSERT_EQUATION_COMMAND } from './EquationsPlugin';
 import { INSERT_MUSIC_COMMAND } from './MusicPlugin';
+import { INSERT_TABLE_COMMAND } from '@lexical/table';
 
 class SlashOption extends MenuOption {
   label: string;
@@ -110,6 +112,13 @@ export default function SlashMenuPlugin({ projectId }: { projectId?: string } = 
       ),
       new SlashOption('Music', Music, 'music score sheet abc notation partitura', (e) =>
         e.dispatchCommand(INSERT_MUSIC_COMMAND, undefined),
+      ),
+      new SlashOption('Table', TableIcon, 'table grid rows columns tabla', (e) =>
+        e.dispatchCommand(INSERT_TABLE_COMMAND, {
+          rows: '3',
+          columns: '3',
+          includeHeaders: { rows: true, columns: false },
+        }),
       ),
     ],
     [],
