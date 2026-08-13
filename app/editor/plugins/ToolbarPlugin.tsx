@@ -672,6 +672,23 @@ export default function ToolbarPlugin({
         disabled={blockType === 'code'}
         onClick={() => fileInputRef.current?.click()}
       />
+      <DropdownMenu open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
+        <ToolbarMenuButton label="Insert Table" tooltip="Insert table" className="toolbar-item spaced">
+          <TableIcon size={18} />
+        </ToolbarMenuButton>
+        <DropdownMenuContent align="start">
+          <TableSizePicker
+            onPick={(rows, columns) => {
+              setTableMenuOpen(false);
+              editor.dispatchCommand(INSERT_TABLE_COMMAND, {
+                rows: String(rows),
+                columns: String(columns),
+                includeHeaders: { rows: true, columns: false },
+              });
+            }}
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Divider />
       <ToolbarButton
         label="Insert Inline Equation"
@@ -694,23 +711,6 @@ export default function ToolbarPlugin({
         disabled={blockType === 'code'}
         onClick={() => editor.dispatchCommand(INSERT_MUSIC_COMMAND, undefined)}
       />
-      <DropdownMenu open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
-        <ToolbarMenuButton label="Insert Table" tooltip="Insert table" className="toolbar-item spaced">
-          <TableIcon size={18} />
-        </ToolbarMenuButton>
-        <DropdownMenuContent align="start">
-          <TableSizePicker
-            onPick={(rows, columns) => {
-              setTableMenuOpen(false);
-              editor.dispatchCommand(INSERT_TABLE_COMMAND, {
-                rows: String(rows),
-                columns: String(columns),
-                includeHeaders: { rows: true, columns: false },
-              });
-            }}
-          />
-        </DropdownMenuContent>
-      </DropdownMenu>
       <Divider />
       <ToolbarButton
         label={INLINE_CODE_FORMAT.label}
