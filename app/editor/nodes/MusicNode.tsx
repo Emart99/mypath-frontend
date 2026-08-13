@@ -83,6 +83,10 @@ export class MusicNode extends DecoratorNode<React.ReactElement> {
     return false;
   }
 
+  isInline(): boolean {
+    return false;
+  }
+
   getAbc(): string {
     return this.__abc;
   }

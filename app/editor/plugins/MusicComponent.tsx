@@ -52,6 +52,7 @@ function renderScore(
     paddingleft: 0,
     paddingright: 0,
   });
+  target.querySelectorAll('style').forEach((node) => node.remove());
   return tune?.warnings ?? [];
 }
 
