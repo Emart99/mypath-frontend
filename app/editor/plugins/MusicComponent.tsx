@@ -311,12 +311,28 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
           onBlur={() => commit()}
           onKeyDown={(event) => {
             event.stopPropagation();
+            const { selectionStart: from, selectionEnd: to, value } = event.currentTarget;
+            const collapsed = from === to;
+            const onFirstLine = value.lastIndexOf('\n', from - 1) === -1;
+            const onLastLine = value.indexOf('\n', to) === -1;
             if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
               event.preventDefault();
               commit();
             } else if (event.key === 'Escape') {
               event.preventDefault();
               cancel();
+            } else if (event.key === 'ArrowLeft' && collapsed && from === 0) {
+              event.preventDefault();
+              commit('before');
+            } else if (event.key === 'ArrowRight' && collapsed && to === value.length) {
+              event.preventDefault();
+              commit('after');
+            } else if (event.key === 'ArrowUp' && collapsed && onFirstLine) {
+              event.preventDefault();
+              commit('before');
+            } else if (event.key === 'ArrowDown' && collapsed && onLastLine) {
+              event.preventDefault();
+              commit('after');
             }
           }}
           placeholder={DEFAULT_ABC}
