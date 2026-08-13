@@ -15,8 +15,10 @@ import {
   $isTextNode,
   CLICK_COMMAND,
   COMMAND_PRIORITY_LOW,
+  KEY_ARROW_DOWN_COMMAND,
   KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_RIGHT_COMMAND,
+  KEY_ARROW_UP_COMMAND,
   KEY_BACKSPACE_COMMAND,
   KEY_DELETE_COMMAND,
   KEY_ENTER_COMMAND,
@@ -26,7 +28,7 @@ import {
 } from 'lexical';
 import katex from 'katex';
 import { $isEquationNode } from '../nodes/EquationNode';
-import { $caretTouches, type Edge } from './decoratorCaret';
+import { $caretOnEdgeLine, $caretTouches, type Edge } from './decoratorCaret';
 import { freshlyInserted } from './EquationsPlugin';
 
 interface EquationComponentProps {
@@ -265,6 +267,17 @@ export default function EquationComponent({
     [nodeKey, startEditing],
   );
 
+  const enterFromLine = useCallback(
+    (edge: Edge) => (event: KeyboardEvent) => {
+      const node = $getNodeByKey(nodeKey);
+      if (!$isEquationNode(node) || !$caretOnEdgeLine(node, edge, editor)) return false;
+      event.preventDefault();
+      startEditing(edge);
+      return true;
+    },
+    [editor, nodeKey, startEditing],
+  );
+
   useEffect(() => {
     if (!isEditable || isEditing) return;
     return mergeRegister(
@@ -289,6 +302,8 @@ export default function EquationComponent({
       editor.registerCommand(KEY_BACKSPACE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
       editor.registerCommand(KEY_ARROW_LEFT_COMMAND, enterFrom('after'), COMMAND_PRIORITY_LOW),
       editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, enterFrom('before'), COMMAND_PRIORITY_LOW),
+      editor.registerCommand(KEY_ARROW_UP_COMMAND, enterFromLine('after'), COMMAND_PRIORITY_LOW),
+      editor.registerCommand(KEY_ARROW_DOWN_COMMAND, enterFromLine('before'), COMMAND_PRIORITY_LOW),
       editor.registerCommand(
         KEY_ENTER_COMMAND,
         (event) => {
@@ -300,7 +315,7 @@ export default function EquationComponent({
         COMMAND_PRIORITY_LOW,
       ),
     );
-  }, [clearSelected, editor, enterFrom, inline, isEditable, isEditing, isSelected, onDelete, setSelected, startEditing]);
+  }, [clearSelected, editor, enterFrom, enterFromLine, inline, isEditable, isEditing, isSelected, onDelete, setSelected, startEditing]);
 
   if (isEditing && isEditable) {
     return (
@@ -331,6 +346,16 @@ export default function EquationComponent({
               commit('before');
             } else if (
               event.key === 'ArrowRight' &&
+              collapsed &&
+              textarea.selectionEnd === textarea.value.length
+            ) {
+              event.preventDefault();
+              commit('after');
+            } else if (event.key === 'ArrowUp' && collapsed && textarea.selectionStart === 0) {
+              event.preventDefault();
+              commit('before');
+            } else if (
+              event.key === 'ArrowDown' &&
               collapsed &&
               textarea.selectionEnd === textarea.value.length
             ) {
