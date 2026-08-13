@@ -21,6 +21,7 @@ import ToolbarPlugin from '../../plugins/ToolbarPlugin';
 import UpdateContentPlugin from '../../plugins/UpdateContentPlugin';
 import ImagesPlugin from '../../plugins/ImagesPlugin';
 import EquationsPlugin from '../../plugins/EquationsPlugin';
+import MusicPlugin from '../../plugins/MusicPlugin';
 import { CodeBlockGuardPlugin } from '../../plugins/CodeBlockGuardPlugin';
 import ListTabPlugin from '../../plugins/ListTabPlugin';
 import PastePlugin from '../../plugins/PastePlugin';
@@ -272,6 +273,7 @@ export function WriteView({
                 <ClickableLinkPlugin newTab />
                 <ImagesPlugin projectId={projectId} />
                 <EquationsPlugin />
+                <MusicPlugin />
                 <CodeBlockGuardPlugin />
                 <PastePlugin />
                 <CodeHighlightPlugin />

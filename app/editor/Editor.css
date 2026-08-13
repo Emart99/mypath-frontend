@@ -465,6 +465,72 @@ div.editor-equation {
   color: var(--destructive);
 }
 
+.editor-music {
+  display: block;
+  margin: 12px 0;
+}
+
+.editor-music-rendered {
+  display: block;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--foreground);
+  overflow-x: auto;
+}
+
+.editor-music-rendered.selected {
+  outline: 2px solid var(--primary);
+}
+
+.editor-music-rendered svg,
+.editor-music-preview svg {
+  max-width: 100%;
+}
+
+.editor-music-editor {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  background: var(--background);
+  padding: 8px;
+}
+
+.editor-music-input {
+  display: block;
+  width: 100%;
+  font-family: var(--font-roboto-mono), monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--foreground);
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.editor-music-preview {
+  display: block;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  color: var(--foreground);
+  overflow-x: auto;
+}
+
+.editor-music-error {
+  margin-top: 6px;
+  font-family: var(--font-roboto-mono), monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--destructive);
+  white-space: pre-wrap;
+}
+
 .editor-image-wrapper {
   display: inline-block;
   position: relative;

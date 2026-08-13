@@ -42,6 +42,7 @@ export default{
     h5: 'editor-heading-h5',
   },
   equation: 'editor-equation',
+  music: 'editor-music',
   image: 'editor-image',
   link: 'editor-link',
   list: {

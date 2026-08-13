@@ -27,6 +27,7 @@ import {
   List as ListIcon,
   ListOrdered,
   Minus,
+  Music,
   Quote,
   Radical,
   Sigma,
@@ -35,6 +36,7 @@ import {
 } from 'lucide-react';
 import { insertImageWithUpload } from './ImagesPlugin';
 import { INSERT_EQUATION_COMMAND } from './EquationsPlugin';
+import { INSERT_MUSIC_COMMAND } from './MusicPlugin';
 
 class SlashOption extends MenuOption {
   label: string;
@@ -105,6 +107,9 @@ export default function SlashMenuPlugin({ projectId }: { projectId?: string } = 
       ),
       new SlashOption('Inline equation', Radical, 'math equation latex formula katex inline', (e) =>
         e.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true }),
+      ),
+      new SlashOption('Music', Music, 'music score sheet abc notation partitura', (e) =>
+        e.dispatchCommand(INSERT_MUSIC_COMMAND, undefined),
       ),
     ],
     [],

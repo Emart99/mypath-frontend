@@ -73,6 +73,7 @@ import {
   Search,
   Sigma,
   Radical,
+  Music,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -85,6 +86,7 @@ import { insertImageWithUpload } from './ImagesPlugin';
 import { OPEN_LINK_EDITOR_COMMAND } from './FloatingLinkEditorPlugin';
 import { OPEN_FIND_REPLACE_COMMAND } from './FindReplacePlugin';
 import { INSERT_EQUATION_COMMAND } from './EquationsPlugin';
+import { INSERT_MUSIC_COMMAND } from './MusicPlugin';
 import { INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRuleNode';
 
 const COLOR_OPTIONS: { value: string; label: string }[] = [
@@ -612,6 +614,13 @@ export default function ToolbarPlugin({
         Icon={Sigma}
         disabled={blockType === 'code'}
         onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })}
+      />
+      <ToolbarButton
+        label="Insert Music"
+        tooltip="Insert music score"
+        Icon={Music}
+        disabled={blockType === 'code'}
+        onClick={() => editor.dispatchCommand(INSERT_MUSIC_COMMAND, undefined)}
       />
       <Divider />
       <ToolbarButton

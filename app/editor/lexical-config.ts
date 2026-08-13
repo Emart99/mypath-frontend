@@ -20,6 +20,7 @@ import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import ExampleTheme from './ExampleTheme';
 import { ImageNode } from './nodes/ImageNode';
 import { EquationNode } from './nodes/EquationNode';
+import { MusicNode } from './nodes/MusicNode';
 import { parseAllowedColor, parseAllowedFontSize } from './styleConfig';
 
 export const placeholder = 'Start writing...';
@@ -129,6 +130,7 @@ export const editorConfig = {
     LinkNode,
     ImageNode,
     EquationNode,
+    MusicNode,
     HorizontalRuleNode,
   ],
   onError(error: Error) {
