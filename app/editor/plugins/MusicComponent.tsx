@@ -13,8 +13,10 @@ import {
   $isNodeSelection,
   CLICK_COMMAND,
   COMMAND_PRIORITY_LOW,
+  KEY_ARROW_DOWN_COMMAND,
   KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_RIGHT_COMMAND,
+  KEY_ARROW_UP_COMMAND,
   KEY_BACKSPACE_COMMAND,
   KEY_DELETE_COMMAND,
   KEY_ENTER_COMMAND,
@@ -23,7 +25,7 @@ import {
   NodeKey,
 } from 'lexical';
 import { $isMusicNode } from '../nodes/MusicNode';
-import { $caretTouches, type Edge } from './decoratorCaret';
+import { $caretOnEdgeLine, $caretTouches, type Edge } from './decoratorCaret';
 import { DEFAULT_ABC, freshlyInsertedMusic } from './MusicPlugin';
 
 interface MusicComponentProps {
@@ -114,6 +116,7 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
   const scoreBoxRef = useRef<HTMLDivElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const entryEdgeRef = useRef<Edge | null>(null);
   const exitEdgeRef = useRef<Edge | null>(null);
 
   const discardedOnMount = useRef(false);
@@ -155,7 +158,9 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
     const textarea = textareaRef.current;
     if (!isEditing || textarea === null) return;
     textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    const at = entryEdgeRef.current === 'before' ? 0 : textarea.value.length;
+    entryEdgeRef.current = null;
+    textarea.setSelectionRange(at, at);
   }, [isEditing]);
 
   useLayoutEffect(() => {
@@ -209,11 +214,15 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
     setIsEditing(false);
   }, [abc, editor, nodeKey]);
 
-  const startEditing = useCallback(() => {
-    if (!isEditable) return;
-    setDraft(abc === '' ? DEFAULT_ABC : abc);
-    setIsEditing(true);
-  }, [abc, isEditable]);
+  const startEditing = useCallback(
+    (from: Edge | null = null) => {
+      if (!isEditable) return;
+      entryEdgeRef.current = from;
+      setDraft(abc === '' ? DEFAULT_ABC : abc);
+      setIsEditing(true);
+    },
+    [abc, isEditable],
+  );
 
   const onDelete = useCallback(
     (event: KeyboardEvent) => {
@@ -234,10 +243,21 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
       const node = $getNodeByKey(nodeKey);
       if (!$isMusicNode(node) || !$caretTouches(node, edge)) return false;
       event.preventDefault();
-      startEditing();
+      startEditing(edge);
       return true;
     },
     [nodeKey, startEditing],
+  );
+
+  const enterFromLine = useCallback(
+    (edge: Edge) => (event: KeyboardEvent) => {
+      const node = $getNodeByKey(nodeKey);
+      if (!$isMusicNode(node) || !$caretOnEdgeLine(node, edge, editor)) return false;
+      event.preventDefault();
+      startEditing(edge);
+      return true;
+    },
+    [editor, nodeKey, startEditing],
   );
 
   useEffect(() => {
@@ -263,6 +283,8 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
       editor.registerCommand(KEY_BACKSPACE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
       editor.registerCommand(KEY_ARROW_LEFT_COMMAND, enterFrom('after'), COMMAND_PRIORITY_LOW),
       editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, enterFrom('before'), COMMAND_PRIORITY_LOW),
+      editor.registerCommand(KEY_ARROW_UP_COMMAND, enterFromLine('after'), COMMAND_PRIORITY_LOW),
+      editor.registerCommand(KEY_ARROW_DOWN_COMMAND, enterFromLine('before'), COMMAND_PRIORITY_LOW),
       editor.registerCommand(
         KEY_ENTER_COMMAND,
         (event) => {
@@ -274,7 +296,7 @@ export default function MusicComponent({ abc, nodeKey }: MusicComponentProps) {
         COMMAND_PRIORITY_LOW,
       ),
     );
-  }, [clearSelected, editor, enterFrom, isEditable, isEditing, isSelected, onDelete, setSelected, startEditing]);
+  }, [clearSelected, editor, enterFrom, enterFromLine, isEditable, isEditing, isSelected, onDelete, setSelected, startEditing]);
 
   if (isEditing && isEditable) {
     return (

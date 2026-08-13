@@ -2,10 +2,33 @@ import {
   $getSelection,
   $isElementNode,
   $isRangeSelection,
+  LexicalEditor,
   LexicalNode,
 } from 'lexical';
 
 export type Edge = 'before' | 'after';
+
+export function $caretOnEdgeLine(
+  node: LexicalNode,
+  edge: Edge,
+  editor: LexicalEditor,
+): boolean {
+  const selection = $getSelection();
+  if (!$isRangeSelection(selection) || !selection.isCollapsed()) return false;
+  const block = selection.anchor.getNode().getTopLevelElement();
+  if (block === null) return false;
+  const sibling = edge === 'after' ? block.getPreviousSibling() : block.getNextSibling();
+  if (sibling !== node) return false;
+
+  const blockDom = editor.getElementByKey(block.getKey());
+  const domSelection = window.getSelection();
+  if (blockDom === null || domSelection === null || domSelection.rangeCount === 0) return false;
+
+  const caret = domSelection.getRangeAt(0).getBoundingClientRect();
+  const box = blockDom.getBoundingClientRect();
+  const slack = caret.height > 0 ? caret.height / 2 : 4;
+  return edge === 'after' ? caret.top - box.top <= slack : box.bottom - caret.bottom <= slack;
+}
 
 export function $caretTouches(node: LexicalNode, edge: Edge): boolean {
   const selection = $getSelection();
