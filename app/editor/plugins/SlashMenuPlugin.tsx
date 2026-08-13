@@ -94,7 +94,7 @@ export default function SlashMenuPlugin({ projectId }: { projectId?: string } = 
         setBlock(e, () => $createQuoteNode()),
       ),
       new SlashOption('Code block', SquareCode, 'code snippet pre', (e) =>
-        setBlock(e, () => $createCodeNode()),
+        setBlock(e, () => $createCodeNode('plain')),
       ),
       new SlashOption('Divider', Minus, 'divider horizontal rule hr separator', (e) =>
         e.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined),

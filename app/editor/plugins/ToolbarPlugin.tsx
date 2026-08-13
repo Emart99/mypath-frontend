@@ -418,7 +418,7 @@ export default function ToolbarPlugin({
   };
 
   const formatCode = () => {
-    setBlock(blockType === 'code' ? $createParagraphNode : $createCodeNode);
+    setBlock(blockType === 'code' ? $createParagraphNode : () => $createCodeNode('plain'));
   };
 
   const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {

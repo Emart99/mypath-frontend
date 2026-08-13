@@ -75,7 +75,9 @@ export const CODE_WITH_KNOWN_LANGUAGE: MultilineElementTransformer = {
     if (children && language !== undefined && !getCodeLanguages().includes(language)) {
       return false;
     }
-    return CODE.replace(rootNode, children, startMatch, endMatch, linesInBetween, isImport);
+    const match = language ? startMatch : ([...startMatch] as RegExpMatchArray);
+    match[1] = language || 'plain';
+    return CODE.replace(rootNode, children, match, endMatch, linesInBetween, isImport);
   },
 };
 
