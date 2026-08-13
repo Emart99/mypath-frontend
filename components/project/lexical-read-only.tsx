@@ -17,6 +17,7 @@ import ExampleTheme from "@/app/editor/ExampleTheme"
 import { ImageNode } from "@/app/editor/nodes/ImageNode"
 import { EquationNode } from "@/app/editor/nodes/EquationNode"
 import ItemLinkClickPlugin from "@/app/editor/plugins/ItemLinkClickPlugin"
+import CodeHighlightPlugin from "@/app/editor/plugins/CodeHighlightPlugin"
 import "@/app/editor/Editor.css"
 
 const nodes = [
@@ -63,6 +64,7 @@ export function LexicalReadOnly({
         ErrorBoundary={LexicalErrorBoundary}
       />
       {onItemClick && <ItemLinkClickPlugin onNavigate={onItemClick} />}
+      <CodeHighlightPlugin />
       <ClickableLinkPlugin newTab />
     </LexicalComposer>
   )
