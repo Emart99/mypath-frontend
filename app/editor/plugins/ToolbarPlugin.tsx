@@ -77,6 +77,7 @@ import {
   Image as ImageIcon,
   ChevronUp,
   ChevronDown,
+  Plus,
   Search,
   Sigma,
   Radical,
@@ -87,6 +88,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -287,7 +292,7 @@ export default function ToolbarPlugin({
   const [fontSize, setFontSize] = useState('15');
   const [textColor, setTextColor] = useState('');
   const [elementFormat, setElementFormat] = useState<ElementFormat>('left');
-  const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [insertMenuOpen, setInsertMenuOpen] = useState(false);
   const [codeLanguage, setCodeLanguage] = useState('plain');
   const [codeElementKey, setCodeElementKey] = useState<string | null>(null);
 
@@ -665,52 +670,69 @@ export default function ToolbarPlugin({
         disabled={blockType === 'code'}
         onClick={insertLink}
       />
-      <ToolbarButton
-        label="Insert Image"
-        tooltip="Insert image"
-        Icon={ImageIcon}
-        disabled={blockType === 'code'}
-        onClick={() => fileInputRef.current?.click()}
-      />
-      <DropdownMenu open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
-        <ToolbarMenuButton label="Insert Table" tooltip="Insert table" className="toolbar-item spaced">
-          <TableIcon size={18} />
+      <DropdownMenu open={insertMenuOpen} onOpenChange={setInsertMenuOpen}>
+        <ToolbarMenuButton label="Insert" tooltip="Insert" className="toolbar-item align-dropdown-trigger spaced">
+          <Plus size={18} />
+          <ChevronDown size={12} />
         </ToolbarMenuButton>
         <DropdownMenuContent align="start">
-          <TableSizePicker
-            onPick={(rows, columns) => {
-              setTableMenuOpen(false);
-              editor.dispatchCommand(INSERT_TABLE_COMMAND, {
-                rows: String(rows),
-                columns: String(columns),
-                includeHeaders: { rows: true, columns: false },
-              });
-            }}
-          />
+          <DropdownMenuItem
+            disabled={blockType === 'code'}
+            onSelect={() => fileInputRef.current?.click()}
+          >
+            <ImageIcon className="h-4 w-4" />
+            Image
+          </DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <TableIcon className="h-4 w-4" />
+              Table
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <TableSizePicker
+                onPick={(rows, columns) => {
+                  setInsertMenuOpen(false);
+                  editor.dispatchCommand(INSERT_TABLE_COMMAND, {
+                    rows: String(rows),
+                    columns: String(columns),
+                    includeHeaders: { rows: true, columns: false },
+                  });
+                }}
+              />
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuItem
+            disabled={blockType === 'code'}
+            onSelect={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true })}
+          >
+            <Radical className="h-4 w-4" />
+            Inline equation
+            <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={blockType === 'code'}
+            onSelect={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })}
+          >
+            <Sigma className="h-4 w-4" />
+            Equation
+            <DropdownMenuShortcut>⌘⇧E</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={blockType === 'code'}
+            onSelect={() => editor.dispatchCommand(INSERT_MUSIC_COMMAND, undefined)}
+          >
+            <Music className="h-4 w-4" />
+            Music score
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={blockType === 'code'}
+            onSelect={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}
+          >
+            <Minus className="h-4 w-4" />
+            Divider
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Divider />
-      <ToolbarButton
-        label="Insert Inline Equation"
-        tooltip="Inline equation (⌘E)"
-        Icon={Radical}
-        disabled={blockType === 'code'}
-        onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true })}
-      />
-      <ToolbarButton
-        label="Insert Equation"
-        tooltip="Insert equation (⌘⇧E)"
-        Icon={Sigma}
-        disabled={blockType === 'code'}
-        onClick={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: false })}
-      />
-      <ToolbarButton
-        label="Insert Music"
-        tooltip="Insert music score"
-        Icon={Music}
-        disabled={blockType === 'code'}
-        onClick={() => editor.dispatchCommand(INSERT_MUSIC_COMMAND, undefined)}
-      />
       <Divider />
       <ToolbarButton
         label={INLINE_CODE_FORMAT.label}
@@ -770,13 +792,6 @@ export default function ToolbarPlugin({
         Icon={Quote}
         active={blockType === 'quote'}
         onClick={formatQuote}
-      />
-      <ToolbarButton
-        label="Insert Divider"
-        tooltip="Divider"
-        Icon={Minus}
-        disabled={blockType === 'code'}
-        onClick={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}
       />
     </div>
   );
