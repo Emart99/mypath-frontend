@@ -41,6 +41,7 @@ function loadAbcjs() {
 const RENDER_PARAMS = {
   ariaLabel: '',
   foregroundColor: 'currentColor',
+  selectTypes: false,
   paddingtop: 0,
   paddingbottom: 0,
   paddingleft: 0,
