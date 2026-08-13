@@ -122,16 +122,34 @@ const ALIGN_OPTIONS: { value: ElementFormat; label: string; Icon: typeof AlignLe
   { value: 'justify', label: 'Justify', Icon: AlignJustify },
 ];
 
-type HeadingOption = 'paragraph' | 'h1' | 'h2' | 'h3' | 'quote' | 'code';
+type BlockOption =
+  | 'paragraph'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'bullet'
+  | 'number'
+  | 'check'
+  | 'quote'
+  | 'code';
 
-const HEADING_OPTIONS: { value: HeadingOption; label: string; Icon: typeof Type }[] = [
+const BLOCK_OPTIONS: { value: BlockOption; label: string; Icon: typeof Type }[] = [
   { value: 'paragraph', label: 'Normal', Icon: Type },
   { value: 'h1', label: 'Heading 1', Icon: Heading1 },
   { value: 'h2', label: 'Heading 2', Icon: Heading2 },
   { value: 'h3', label: 'Heading 3', Icon: Heading3 },
+  { value: 'bullet', label: 'Bulleted list', Icon: ListIcon },
+  { value: 'number', label: 'Numbered list', Icon: ListOrdered },
+  { value: 'check', label: 'Check list', Icon: CheckSquare },
   { value: 'quote', label: 'Quote', Icon: Quote },
   { value: 'code', label: 'Code Block', Icon: SquareCode },
 ];
+
+const LIST_COMMANDS: Partial<Record<BlockOption, LexicalCommand<void>>> = {
+  bullet: INSERT_UNORDERED_LIST_COMMAND,
+  number: INSERT_ORDERED_LIST_COMMAND,
+  check: INSERT_CHECK_LIST_COMMAND,
+};
 
 const FONT_FAMILY_OPTIONS: Array<[string, string]> = [
   ['Arial', 'Arial'],
@@ -150,12 +168,6 @@ const TEXT_FORMATS = [
 ] as const;
 
 const INLINE_CODE_FORMAT = { format: 'code', label: 'Format Code', tooltip: 'Inline code', Icon: Code } as const;
-
-const LIST_OPTIONS = [
-  { type: 'bullet', label: 'Bullet List', tooltip: 'Bulleted list', Icon: ListIcon, command: INSERT_UNORDERED_LIST_COMMAND },
-  { type: 'number', label: 'Numbered List', tooltip: 'Numbered list', Icon: ListOrdered, command: INSERT_ORDERED_LIST_COMMAND },
-  { type: 'check', label: 'Check List', tooltip: 'Check list', Icon: CheckSquare, command: INSERT_CHECK_LIST_COMMAND },
-] as const;
 
 const CODE_LANGUAGE_OPTIONS = getCodeLanguageOptions();
 
@@ -469,20 +481,20 @@ export default function ToolbarPlugin({
     if (blockType !== 'paragraph') setBlock($createParagraphNode);
   };
 
-  const formatHeading = (headingSize: HeadingTagType) => {
-    setBlock(blockType === headingSize ? $createParagraphNode : () => $createHeadingNode(headingSize));
-  };
-
-  const toggleList = (type: string, command: LexicalCommand<void>) => {
-    if (blockType !== type) {
-      editor.dispatchCommand(command, undefined);
-    } else {
+  const selectBlock = (value: BlockOption) => {
+    if (value === blockType) {
       formatParagraph();
+      return;
     }
-  };
-
-  const formatQuote = () => {
-    if (blockType !== 'quote') setBlock($createQuoteNode);
+    const listCommand = LIST_COMMANDS[value];
+    if (listCommand) {
+      editor.dispatchCommand(listCommand, undefined);
+      return;
+    }
+    if (value === 'paragraph') formatParagraph();
+    else if (value === 'quote') setBlock($createQuoteNode);
+    else if (value === 'code') setBlock(() => $createCodeNode('plain'));
+    else setBlock(() => $createHeadingNode(value as HeadingTagType));
   };
 
   const setCodeLanguageOn = useCallback(
@@ -509,7 +521,7 @@ export default function ToolbarPlugin({
 
 
   const activeAlign = titleFocused ? titleAlign ?? 'left' : elementFormat;
-  const ActiveHeadingIcon = HEADING_OPTIONS.find((option) => option.value === blockType)?.Icon ?? Type;
+  const ActiveBlockIcon = BLOCK_OPTIONS.find((option) => option.value === blockType)?.Icon ?? Type;
   const ActiveAlignIcon = ALIGN_OPTIONS.find((option) => option.value === activeAlign)?.Icon ?? AlignLeft;
 
   return (
@@ -604,23 +616,12 @@ export default function ToolbarPlugin({
       <Divider />
       <DropdownMenu>
         <ToolbarMenuButton label="Text style" tooltip="Text style" className="toolbar-item align-dropdown-trigger spaced">
-          <ActiveHeadingIcon size={18} />
+          <ActiveBlockIcon size={18} />
           <ChevronDown size={12} />
         </ToolbarMenuButton>
         <DropdownMenuContent align="start">
-          {HEADING_OPTIONS.map(({ value, label, Icon }) => (
-            <DropdownMenuItem
-              key={value}
-              onSelect={() =>
-                value === 'paragraph'
-                  ? formatParagraph()
-                  : value === 'quote'
-                    ? formatQuote()
-                    : value === 'code'
-                      ? formatCode()
-                      : formatHeading(value)
-              }
-            >
+          {BLOCK_OPTIONS.map(({ value, label, Icon }) => (
+            <DropdownMenuItem key={value} onSelect={() => selectBlock(value)}>
               <Icon className="h-4 w-4" />
               {label}
             </DropdownMenuItem>
@@ -770,25 +771,6 @@ export default function ToolbarPlugin({
         accept="image/*"
         onChange={handleImageFileChange}
         className="hidden"
-      />
-
-      <Divider />
-      {LIST_OPTIONS.map(({ type, label, tooltip, Icon, command }) => (
-        <ToolbarButton
-          key={type}
-          label={label}
-          tooltip={tooltip}
-          Icon={Icon}
-          active={blockType === type}
-          onClick={() => toggleList(type, command)}
-        />
-      ))}
-      <ToolbarButton
-        label="Quote"
-        tooltip="Quote"
-        Icon={Quote}
-        active={blockType === 'quote'}
-        onClick={formatQuote}
       />
     </div>
   );
