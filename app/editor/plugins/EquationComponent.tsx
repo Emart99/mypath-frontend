@@ -12,7 +12,6 @@ import {
   $getSelection,
   $isElementNode,
   $isNodeSelection,
-  $isRangeSelection,
   $isTextNode,
   CLICK_COMMAND,
   COMMAND_PRIORITY_LOW,
@@ -27,6 +26,7 @@ import {
 } from 'lexical';
 import katex from 'katex';
 import { $isEquationNode } from '../nodes/EquationNode';
+import { $caretTouches, type Edge } from './decoratorCaret';
 import { freshlyInserted } from './EquationsPlugin';
 
 interface EquationComponentProps {
@@ -34,8 +34,6 @@ interface EquationComponentProps {
   inline: boolean;
   nodeKey: NodeKey;
 }
-
-type Edge = 'before' | 'after';
 
 const TEMPLATES: { label: string; title: string; latex: string; at: number; len: number }[] = [
   { label: 'a/b', title: 'Fracción', latex: '\\frac{}{}', at: 6, len: 0 },
@@ -70,30 +68,6 @@ function renderKatex(target: HTMLElement, equation: string, inline: boolean): st
     });
     return String((parseError as Error).message).replace(/^KaTeX parse error:\s*/, '');
   }
-}
-
-function $caretTouches(node: LexicalNode, edge: Edge): boolean {
-  const selection = $getSelection();
-  if (!$isRangeSelection(selection) || !selection.isCollapsed()) return false;
-  const point = selection.anchor;
-  const anchorNode = point.getNode();
-  const sibling = edge === 'after' ? 'getPreviousSibling' : 'getNextSibling';
-
-  if (point.type === 'text') {
-    const atEdge = edge === 'after' ? point.offset === 0 : point.offset === anchorNode.getTextContentSize();
-    if (!atEdge) return false;
-    if (anchorNode[sibling]() === node) return true;
-    const block = anchorNode.getTopLevelElement();
-    return anchorNode[sibling]() === null && block !== null && block[sibling]() === node;
-  }
-
-  if (!$isElementNode(anchorNode)) return false;
-  const neighbour = edge === 'after'
-    ? anchorNode.getChildAtIndex(point.offset - 1)
-    : anchorNode.getChildAtIndex(point.offset);
-  if (neighbour === node) return true;
-  const empty = anchorNode.getChildrenSize() === 0;
-  return empty && anchorNode[sibling]() === node;
 }
 
 function $placeCaret(node: LexicalNode, edge: Edge) {
