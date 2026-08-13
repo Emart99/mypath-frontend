@@ -724,6 +724,10 @@ export default function ToolbarPlugin({
             <Music className="h-4 w-4" />
             Music score
           </DropdownMenuItem>
+          <DropdownMenuItem onSelect={formatCode}>
+            <SquareCode className="h-4 w-4" />
+            Code block
+          </DropdownMenuItem>
           <DropdownMenuItem
             disabled={blockType === 'code'}
             onSelect={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}
@@ -740,13 +744,6 @@ export default function ToolbarPlugin({
         Icon={INLINE_CODE_FORMAT.Icon}
         active={formats.has(INLINE_CODE_FORMAT.format)}
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, INLINE_CODE_FORMAT.format)}
-      />
-      <ToolbarButton
-        label="Code Block"
-        tooltip="Code block"
-        Icon={SquareCode}
-        active={blockType === 'code'}
-        onClick={formatCode}
       />
       {blockType === 'code' && (
         <DropdownMenu>
