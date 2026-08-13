@@ -49,7 +49,7 @@ export function EditorTitleSlot({ projectTitle, onRenameProject, saveStatus }: E
     <div className="flex gap-4">
       <span
         data-tour="editor-title"
-        className="text-[15px] font-medium"
+        className="cursor-text text-[15px] font-medium decoration-dotted underline-offset-4 hover:underline"
         onDoubleClick={startEditTitle}
         title="Double-click to rename"
       >
