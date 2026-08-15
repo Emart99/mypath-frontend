@@ -187,7 +187,12 @@ export function SidebarCustom({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
       if (!event.altKey || (!event.metaKey && !event.ctrlKey)) return;
-      const ordered = Object.values(items);
+      const trail = selectedItemId
+        ? trails.find((candidate) => candidate.itemIds.includes(selectedItemId))
+        : undefined;
+      const ordered = trail
+        ? trail.itemIds.map((id) => items[id]).filter((item): item is Item => Boolean(item))
+        : Object.values(items);
       if (ordered.length === 0) return;
       event.preventDefault();
       const current = ordered.findIndex((item) => item.id === selectedItemId);
@@ -197,7 +202,7 @@ export function SidebarCustom({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [items, selectedItemId, onSelectItem]);
+  }, [items, trails, selectedItemId, onSelectItem]);
 
   const trailsForItem = (itemId: string) => trails.filter(trail => trail.itemIds.includes(itemId));
   const allItems = Object.values(items);
