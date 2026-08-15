@@ -184,7 +184,9 @@ export default function FindReplacePlugin() {
       setPosition({ top: rect.top + 8, right: window.innerWidth - rect.right + 8 });
     }
     setOpen(true);
-    requestAnimationFrame(() => searchInputRef.current?.focus());
+    const input = searchInputRef.current;
+    if (input) input.select();
+    else requestAnimationFrame(() => searchInputRef.current?.select());
   }, [editor]);
 
   useEffect(() => {
