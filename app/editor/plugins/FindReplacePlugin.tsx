@@ -173,7 +173,8 @@ export default function FindReplacePlugin() {
     setMatches([]);
     setCurrentIndex(0);
     highlightMatch(null);
-  }, [highlightMatch]);
+    editor.getRootElement()?.focus({ preventScroll: true });
+  }, [editor, highlightMatch]);
 
   const openBar = useCallback(() => {
     const rootElement = editor.getRootElement();
