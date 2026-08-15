@@ -810,6 +810,30 @@ div.editor-equation {
   content: attr(data-highlight-language);
 }
 
+.editor-code.has-language-picker:after {
+  content: none;
+}
+
+.code-language-picker {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 5px;
+  border-radius: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.code-language-picker:hover,
+.code-language-picker[data-state="open"] {
+  background: var(--surface-container-highest);
+  color: var(--foreground);
+}
+
 .editor-tokenComment {
   color: var(--muted-foreground);
 }

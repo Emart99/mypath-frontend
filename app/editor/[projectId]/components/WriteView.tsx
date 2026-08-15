@@ -27,6 +27,7 @@ import { CodeBlockGuardPlugin } from '../../plugins/CodeBlockGuardPlugin';
 import ListTabPlugin from '../../plugins/ListTabPlugin';
 import PastePlugin from '../../plugins/PastePlugin';
 import CodeHighlightPlugin from '../../plugins/CodeHighlightPlugin';
+import CodeLanguagePlugin from '../../plugins/CodeLanguagePlugin';
 import TrailingParagraphPlugin from '../../plugins/TrailingParagraphPlugin';
 import SlashMenuPlugin from '../../plugins/SlashMenuPlugin';
 import FloatingLinkEditorPlugin from '../../plugins/FloatingLinkEditorPlugin';
@@ -279,6 +280,7 @@ export function WriteView({
                 <CodeBlockGuardPlugin />
                 <PastePlugin />
                 <CodeHighlightPlugin />
+                <CodeLanguagePlugin />
                 <TrailingParagraphPlugin />
                 <ListTabPlugin />
                 <TabIndentationPlugin />
