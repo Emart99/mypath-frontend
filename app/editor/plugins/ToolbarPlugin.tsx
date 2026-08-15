@@ -11,6 +11,7 @@ import {
   COMMAND_PRIORITY_LOW,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
+  KEY_ESCAPE_COMMAND,
   KEY_MODIFIER_COMMAND,
   REDO_COMMAND,
   SELECTION_CHANGE_COMMAND,
@@ -290,7 +291,7 @@ export default function ToolbarPlugin({
   onSetTitleAlign?: (align: 'left' | 'center' | 'right') => void;
 } = {}) {
   const [editor] = useLexicalComposerContext();
-  const toolbarRef = useRef(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
@@ -463,6 +464,19 @@ export default function ToolbarPlugin({
         },
         COMMAND_PRIORITY_LOW,
       ),
+      editor.registerCommand(
+        KEY_ESCAPE_COMMAND,
+        (event) => {
+          const first = toolbarRef.current?.querySelector<HTMLElement>(
+            'button:not([disabled]), select:not([disabled])',
+          );
+          if (first == null) return false;
+          event.preventDefault();
+          requestAnimationFrame(() => first.focus());
+          return true;
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
     );
   }, [editor, updateToolbar, insertLink]);
 
@@ -525,7 +539,18 @@ export default function ToolbarPlugin({
   const ActiveAlignIcon = ALIGN_OPTIONS.find((option) => option.value === activeAlign)?.Icon ?? AlignLeft;
 
   return (
-    <div className="toolbar" ref={toolbarRef}>
+    <div
+      className="toolbar"
+      ref={toolbarRef}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return;
+        event.preventDefault();
+        requestAnimationFrame(() => {
+          editor.getRootElement()?.focus({ preventScroll: true });
+          editor.focus();
+        });
+      }}
+    >
       <ToolbarButton
         label="Undo"
         tooltip="Undo"
