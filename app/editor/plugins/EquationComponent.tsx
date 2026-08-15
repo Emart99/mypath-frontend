@@ -100,12 +100,10 @@ function $placeCaret(node: LexicalNode, edge: Edge) {
 }
 
 function returnFocusTo(editor: LexicalEditor, nodeKey: NodeKey, edge: Edge) {
-  requestAnimationFrame(() => {
-    editor.getRootElement()?.focus({ preventScroll: true });
-    editor.update(() => {
-      const node = $getNodeByKey(nodeKey);
-      if (node !== null) $placeCaret(node, edge);
-    });
+  editor.getRootElement()?.focus({ preventScroll: true });
+  editor.update(() => {
+    const node = $getNodeByKey(nodeKey);
+    if (node !== null) $placeCaret(node, edge);
   });
 }
 
@@ -184,7 +182,7 @@ export default function EquationComponent({
     textarea.style.height = `${textarea.scrollHeight}px`;
   }, [draft, isEditing]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isEditing || exitEdgeRef.current === null) return;
     const edge = exitEdgeRef.current;
     exitEdgeRef.current = null;
