@@ -447,7 +447,7 @@ export default function ToolbarPlugin({
       editor.registerCommand(
         KEY_MODIFIER_COMMAND,
         (event) => {
-          if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
+          if ((event.key === 'k' || event.key === 'K') && (event.metaKey || event.ctrlKey)) {
             event.preventDefault();
             insertLink();
             return true;
