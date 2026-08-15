@@ -1,5 +1,5 @@
 import { ChevronRight, GitBranch, Link2, ListPlus, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Mark } from "@/components/layout/logo"
 import {
@@ -128,7 +128,9 @@ export function SidebarCustom({
   onDeleteItem,
   onReorderTrailItems,
 }: SidebarCustomProps) {
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -166,6 +168,36 @@ export function SidebarCustom({
     next.splice(drag.overIndex, 0, drag.itemId);
     onReorderTrailItems(trail.id, next);
   };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "p" && event.key !== "P") return;
+      if (!event.metaKey && !event.ctrlKey) return;
+      event.preventDefault();
+      setOpen(true);
+      const input = searchBoxRef.current?.querySelector("input");
+      if (input) input.select();
+      else requestAnimationFrame(() => searchBoxRef.current?.querySelector("input")?.select());
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [setOpen]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      if (!event.altKey || (!event.metaKey && !event.ctrlKey)) return;
+      const ordered = Object.values(items);
+      if (ordered.length === 0) return;
+      event.preventDefault();
+      const current = ordered.findIndex((item) => item.id === selectedItemId);
+      const next = current === -1 ? 0 : current + (event.key === "ArrowDown" ? 1 : -1);
+      if (next < 0 || next >= ordered.length) return;
+      onSelectItem(ordered[next]);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [items, selectedItemId, onSelectItem]);
 
   const trailsForItem = (itemId: string) => trails.filter(trail => trail.itemIds.includes(itemId));
   const allItems = Object.values(items);
@@ -294,13 +326,23 @@ export function SidebarCustom({
             <Link href={homeHref} title="Back to projects" className="shrink-0">
               <Mark size={26} />
             </Link>
-            <div className="relative flex-1">
+            <div className="relative flex-1" ref={searchBoxRef}>
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 placeholder="Buscar en el memex"
                 className="h-8 pl-8 rounded-full"
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setQuery("");
+                    return;
+                  }
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    resultsRef.current?.querySelector<HTMLElement>("button")?.focus();
+                  }
+                }}
               />
             </div>
           </div>
@@ -311,7 +353,8 @@ export function SidebarCustom({
             <div className="flex h-8 shrink-0 items-center px-2 text-xs font-medium text-muted-foreground">
               Results
             </div>
-            <SidebarGroupContent className="pl-2">
+            <SidebarGroupContent className="pl-2" >
+              <div ref={resultsRef}>
               <SidebarMenu>
                 {resultTrails.length > 0 && (
                   <p className="px-2 pt-1 text-[11px] uppercase tracking-wide text-muted-foreground">Trails</p>
@@ -331,7 +374,10 @@ export function SidebarCustom({
                   <SidebarMenuItem key={`result-item-${item.id}`}>
                     <SidebarMenuButton
                       isActive={selectedItemId === item.id}
-                      onClick={() => onSelectItem(item)}
+                      onClick={() => {
+                        onSelectItem(item);
+                        setQuery("");
+                      }}
                       className={selectedItemId === item.id ? "bg-secondary text-secondary-foreground" : undefined}
                     >
                       <span
@@ -349,6 +395,7 @@ export function SidebarCustom({
                   <p className="px-2 py-1 text-xs italic text-muted-foreground">No matches</p>
                 )}
               </SidebarMenu>
+              </div>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
