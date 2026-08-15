@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { FolderPlus } from 'lucide-react';
 import { ProjectShell } from '@/components/editor/project-shell';
 import { SidebarCustom } from '@/components/editor/sidebar-custom';
+import { ShortcutsDialog } from '@/components/editor/shortcuts-dialog';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { countTextStats, SIDEBAR_OPEN_STORAGE_KEY, CONNECTIONS_OPEN_STORAGE_KEY } from '../editor-utils';
 import { useProjectEditorState } from './hooks/useProjectEditorState';
@@ -161,6 +162,7 @@ export default function EditorPage() {
           </div>
         }
       />
+      <ShortcutsDialog />
     </SidebarProvider>
   )
 }
