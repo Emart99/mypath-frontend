@@ -89,9 +89,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -138,11 +135,12 @@ const BLOCK_OPTIONS: { value: BlockOption; label: string; Icon: typeof Type }[] 
   { value: 'h1', label: 'Heading 1', Icon: Heading1 },
   { value: 'h2', label: 'Heading 2', Icon: Heading2 },
   { value: 'h3', label: 'Heading 3', Icon: Heading3 },
+];
+
+const LIST_OPTIONS: { value: BlockOption; label: string; Icon: typeof Type }[] = [
   { value: 'bullet', label: 'Bulleted list', Icon: ListIcon },
   { value: 'number', label: 'Numbered list', Icon: ListOrdered },
   { value: 'check', label: 'Check list', Icon: CheckSquare },
-  { value: 'quote', label: 'Quote', Icon: Quote },
-  { value: 'code', label: 'Code Block', Icon: SquareCode },
 ];
 
 const LIST_COMMANDS: Partial<Record<BlockOption, LexicalCommand<void>>> = {
@@ -305,6 +303,7 @@ export default function ToolbarPlugin({
   const [textColor, setTextColor] = useState('');
   const [elementFormat, setElementFormat] = useState<ElementFormat>('left');
   const [insertMenuOpen, setInsertMenuOpen] = useState(false);
+  const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [codeLanguage, setCodeLanguage] = useState('plain');
   const [codeElementKey, setCodeElementKey] = useState<string | null>(null);
 
@@ -522,6 +521,7 @@ export default function ToolbarPlugin({
 
   const activeAlign = titleFocused ? titleAlign ?? 'left' : elementFormat;
   const ActiveBlockIcon = BLOCK_OPTIONS.find((option) => option.value === blockType)?.Icon ?? Type;
+  const ActiveListIcon = LIST_OPTIONS.find((option) => option.value === blockType)?.Icon ?? ListIcon;
   const ActiveAlignIcon = ALIGN_OPTIONS.find((option) => option.value === activeAlign)?.Icon ?? AlignLeft;
 
   return (
@@ -540,12 +540,6 @@ export default function ToolbarPlugin({
         spaced={false}
         disabled={!canRedo}
         onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
-      />
-      <ToolbarButton
-        label="Find and replace"
-        tooltip="Find and replace"
-        Icon={Search}
-        onClick={() => editor.dispatchCommand(OPEN_FIND_REPLACE_COMMAND, undefined)}
       />
       <Divider />
       <select
@@ -630,6 +624,21 @@ export default function ToolbarPlugin({
       </DropdownMenu>
 
       <DropdownMenu>
+        <ToolbarMenuButton label="Lists" tooltip="Lists" className="toolbar-item align-dropdown-trigger spaced">
+          <ActiveListIcon size={18} />
+          <ChevronDown size={12} />
+        </ToolbarMenuButton>
+        <DropdownMenuContent align="start">
+          {LIST_OPTIONS.map(({ value, label, Icon }) => (
+            <DropdownMenuItem key={value} onSelect={() => selectBlock(value)}>
+              <Icon className="h-4 w-4" />
+              {label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
         <ToolbarMenuButton label="Align text" tooltip="Align text" className="toolbar-item align-dropdown-trigger spaced">
           <ActiveAlignIcon size={18} />
           <ChevronDown size={12} />
@@ -652,7 +661,7 @@ export default function ToolbarPlugin({
       </DropdownMenu>
 
       <Divider />
-      {TEXT_FORMATS.map(({ format, label, tooltip, Icon }) => (
+      {[...TEXT_FORMATS, INLINE_CODE_FORMAT].map(({ format, label, tooltip, Icon }) => (
         <ToolbarButton
           key={format}
           label={label}
@@ -671,6 +680,23 @@ export default function ToolbarPlugin({
         disabled={blockType === 'code'}
         onClick={insertLink}
       />
+      <DropdownMenu open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
+        <ToolbarMenuButton label="Insert table" tooltip="Table" className="toolbar-item spaced">
+          <TableIcon size={18} />
+        </ToolbarMenuButton>
+        <DropdownMenuContent align="start">
+          <TableSizePicker
+            onPick={(rows, columns) => {
+              setTableMenuOpen(false);
+              editor.dispatchCommand(INSERT_TABLE_COMMAND, {
+                rows: String(rows),
+                columns: String(columns),
+                includeHeaders: { rows: true, columns: false },
+              });
+            }}
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
       <DropdownMenu open={insertMenuOpen} onOpenChange={setInsertMenuOpen}>
         <ToolbarMenuButton label="Insert" tooltip="Insert" className="toolbar-item align-dropdown-trigger spaced">
           <Plus size={18} />
@@ -684,24 +710,6 @@ export default function ToolbarPlugin({
             <ImageIcon className="h-4 w-4" />
             Image
           </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <TableIcon className="h-4 w-4" />
-              Table
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <TableSizePicker
-                onPick={(rows, columns) => {
-                  setInsertMenuOpen(false);
-                  editor.dispatchCommand(INSERT_TABLE_COMMAND, {
-                    rows: String(rows),
-                    columns: String(columns),
-                    includeHeaders: { rows: true, columns: false },
-                  });
-                }}
-              />
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
           <DropdownMenuItem
             disabled={blockType === 'code'}
             onSelect={() => editor.dispatchCommand(INSERT_EQUATION_COMMAND, { equation: '', inline: true })}
@@ -725,6 +733,10 @@ export default function ToolbarPlugin({
             <Music className="h-4 w-4" />
             Music score
           </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => selectBlock('quote')}>
+            <Quote className="h-4 w-4" />
+            Quote
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={formatCode}>
             <SquareCode className="h-4 w-4" />
             Code block
@@ -738,33 +750,35 @@ export default function ToolbarPlugin({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {blockType === 'code' && (
+        <>
+          <Divider />
+          <DropdownMenu>
+            <ToolbarMenuButton
+              label="Code language"
+              tooltip="Code language"
+              className="toolbar-item align-dropdown-trigger spaced"
+            >
+              <span className="toolbar-code-language">{getLanguageFriendlyName(codeLanguage)}</span>
+              <ChevronDown size={12} />
+            </ToolbarMenuButton>
+            <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">
+              {CODE_LANGUAGE_OPTIONS.map(([value, label]) => (
+                <DropdownMenuItem key={value} onSelect={() => setCodeLanguageOn(value)}>
+                  {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
       <Divider />
       <ToolbarButton
-        label={INLINE_CODE_FORMAT.label}
-        tooltip={INLINE_CODE_FORMAT.tooltip}
-        Icon={INLINE_CODE_FORMAT.Icon}
-        active={formats.has(INLINE_CODE_FORMAT.format)}
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, INLINE_CODE_FORMAT.format)}
+        label="Find and replace"
+        tooltip="Find and replace"
+        Icon={Search}
+        onClick={() => editor.dispatchCommand(OPEN_FIND_REPLACE_COMMAND, undefined)}
       />
-      {blockType === 'code' && (
-        <DropdownMenu>
-          <ToolbarMenuButton
-            label="Code language"
-            tooltip="Code language"
-            className="toolbar-item align-dropdown-trigger spaced"
-          >
-            <span className="toolbar-code-language">{getLanguageFriendlyName(codeLanguage)}</span>
-            <ChevronDown size={12} />
-          </ToolbarMenuButton>
-          <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">
-            {CODE_LANGUAGE_OPTIONS.map(([value, label]) => (
-              <DropdownMenuItem key={value} onSelect={() => setCodeLanguageOn(value)}>
-                {label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
       <input
         ref={fileInputRef}
         type="file"
