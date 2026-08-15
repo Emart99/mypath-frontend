@@ -199,14 +199,18 @@ export default function FindReplacePlugin() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'f' && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        openBar();
-      }
+      if (event.key !== 'f' && event.key !== 'F') return;
+      if (!event.metaKey && !event.ctrlKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target === null) return;
+      const container = editor.getRootElement()?.closest('.editor-container');
+      if (!container?.contains(target) && target.closest('.find-replace-bar') === null) return;
+      event.preventDefault();
+      openBar();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [openBar]);
+  }, [editor, openBar]);
 
   const findMatches = useCallback(
     (needleRaw: string): Match[] => {
