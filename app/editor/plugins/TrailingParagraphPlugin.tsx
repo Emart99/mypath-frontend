@@ -108,6 +108,7 @@ export default function TrailingParagraphPlugin(): null {
         KEY_ARROW_DOWN_COMMAND,
         (event) => {
           if (event.altKey) return false;
+          if (document.querySelector('.item-mention-menu') !== null) return false;
 
           const code = $codeBlockAtBoundary('down');
           if (code !== null) {
