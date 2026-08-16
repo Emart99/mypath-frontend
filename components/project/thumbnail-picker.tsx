@@ -59,16 +59,14 @@ export function ThumbnailPicker({
 }) {
   const [tab, setTab] = useState<"trail" | "image" | "upload">("trail");
   const [images, setImages] = useState<ProjectImage[] | null>(null);
-  const [imagesLoading, setImagesLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const imagesLoading = tab === "image" && images === null;
 
   useEffect(() => {
     if (tab !== "image" || images !== null) return;
-    setImagesLoading(true);
     getProjectImages(projectId)
       .then(setImages)
-      .catch(() => setImages([]))
-      .finally(() => setImagesLoading(false));
+      .catch(() => setImages([]));
   }, [tab, images, projectId]);
 
   const apply = async (choice: ThumbnailChoice, optimistic: { imageUrl: string | null; graph: Project["thumbnailGraph"] }) => {

@@ -243,14 +243,16 @@ export default function FindReplacePlugin() {
     [editor],
   );
 
-  useEffect(() => {
-    if (!open) return;
-    const found = findMatches(query);
-    setMatches(found);
-    setCurrentIndex(0);
-    highlightMatch(found.length > 0 ? found[0] : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, open]);
+  const runSearch = useCallback(
+    (next: string) => {
+      setQuery(next);
+      const found = findMatches(next);
+      setMatches(found);
+      setCurrentIndex(0);
+      highlightMatch(found.length > 0 ? found[0] : null);
+    },
+    [findMatches, highlightMatch],
+  );
 
   const goToMatch = (index: number) => {
     if (matches.length === 0) return;
@@ -316,7 +318,7 @@ export default function FindReplacePlugin() {
         <input
           ref={searchInputRef}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => runSearch(e.target.value)}
           onMouseDown={(e) => e.stopPropagation()}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {

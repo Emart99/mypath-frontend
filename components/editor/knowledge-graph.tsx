@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { useTheme } from "next-themes"
+import { useMounted } from "@/hooks/use-mounted"
 import {
   ReactFlow,
   Background,
@@ -168,8 +169,7 @@ export function KnowledgeGraph({ trails, items, activeTrailId, selectedItemId, o
   const preview = variant === "preview";
   const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   const [colors, setColors] = useState<Record<string, string>>(FALLBACK);
   useEffect(() => {

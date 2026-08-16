@@ -4,6 +4,7 @@ import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { useMounted } from '@/hooks/use-mounted';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,11 +32,7 @@ export function AvatarMenu({
 }) {
   const initials = username.slice(0, 2).toUpperCase();
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   const isDark = mounted && resolvedTheme === 'dark';
   const ThemeIcon = mounted && theme === 'system' ? SunMoon : isDark ? Moon : Sun;
