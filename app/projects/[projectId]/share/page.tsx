@@ -193,7 +193,7 @@ export default function PublishPage() {
         <SharePreview card={yourCard} />
       </div>
 
-      <div className="flex flex-col gap-6 overflow-y-auto border-l border-border p-6 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:min-h-0 [&>*]:shrink-0">
+      <div className="flex flex-col gap-6 overflow-y-auto border-l border-border p-6 pb-0 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:min-h-0 [&>*]:shrink-0">
         <div className="flex flex-col gap-1.5">
           <Label>Visibility</Label>
           <div className="flex flex-col gap-2">
@@ -256,7 +256,7 @@ export default function PublishPage() {
           onError={setError}
         />
 
-        <div className="sticky bottom-0 -mx-6 flex flex-col gap-2 bg-background px-6 pb-2 pt-3">
+        <div className="sticky bottom-0 -mx-6 flex flex-col gap-2 bg-background px-6 pb-6 pt-3">
           {error && <p className="text-xs text-destructive">{error}</p>}
           <button
             type="button"
@@ -281,7 +281,7 @@ export default function PublishPage() {
         </div>
 
         {shareUrl && (
-          <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2">
+          <div className="mb-6 flex items-center gap-2 rounded-md border border-border px-3 py-2">
             <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
               {shareUrl}
             </span>
